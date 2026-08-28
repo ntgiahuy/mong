@@ -75,8 +75,8 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
   return (
     <>
       <div className="form-col">
-      <fieldset className="panel">
-        <legend>{L.quick}</legend>
+      <fieldset className="panel footing-id-panel">
+        <legend>{L.nameQty}</legend>
         <div className="footing-id">
           <label className="footing-id-name">
             <span className="footing-id-k">{L.nameMark}</span>
@@ -100,6 +100,9 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
             />
           </label>
         </div>
+      </fieldset>
+      <fieldset className="panel">
+        <legend>{L.quick}</legend>
         <div className="radios">
           {(
             [
