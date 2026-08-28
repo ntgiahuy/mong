@@ -114,14 +114,14 @@ function Level({ x, y, text }: { x: number; y: number; text: string }) {
 }
 
 function BarShape({ row }: { row: RebarRow }) {
-  const h = 52
-  const w = 168
+  const h = 34
+  const w = 108
   if (row.shape === 'straight') {
     const L = row.segs[0] ?? row.length
     return (
-      <svg width={w} height={h} viewBox="0 0 168 52">
-        <line x1={16} y1={28} x2={152} y2={28} stroke="#111" strokeWidth={2} />
-        <text x={84} y={22} textAnchor="middle" fontSize={10}>
+      <svg width={w} height={h} viewBox="0 0 108 34">
+        <line x1={10} y1={20} x2={98} y2={20} stroke="#111" strokeWidth={1.6} />
+        <text x={54} y={14} textAnchor="middle" fontSize={8}>
           {L}
         </text>
       </svg>
@@ -130,12 +130,12 @@ function BarShape({ row }: { row: RebarRow }) {
   if (row.shape === 'u') {
     const [leg, mid] = row.segs
     return (
-      <svg width={w} height={h} viewBox="0 0 168 52">
-        <path d="M28 10 V38 H140 V10" fill="none" stroke="#111" strokeWidth={2} />
-        <text x={84} y={50} textAnchor="middle" fontSize={9}>
+      <svg width={w} height={h} viewBox="0 0 108 34">
+        <path d="M18 6 V26 H90 V6" fill="none" stroke="#111" strokeWidth={1.6} />
+        <text x={54} y={33} textAnchor="middle" fontSize={8}>
           {mid}
         </text>
-        <text x={18} y={28} fontSize={9}>
+        <text x={2} y={18} fontSize={8}>
           {leg}
         </text>
       </svg>
@@ -144,12 +144,12 @@ function BarShape({ row }: { row: RebarRow }) {
   if (row.shape === 'L') {
     const [hook, straight] = row.segs
     return (
-      <svg width={w} height={h} viewBox="0 0 168 52">
-        <path d="M20 38 H52 V10" fill="none" stroke="#111" strokeWidth={2} />
-        <text x={36} y={50} textAnchor="middle" fontSize={9}>
+      <svg width={w} height={h} viewBox="0 0 108 34">
+        <path d="M12 26 H36 V6" fill="none" stroke="#111" strokeWidth={1.6} />
+        <text x={24} y={33} textAnchor="middle" fontSize={8}>
           {hook}
         </text>
-        <text x={88} y={24} fontSize={9}>
+        <text x={42} y={16} fontSize={8}>
           {straight}
         </text>
       </svg>
@@ -157,17 +157,17 @@ function BarShape({ row }: { row: RebarRow }) {
   }
   const [a, b, hook] = row.segs
   return (
-    <svg width={w} height={h} viewBox="0 0 168 52">
-      <rect x={48} y={10} width={70} height={30} fill="none" stroke="#111" strokeWidth={2} />
-      <path d="M48 16 H36" stroke="#111" strokeWidth={2} fill="none" />
-      <path d="M48 40 H36" stroke="#111" strokeWidth={2} fill="none" />
-      <text x={83} y={28} textAnchor="middle" fontSize={9}>
+    <svg width={w} height={h} viewBox="0 0 108 34">
+      <rect x={28} y={6} width={48} height={20} fill="none" stroke="#111" strokeWidth={1.6} />
+      <path d="M28 10 H18" stroke="#111" strokeWidth={1.6} fill="none" />
+      <path d="M28 22 H18" stroke="#111" strokeWidth={1.6} fill="none" />
+      <text x={52} y={19} textAnchor="middle" fontSize={8}>
         {b}
       </text>
-      <text x={130} y={28} fontSize={9}>
+      <text x={80} y={19} fontSize={8}>
         {a}
       </text>
-      <text x={28} y={14} fontSize={8}>
+      <text x={8} y={9} fontSize={7}>
         {hook}
       </text>
     </svg>
@@ -204,9 +204,12 @@ function SectionDrawing({
   const markTrans = (axis === 'x' ? meshY : meshX)?.mark ?? (axis === 'x' ? 2 : 1)
   const colMark = result.bars.find((b) => b.shape === 'L')?.mark ?? 3
   const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
+  const colBars = result.bars.filter((b) => b.shape === 'L')
+  const stirrup = result.bars.find((b) => b.shape === 'stirrup')
+  const show34 = axis === 'x'
 
   const totalH = inp.hCom + inp.hCm + inp.hDm
-  const W = 430
+  const W = show34 ? 560 : 430
   const s = Math.min(250 / widthMm, 250 / (totalH + inp.lining + (inp.fType === 'sand' ? 80 : 0)))
   const ox = 70
   const oy = 22
@@ -243,7 +246,7 @@ function SectionDrawing({
   const yMainLab = y0 + Math.max(22, hs.com * 0.32)
   const yStirLab = y0 + Math.max(10, hs.com * 0.12)
   const captionY = y4 + sandH + 58
-  const H = captionY + 16
+  const H = Math.max(captionY + 16, show34 ? y0 + 220 : captionY + 16)
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
@@ -401,6 +404,41 @@ function SectionDrawing({
         {fmtLevel(inp.cdtn)}
       </text>
       <Level x={ox + bw + 8} y={y3} text={fmtLevel(result.cdm)} />
+      {show34 && (
+        <g transform={`translate(${Math.min(ox + bw + 92, W - 128)}, ${y0})`}>
+          {colBars.map((b, i) => (
+            <g key={b.mark} transform={`translate(0, ${i * 100})`}>
+              <Tag n={b.mark} x={12} y={12} />
+              <text x={24} y={16} fontSize={10} fontWeight={700}>
+                {b.n1}Ø{b.d}-L={b.length}
+              </text>
+              <path d="M18 88 H58 V20" fill="none" stroke="#111" strokeWidth={2} />
+              <text x={38} y={100} textAnchor="middle" fontSize={9}>
+                {b.segs[0]}
+              </text>
+              <text x={64} y={56} fontSize={9}>
+                {b.segs[1]}
+              </text>
+            </g>
+          ))}
+          {stirrup && (
+            <g transform={`translate(0, ${colBars.length * 100})`}>
+              <Tag n={stirrup.mark} x={12} y={12} />
+              <text x={24} y={16} fontSize={10} fontWeight={700}>
+                {stirrup.n1}Ø{stirrup.d}-L={stirrup.length}
+              </text>
+              <rect x={28} y={28} width={52} height={36} fill="none" stroke="#111" strokeWidth={2} />
+              <path d="M28 34 H16" stroke="#111" strokeWidth={2} />
+              <text x={54} y={50} textAnchor="middle" fontSize={9}>
+                {stirrup.segs[1]}
+              </text>
+              <text x={84} y={50} fontSize={9}>
+                {stirrup.segs[0]}
+              </text>
+            </g>
+          )}
+        </g>
+      )}
       <DrawingCaption x={ox + bw / 2} y={captionY} title={title} />
     </svg>
   )
@@ -416,9 +454,11 @@ function PlanDrawing({
   result: CalcResult
   title: string
 }) {
-  const W = 430
-  const s = Math.min(300 / inp.xMong, 250 / inp.yMong)
-  const ox = 55
+  const barFaX = result.bars.find((b) => b.label.includes('FaX'))
+  const barFaY = result.bars.find((b) => b.label.includes('FaY'))
+  const W = 470
+  const s = Math.min(280 / inp.xMong, 230 / inp.yMong)
+  const ox = 88
   const oy = 28
   const w = inp.xMong * s
   const h = inp.yMong * s
@@ -429,7 +469,7 @@ function PlanDrawing({
   const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
   const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
-  const captionY = oy + h + 68
+  const captionY = oy + h + 86
   const H = captionY + 16
 
   return (
@@ -441,6 +481,20 @@ function PlanDrawing({
       <line x1={ox} y1={oy + h} x2={cx} y2={cy + ch} stroke="#666" />
       <line x1={ox + w} y1={oy + h} x2={cx + cw} y2={cy + ch} stroke="#666" />
 
+      {ny.map((mm, i) => {
+        const y = oy + mm * s
+        return (
+          <line
+            key={`y${i}`}
+            x1={ox + inp.coverBase * s}
+            y1={y}
+            x2={ox + w - inp.coverBase * s}
+            y2={y}
+            stroke="#111"
+            strokeWidth={Math.max(1.1, inp.dFaX / 12)}
+          />
+        )
+      })}
       {nx.map((mm, i) => {
         const x = ox + mm * s
         return (
@@ -451,21 +505,7 @@ function PlanDrawing({
             x2={x}
             y2={oy + h - inp.coverBase * s}
             stroke="#333"
-            strokeWidth={Math.max(0.7, inp.dFaY / 16)}
-          />
-        )
-      })}
-      {ny.map((mm, i) => {
-        const y = oy + mm * s
-        return (
-          <line
-            key={`y${i}`}
-            x1={ox + inp.coverBase * s}
-            y1={y}
-            x2={ox + w - inp.coverBase * s}
-            y2={y}
-            stroke="#333"
-            strokeWidth={Math.max(0.7, inp.dFaX / 16)}
+            strokeWidth={Math.max(0.8, inp.dFaY / 14)}
           />
         )
       })}
@@ -511,18 +551,59 @@ function PlanDrawing({
       <VDim x={ox + w + 18} y1={cy} y2={cy + ch} label={inp.yCo} />
       <VDim x={ox + w + 40} y1={oy} y2={oy + h} label={inp.yMong} />
 
-      <Tag n={1} x={ox + 24} y={oy + 22} />
-      <text x={ox + 36} y={oy + 26} fontSize={10}>
-        FaX {result.nMeshX}Ø{inp.dFaX}a{inp.aFaX}
+      <Tag n={barFaX?.mark ?? 1} x={ox + 20} y={oy + h - 18} />
+      <text x={ox + 32} y={oy + h - 14} fontSize={10} fontWeight={700}>
+        {barFaX?.n1 ?? result.nMeshX}Ø{inp.dFaX}a{inp.aFaX} (X)
       </text>
-      <Tag n={2} x={ox + w - 90} y={oy + 22} />
-      <text x={ox + w - 78} y={oy + 26} fontSize={10}>
-        FaY {result.nMeshY}Ø{inp.dFaY}a{inp.aFaY}
+      <Tag n={barFaY?.mark ?? 2} x={ox + w - 22} y={oy + 20} />
+      <text x={ox + w - 34} y={oy + 24} textAnchor="end" fontSize={10} fontWeight={700}>
+        {barFaY?.n1 ?? result.nMeshY}Ø{inp.dFaY}a{inp.aFaY} (Y)
       </text>
-      <Tag n={3} x={cx + cw / 2} y={cy + ch / 2} />
-      <text x={cx + cw / 2 + 12} y={cy + ch / 2 + 4} fontSize={10}>
-        Cx×Cy {inp.cx}×{inp.cy} = {result.nCol}Ø{inp.dMain}
-      </text>
+
+      {barFaX && (
+        <g>
+          <line
+            x1={ox}
+            y1={oy + h + 62}
+            x2={ox + w}
+            y2={oy + h + 62}
+            stroke="#111"
+            strokeWidth={2.2}
+          />
+          {inp.hooked && (
+            <>
+              <path d={`M ${ox} ${oy + h + 62} V ${oy + h + 48}`} fill="none" stroke="#111" strokeWidth={2.2} />
+              <path d={`M ${ox + w} ${oy + h + 62} V ${oy + h + 48}`} fill="none" stroke="#111" strokeWidth={2.2} />
+            </>
+          )}
+          <Tag n={barFaX.mark} x={ox - 16} y={oy + h + 62} />
+          <text x={ox + w / 2} y={oy + h + 56} textAnchor="middle" fontSize={9} fontWeight={700}>
+            {barFaX.n1}Ø{barFaX.d}-L={barFaX.length} phương X
+          </text>
+        </g>
+      )}
+      {barFaY && (
+        <g>
+          <line
+            x1={22}
+            y1={oy}
+            x2={22}
+            y2={oy + h}
+            stroke="#111"
+            strokeWidth={2.2}
+          />
+          {inp.hooked && (
+            <>
+              <path d={`M 22 ${oy} H 36`} fill="none" stroke="#111" strokeWidth={2.2} />
+              <path d={`M 22 ${oy + h} H 36`} fill="none" stroke="#111" strokeWidth={2.2} />
+            </>
+          )}
+          <Tag n={barFaY.mark} x={22} y={oy - 14} />
+          <text x={8} y={oy + h / 2} fontSize={9} fontWeight={700} transform={`rotate(-90, 8, ${oy + h / 2})`}>
+            {barFaY.n1}Ø{barFaY.d}-L={barFaY.length} phương Y
+          </text>
+        </g>
+      )}
 
       {inp.fType === 'tram' &&
         Array.from({ length: result.nTram }).map((_, i) => {
@@ -545,69 +626,6 @@ function PlanDrawing({
   )
 }
 
-function DetailCallouts({ inp, result }: { inp: Inputs; result: CalcResult }) {
-  const meshX = result.bars[0]
-  const meshY = result.bars[1]
-  const col = result.bars[2]
-  const stirrup = result.bars.find((b) => b.shape === 'stirrup')
-  return (
-    <svg className="cad" viewBox="0 0 220 430" width="100%">
-      {meshX && (
-        <g transform="translate(10,20)">
-          <Tag n={meshX.mark} x={12} y={12} />
-          <text x={24} y={16} fontSize={11} fontWeight={700}>
-            {meshX.n1}Ø{meshX.d}-L={meshX.length}
-          </text>
-          <line x1={20} y1={36} x2={190} y2={36} stroke="#111" strokeWidth={2} />
-        </g>
-      )}
-      {meshY && (
-        <g transform="translate(10,80)">
-          <Tag n={meshY.mark} x={12} y={12} />
-          <text x={24} y={16} fontSize={11} fontWeight={700}>
-            {meshY.n1}Ø{meshY.d}-L={meshY.length}
-          </text>
-          <line x1={20} y1={36} x2={200} y2={36} stroke="#111" strokeWidth={2} />
-        </g>
-      )}
-      {col && (
-        <g transform="translate(10,150)">
-          <Tag n={col.mark} x={12} y={12} />
-          <text x={24} y={16} fontSize={11} fontWeight={700}>
-            {col.n1}Ø{col.d}-L={col.length}
-          </text>
-          <path d="M30 70 H70 V20" fill="none" stroke="#111" strokeWidth={2} />
-          <text x={50} y={82} fontSize={10}>
-            {col.segs[0]}
-          </text>
-          <text x={78} y={48} fontSize={10}>
-            {col.segs[1]}
-          </text>
-        </g>
-      )}
-      {stirrup && (
-        <g transform="translate(10,260)">
-          <Tag n={stirrup.mark} x={12} y={12} />
-          <text x={24} y={16} fontSize={11} fontWeight={700}>
-            {stirrup.n1}Ø{stirrup.d}-L={stirrup.length}
-          </text>
-          <rect x={50} y={36} width={70} height={44} fill="none" stroke="#111" strokeWidth={2} />
-          <path d="M50 44 H38" stroke="#111" strokeWidth={2} />
-          <text x={85} y={60} textAnchor="middle" fontSize={10}>
-            {stirrup.segs[1]}
-          </text>
-          <text x={128} y={60} fontSize={10}>
-            {stirrup.segs[0]}
-          </text>
-        </g>
-      )}
-      <text x={10} y={400} fontSize={10} fill="#444">
-        {inp.industrial ? 'Móng nhà công nghiệp — bu lông neo theo bản vẽ cột.' : ''}
-      </text>
-    </svg>
-  )
-}
-
 export function ShopDrawing({ inp, result, lang }: Props) {
   const L = t[lang]
 
@@ -617,11 +635,10 @@ export function ShopDrawing({ inp, result, lang }: Props) {
       <div className="shop-a2-top">
         <SectionDrawing axis="x" inp={inp} result={result} title={L.sectionAA} />
         <SectionDrawing axis="y" inp={inp} result={result} title={L.sectionBB} />
-        <PlanDrawing inp={inp} result={result} title={L.plan(inp.name, inp.qty)} />
       </div>
       <div className="shop-a2-bottom">
-        <DetailCallouts inp={inp} result={result} />
-        <div className="schedule">
+        <PlanDrawing inp={inp} result={result} title={L.plan(inp.name, inp.qty)} />
+        <div className="schedule schedule-compact">
           <h2>{L.table}</h2>
           <div className="schedule-meta">
             <strong>{inp.name}</strong>

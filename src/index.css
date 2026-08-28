@@ -294,14 +294,14 @@ p {
 
 .shop-a2-top {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1.15fr 1fr;
   gap: 8px;
   align-items: start;
 }
 
 .shop-a2-bottom {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-columns: 1.15fr 0.85fr;
   gap: 8px;
   margin-top: 8px;
   align-items: start;
@@ -313,30 +313,39 @@ p {
 
 .schedule h2 {
   text-align: center;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: #111;
+}
+
+.schedule-compact h2 {
+  font-size: 11px;
+  margin-bottom: 2px;
 }
 
 .schedule-meta {
   display: flex;
-  gap: 16px;
-  font-size: 13px;
-  margin-bottom: 6px;
+  gap: 12px;
+  font-size: 11px;
+  margin-bottom: 4px;
 }
 
 .schedule table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 9px;
   color: #111;
+}
+
+.schedule-compact table {
+  font-size: 8.5px;
 }
 
 .schedule th,
 .schedule td {
   border: 1px solid #111;
-  padding: 3px 4px;
+  padding: 1px 2px;
   text-align: center;
   vertical-align: middle;
 }
@@ -345,16 +354,21 @@ p {
   padding: 0;
 }
 
+.schedule-compact .shape-cell svg {
+  display: block;
+  margin: 0 auto;
+}
+
 .sum-table {
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .qty-notes {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   padding-left: 0;
   list-style: none;
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 9px;
+  line-height: 1.35;
   color: #111;
 }
 
@@ -397,9 +411,9 @@ p {
     min-height: 0;
   }
   .shop-a2-top {
-    grid-template-columns: 1fr 1fr 1fr !important;
+    grid-template-columns: 1.15fr 1fr !important;
   }
   .shop-a2-bottom {
-    grid-template-columns: 200px 1fr !important;
+    grid-template-columns: 1.15fr 0.85fr !important;
   }
 }
