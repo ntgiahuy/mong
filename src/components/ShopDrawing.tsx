@@ -10,7 +10,8 @@ type Props = {
 
 const OX = 78
 const RIGHT = 96
-const CALLOUT_W = 170
+const CALLOUT_W = 168
+const SHEET_W = 1782
 /** Gap from footing bottom to view title — keep below the overall X-dimension numbers. */
 const SECTION_CAPTION_GAP = 114
 const SECTION_CAPTION_PAD = 22
@@ -211,12 +212,11 @@ function BarShape({ row }: { row: RebarRow }) {
 
 function sheetScale(inp: Inputs): number {
   const totalH = inp.hCom + inp.hCm + inp.hDm + inp.lining + (inp.fType === 'sand' ? 80 : 0)
-  const sheetW = 1520
-  const availW = sheetW - CALLOUT_W - 16 - (OX + RIGHT) * 2
+  const availW = SHEET_W - CALLOUT_W - 36 - (OX + RIGHT) * 2
   const sW = availW / Math.max(inp.xMong + inp.yMong, 1)
-  const sSec = 480 / Math.max(totalH, 1)
-  const sPlan = 420 / Math.max(inp.yMong, 1)
-  return Math.min(sW, sSec, sPlan, 0.26)
+  const stackExtra = 330
+  const sH = (1080 - stackExtra) / Math.max(totalH + inp.yMong, 1)
+  return Math.min(sW, sH, 0.22)
 }
 
 function sectionSize(inp: Inputs, axis: 'x' | 'y', s: number) {
@@ -785,7 +785,10 @@ export function ShopDrawing({ inp, result, lang }: Props) {
 
   return (
     <div className="shop-sheet" id="shop-sheet">
-      <h1 className="shop-title">{title}</h1>
+      <h1 className="shop-title">
+        <span>{title}</span>
+        <span className="shop-sheet-size">KHỔ A2 NẰM</span>
+      </h1>
       <div className="shop-a2">
         <div className="shop-callouts">
           <Callouts inp={inp} result={result} s={s} height={aa.H} />

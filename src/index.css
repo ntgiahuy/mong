@@ -274,31 +274,43 @@ p {
 .shop-sheet {
   background: #fff;
   color: #111;
-  padding: 14px 16px 18px;
+  padding: 10px 14px 12px;
   font-family: Arial, 'Segoe UI', sans-serif;
-  width: 1520px;
+  width: 1782px;
   max-width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
+  border: 1.5px solid #111;
 }
 
 .shop-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 18px;
   text-align: center;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.4px;
   border-bottom: 2px solid #111;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
   margin-bottom: 8px;
   color: #111;
 }
 
+.shop-sheet-size {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #333;
+}
+
 .shop-a2 {
   display: grid;
-  grid-template-columns: 170px max-content minmax(420px, 1fr);
+  grid-template-columns: 168px max-content minmax(520px, 1fr);
   grid-template-rows: auto auto;
   column-gap: 2px;
-  row-gap: 4px;
+  row-gap: 8px;
   align-items: start;
   justify-content: start;
 }
@@ -317,6 +329,7 @@ p {
 .shop-bb {
   grid-column: 3;
   grid-row: 1;
+  margin-left: 20px;
 }
 
 .shop-plan {
@@ -328,6 +341,7 @@ p {
   grid-column: 3;
   grid-row: 2;
   min-width: 0;
+  margin-left: 20px;
 }
 
 .cad {
@@ -409,6 +423,7 @@ p {
   .shop-sched {
     grid-column: 1;
     grid-row: auto;
+    margin-left: 0;
   }
 }
 
@@ -420,7 +435,7 @@ p {
 
 @media print {
   @page {
-    size: A2 portrait;
+    size: A2 landscape;
     margin: 8mm;
   }
   .topbar,
@@ -438,6 +453,10 @@ p {
     min-height: 0;
   }
   .shop-a2 {
-    grid-template-columns: 170px max-content minmax(420px, 1fr) !important;
+    grid-template-columns: 168px max-content minmax(520px, 1fr) !important;
+  }
+  .shop-sheet {
+    width: 1782px;
+    border: 0;
   }
 }

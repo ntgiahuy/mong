@@ -1,6 +1,6 @@
 # Shop thép móng — Bê tông — Cốt pha
 
-Công cụ nhập kích thước móng đơn (giống form CAD), vẽ **mặt cắt A-A / B-B**, **mặt bằng**, **bảng thống kê cốt thép**, khối lượng **bê tông / ván khuôn**, rồi **xuất PDF A2 đứng** (bố cục giống bản shop mẫu).
+Công cụ nhập kích thước móng đơn (giống form CAD), vẽ **mặt cắt A-A / B-B**, **mặt bằng**, **bảng thống kê cốt thép**, khối lượng **bê tông / ván khuôn**, rồi **xuất PDF A2 nằm**.
 
 Dùng được trên web và nhúng vào **Blogger** bằng iframe.
 
@@ -42,7 +42,7 @@ npm run preview
 1. Chọn lệch tâm / đúng tâm, nhập `Xmong`, `Ymong`, cổ cột / cột, cao `HCOM` `HCM` `HDM`.
 2. Khai báo thép cổ cột (`Cx`, `Cy`, đường kính, đai) và thép đế (`FaX`, `FaY`, khoảng `a`).
 3. Bấm **Shop thép - Bê tông - Cốt pha**.
-4. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 đứng.
+4. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 nằm.
 
 Nút **Nạp mẫu bản vẽ** điền số liệu gần với file shop mẫu (móng M2, 2000×2200).
 
