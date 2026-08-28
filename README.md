@@ -1,9 +1,5 @@
 # Shop thép móng — Bê tông — Cốt pha
 
-Trang chạy: **https://ntgiahuy.github.io/xd/**
-
-Công cụ nhập kích thước móng đơn (giống form CAD), vẽ **mặt cắt A-A / B-B**, **mặt bằng**, **bảng thống kê cốt thép**, khối lượng **bê tông / ván khuôn**, rồi **xuất PDF A3**.
-
 Công cụ nhập kích thước móng đơn (giống form CAD), vẽ **mặt cắt A-A / B-B**, **mặt bằng**, **bảng thống kê cốt thép**, khối lượng **bê tông / ván khuôn**, rồi **xuất PDF A3**.
 
 Dùng được trên web và nhúng vào **Blogger** bằng iframe.
@@ -63,7 +59,7 @@ Nút **EN** đổi giao diện sang tiếng Anh.
 
 ```
 Ymong*Xmong*Hdm
-+ Hcm/3 * (Ymong*Xmong + Xcot*Ycot + sqrt(Ymong*Xmong*Xcot*Ycot))
++ Hcm/3 * (Ymong*Xmong + (Xcot+0.1)*(Ycot+0.1) + sqrt(Ymong*Xmong*(Xcot+0.1)*(Ycot+0.1)))
 ```
 
 Số thanh lưới đế: `floor((cạnh - 2*cover) / a) + 1`.

@@ -261,16 +261,6 @@ export function compute(i: Inputs): CalcResult {
     n1: nStirrup,
     label: `Ø${i.dStirrup}a${i.aStirrup}`,
   })
-  if (Math.max(i.cx, 2) >= 4 && stirrupA !== stirrupB) {
-    push({
-      shape: 'stirrup',
-      segs: [stirrupB, stirrupA, stirrupHook],
-      d: i.dStirrup,
-      length: stirrupL,
-      n1: nStirrup,
-      label: `Ø${i.dStirrup}a${i.aStirrup} (đai phụ)`,
-    })
-  }
 
   const byMap = new Map<number, SteelByDia>()
   for (const b of bars) {
@@ -309,9 +299,11 @@ export function compute(i: Inputs): CalcResult {
   const formworkFooting = round((ym + xm) * 2 * hdm, 2)
   const formworkNeck = round((yc + xc) * 2 * hcom, 2)
   const concreteNeck = round(yc * xc * hcom, 3)
+  const xcTop = xc + 0.1
+  const ycTop = yc + 0.1
   const frustum =
     hcm > 0
-      ? (hcm / 3) * (ym * xm + xc * yc + Math.sqrt(ym * xm * xc * yc))
+      ? (hcm / 3) * (ym * xm + xcTop * ycTop + Math.sqrt(ym * xm * xcTop * ycTop))
       : 0
   const concreteFooting = round(ym * xm * hdm + frustum, 3)
   const concreteLining = round((xm + 0.1) * (ym + 0.1) * tLot, 3)
@@ -321,7 +313,7 @@ export function compute(i: Inputs): CalcResult {
   const formworkFootingExpr = `=(Ymong+Xmong)*2*Hdm  —  (${fmt(ym)}+${fmt(xm)})*2*${fmt(hdm)}=${formworkFooting} m²`
   const formworkNeckExpr = `=(Ycot+Xcot)*2*Hcom  —  (${fmt(yc)}+${fmt(xc)})*2*${fmt(hcom)}=${formworkNeck} m²`
   const concreteNeckExpr = `=Ycot*Xcot*Hcom  —  ${fmt(yc)}*${fmt(xc)}*${fmt(hcom)}=${concreteNeck} m³`
-  const concreteFootingExpr = `=((Ymong*Xmong*Hdm)+(Hcm/3*(Ymong*Xmong+Xcot*Ycot+SQRT(Ymong*Xmong*Xcot*Ycot))))  —  ((${fmt(ym)}*${fmt(xm)}*${fmt(hdm)})+(${fmt(hcm)}/3*(${fmt(ym)}*${fmt(xm)}+${fmt(xc)}*${fmt(yc)}+SQRT(${fmt(ym)}*${fmt(xm)}*${fmt(xc)}*${fmt(yc)}))))=${concreteFooting} m³`
+  const concreteFootingExpr = `=((Ymong*Xmong*Hdm)+(Hcm/3*(Ymong*Xmong+(Xcot+0.1)*(Ycot+0.1)+SQRT(Ymong*Xmong*(Xcot+0.1)*(Ycot+0.1)))))  —  ((${fmt(ym)}*${fmt(xm)}*${fmt(hdm)})+(${fmt(hcm)}/3*(${fmt(ym)}*${fmt(xm)}+${fmt(xcTop)}*${fmt(ycTop)}+SQRT(${fmt(ym)}*${fmt(xm)}*${fmt(xcTop)}*${fmt(ycTop)}))))=${concreteFooting} m³`
 
   const stirrupRows = bars.filter((b) => b.shape === 'stirrup')
   const stirrupNote = stirrupRows.map(

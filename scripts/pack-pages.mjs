@@ -13,6 +13,10 @@ if (!existsSync(dist)) {
 rmSync(docs, { recursive: true, force: true })
 mkdirSync(docs, { recursive: true })
 cpSync(dist, docs, { recursive: true })
+for (const extra of ['404.html']) {
+  const src = join(root, 'public', extra)
+  if (existsSync(src)) cpSync(src, join(docs, extra))
+}
 for (const extra of ['shop-thep-mong-github-pages.zip']) {
   const p = join(docs, extra)
   if (existsSync(p)) rmSync(p)
