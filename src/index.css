@@ -297,7 +297,7 @@ p {
   display: grid;
   grid-template-columns: 170px max-content minmax(420px, 1fr);
   grid-template-rows: auto auto;
-  column-gap: 8px;
+  column-gap: 2px;
   row-gap: 4px;
   align-items: start;
   justify-content: start;
@@ -306,6 +306,7 @@ p {
 .shop-callouts {
   grid-column: 1;
   grid-row: 1;
+  justify-self: end;
 }
 
 .shop-aa {

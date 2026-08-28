@@ -245,77 +245,83 @@ function Callouts({
 }) {
   const colBars = result.bars.filter((b) => b.shape === 'L')
   const stirrup = result.bars.find((b) => b.shape === 'stirrup')
-  const stem = Math.max(90, (inp.hCom + inp.hCm + inp.hDm - 100) * s)
-  const hook = Math.max(18, Math.min(48, result.colHook * s * 0.55))
-  const pairW = 52
-  const top = 18
-  const stirH = 88
-  const stirY = top
-  const lTop = stirY + stirH + 10
-  const lBot = lTop + stem
+  const totalH = inp.hCom + inp.hCm + inp.hDm
+  const oy = 22
+  const stem = Math.max(80, (totalH - 100) * s)
+  const hook = Math.max(16, Math.min(40, result.colHook * s * 0.5))
+  const pairW = 56
   const W = CALLOUT_W
-  const H = Math.max(height, lBot + hook + 24)
+  const hoopW = 30
+  const hoopH = 48
+  const x2 = W - hook - 6
+  const x1 = x2 - pairW
+  const y1 = oy
+  const y2 = y1 + stem
+  const stirX = 8
+  const stirY = y2 - hoopH
+  const lBot = y2 + hook + 20
+  const H = Math.max(height, lBot, stirY + hoopH + 26)
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
-      {stirrup && (
-        <g transform={`translate(22, ${stirY})`}>
-          <Tag n={stirrup.mark} x={10} y={8} />
-          <text x={22} y={12} fontSize={10} fontWeight={700}>
-            {stirrup.n1}Ø{stirrup.d}-L={stirrup.length}
-          </text>
-          <StirrupHoop x={52} y={18} w={32} h={50} strokeWidth={2} />
-          <text x={40} y={46} fontSize={8} textAnchor="end">
-            {stirrup.segs[1]}
-          </text>
-          <text x={68} y={78} fontSize={8} textAnchor="middle">
-            {stirrup.segs[0]}
-          </text>
-        </g>
-      )}
       {colBars.map((b, i) => {
-        const y0 = lTop + i * (stem + hook + 28)
-        const x1 = 48
-        const x2 = x1 + pairW
-        const y1 = y0
-        const y2 = y0 + stem
-        const mid = (y1 + y2) / 2
+        const dy = i * (stem + hook + 22)
+        const ya = y1 + dy
+        const yb = y2 + dy
+        const mid = (ya + yb) / 2
         return (
           <g key={b.mark}>
             <path
-              d={`M ${x1} ${y1} V ${y2} H ${x1 - hook}`}
+              d={`M ${x1} ${ya} V ${yb} H ${x1 - hook}`}
               fill="none"
               stroke="#111"
               strokeWidth={2.2}
               strokeLinecap="square"
             />
             <path
-              d={`M ${x2} ${y1} V ${y2} H ${x2 + hook}`}
+              d={`M ${x2} ${ya} V ${yb} H ${x2 + hook}`}
               fill="none"
               stroke="#111"
               strokeWidth={2.2}
               strokeLinecap="square"
             />
-            <Tag n={b.mark} x={14} y={y1 + 10} />
+            <Tag n={b.mark} x={(x1 + x2) / 2} y={ya + 12} />
             <text
-              x={18}
-              y={mid}
+              x={(x1 + x2) / 2}
+              y={mid + 8}
               fontSize={10}
               fontWeight={700}
-              transform={`rotate(-90, 18, ${mid})`}
+              transform={`rotate(-90, ${(x1 + x2) / 2}, ${mid + 8})`}
               textAnchor="middle"
             >
               {inp.cx}Ø{b.d}-L={b.length}
             </text>
-            <text x={x1} y={y2 + 12} textAnchor="middle" fontSize={8}>
+            <text x={x1 - hook / 2} y={yb + 12} textAnchor="middle" fontSize={8}>
               {b.segs[0]}
             </text>
-            <text x={x2 + hook / 2} y={y2 + 12} textAnchor="middle" fontSize={8}>
+            <text x={x2 + hook / 2} y={yb + 12} textAnchor="middle" fontSize={8}>
               {b.segs[0]}
             </text>
           </g>
         )
       })}
+      {stirrup && (
+        <g>
+          <line
+            x1={stirX + hoopW}
+            y1={stirY + hoopH / 2}
+            x2={x1}
+            y2={stirY + hoopH / 2}
+            stroke="#111"
+            strokeWidth={0.9}
+          />
+          <StirrupHoop x={stirX} y={stirY} w={hoopW} h={hoopH} strokeWidth={2} />
+          <Tag n={stirrup.mark} x={stirX + 8} y={stirY + hoopH + 14} />
+          <text x={stirX + 20} y={stirY + hoopH + 18} fontSize={10} fontWeight={700}>
+            {stirrup.n1}Ø{stirrup.d}-L={stirrup.length}
+          </text>
+        </g>
+      )}
     </svg>
   )
 }
