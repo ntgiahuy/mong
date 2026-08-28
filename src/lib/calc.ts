@@ -349,7 +349,7 @@ export function compute(i: Inputs): CalcResult {
       ? (hcm / 3) * (ym * xm + xcTop * ycTop + Math.sqrt(ym * xm * xcTop * ycTop))
       : 0
   const concreteFooting = round(ym * xm * hdm + frustum, 3)
-  const concreteLining = round((xm + 0.1) * (ym + 0.1) * tLot, 3)
+  const concreteLining = round((xm + 0.2) * (ym + 0.2) * tLot, 3)
 
   const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, ''))
 
@@ -357,6 +357,7 @@ export function compute(i: Inputs): CalcResult {
   const formworkNeckExpr = `=(Ycot+Xcot)*2*Hcom  —  (${fmt(yc)}+${fmt(xc)})*2*${fmt(hcom)}=${formworkNeck} m²`
   const concreteNeckExpr = `=Ycot*Xcot*Hcom  —  ${fmt(yc)}*${fmt(xc)}*${fmt(hcom)}=${concreteNeck} m³`
   const concreteFootingExpr = `=((Ymong*Xmong*Hdm)+(Hcm/3*(Ymong*Xmong+(Xcot+0.1)*(Ycot+0.1)+SQRT(Ymong*Xmong*(Xcot+0.1)*(Ycot+0.1)))))  —  ((${fmt(ym)}*${fmt(xm)}*${fmt(hdm)})+(${fmt(hcm)}/3*(${fmt(ym)}*${fmt(xm)}+${fmt(xcTop)}*${fmt(ycTop)}+SQRT(${fmt(ym)}*${fmt(xm)}*${fmt(xcTop)}*${fmt(ycTop)}))))=${concreteFooting} m³`
+  const concreteLiningExpr = `=(Xmong+0.2)*(Ymong+0.2)*Hcom  —  (${fmt(xm)}+0.2)*(${fmt(ym)}+0.2)*${fmt(tLot)}=${concreteLining} m³`
 
   const stirrupRows = bars.filter((b) => b.shape === 'stirrup')
   const stirrupNote = stirrupRows.map(
@@ -388,6 +389,7 @@ export function compute(i: Inputs): CalcResult {
     formworkNeckExpr,
     concreteFootingExpr,
     concreteNeckExpr,
+    concreteLiningExpr,
     nMeshX,
     nMeshY,
     lenMeshX: roundTo(lenMeshX, 10),

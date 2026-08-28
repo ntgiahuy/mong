@@ -55,6 +55,7 @@ Nút **EN** đổi giao diện sang tiếng Anh.
 - Ván khuôn móng: `(Ymong + Xmong) * 2 * Hdm`
 - Ván khuôn cổ cột: `(Ycot + Xcot) * 2 * Hcom`
 - Bê tông cổ cột: `Ycot * Xcot * Hcom`
+- Bê tông lót: `(Xmong+0.2)*(Ymong+0.2)*` chiều dày lót (nhô 0.1 m mỗi phía)
 - Bê tông móng (đế + chóp cụt cánh móng):
 
 ```

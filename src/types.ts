@@ -85,6 +85,7 @@ export interface CalcResult {
   formworkNeckExpr: string
   concreteFootingExpr: string
   concreteNeckExpr: string
+  concreteLiningExpr: string
   nMeshX: number
   nMeshY: number
   lenMeshX: number

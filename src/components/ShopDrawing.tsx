@@ -218,6 +218,12 @@ function SectionDrawing({
   const yLong = lineIsBottom ? y3 - cover : y3 - cover - dotR * 2 - 4
   const yTrans = lineIsBottom ? y3 - cover - lineW - dotR - 3 : y3 - cover
   const yTrans2 = yTrans + (lineIsBottom ? -(dotR * 2 + 3) : dotR * 2 + 3)
+  const labelOnRight = ox + bw - (colX + cw) >= 56
+  const tagX = labelOnRight ? Math.min(colX + cw + 16, ox + bw - 8) : colX - 16
+  const textX = labelOnRight ? tagX + 12 : tagX - 12
+  const textAnchor = labelOnRight ? 'start' : 'end'
+  const yMainLab = y0 + Math.max(22, hs.com * 0.32)
+  const yStirLab = y0 + Math.max(10, hs.com * 0.12)
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
@@ -322,15 +328,15 @@ function SectionDrawing({
           <circle key={`d2${i}`} cx={x} cy={yTrans2} r={dotR} fill="#111" />
         ))}
 
-      <Tag n={colMark} x={colX + cw / 2} y={y0 + hs.com * 0.38} />
-      <text x={colX + cw / 2 + 14} y={y0 + hs.com * 0.38 + 3} fontSize={10} fontWeight={700}>
+      <Tag n={colMark} x={tagX} y={yMainLab} />
+      <text x={textX} y={yMainLab + 4} textAnchor={textAnchor} fontSize={11} fontWeight={700}>
         {faceName} {nFace}Ø{inp.dMain}
       </text>
-      <text x={colX + cw / 2 + 14} y={y0 + hs.com * 0.38 + 15} fontSize={9} fill="#333">
+      <text x={textX} y={yMainLab + 17} textAnchor={textAnchor} fontSize={10} fontWeight={700}>
         Σ {result.nCol}Ø{inp.dMain}
       </text>
-      <Tag n={stirMark} x={colX + cw + 14} y={y0 + hs.com * 0.18} />
-      <text x={colX + cw + 24} y={y0 + hs.com * 0.18 + 4} fontSize={10}>
+      <Tag n={stirMark} x={tagX} y={yStirLab} />
+      <text x={textX} y={yStirLab + 4} textAnchor={textAnchor} fontSize={10}>
         Ø{inp.dStirrup}a{inp.aStirrup}
       </text>
       <Tag n={markLong} x={ox + bw * 0.22} y={yLong - 16} />
@@ -674,7 +680,7 @@ export function ShopDrawing({ inp, result, lang }: Props) {
               - Bê tông móng: {result.concreteFootingExpr}
             </li>
             <li>
-              - Bê tông lót: {result.concreteLining} m³
+              - Bê tông lót: {result.concreteLiningExpr}
             </li>
           </ul>
         </div>
