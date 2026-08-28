@@ -16,8 +16,6 @@ export default function App() {
   const [inp, setInp] = useState<Inputs>(DEFAULT_INPUTS)
   const [busy, setBusy] = useState(false)
   const [showResult, setShowResult] = useState(false)
-  const [showEmbed, setShowEmbed] = useState(false)
-  const [copied, setCopied] = useState(false)
   const [pdfError, setPdfError] = useState('')
   const result = useMemo(() => compute(inp), [inp])
   const L = t[lang]
@@ -25,8 +23,6 @@ export default function App() {
   const patch = (partial: Partial<Inputs>, edited?: keyof Inputs) => {
     setInp((prev) => applyGeometry({ ...prev, ...partial }, edited))
   }
-
-  const iframeCode = `<iframe src="${typeof window !== 'undefined' ? window.location.href.split('#')[0] : ''}" width="100%" height="980" style="border:0;max-width:1200px" loading="lazy" allow="download"></iframe>`
 
   function showShop() {
     setPdfError('')
@@ -76,12 +72,14 @@ export default function App() {
           <button type="button" className="ghost" onClick={() => setInp(DEFAULT_INPUTS)}>
             {L.reset}
           </button>
-          <a className="ghost" href={`${import.meta.env.BASE_URL}tai-github-pages.html`}>
-            {L.downloadPages}
+          <a
+            className="credit"
+            href="https://www.giahuy.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            by GiaHuy.Net
           </a>
-          <button type="button" className="ghost" onClick={() => setShowEmbed(true)}>
-            {L.blogger}
-          </button>
           <button type="button" className="en-btn" onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}>
             {lang === 'vi' ? 'EN' : 'VI'}
           </button>
@@ -128,46 +126,6 @@ export default function App() {
           </div>
           <ShopDrawing inp={inp} result={result} lang={lang} />
         </section>
-      )}
-
-      {showEmbed && (
-        <div className="modal" role="dialog" aria-modal="true">
-          <div className="modal-card">
-            <h2>{L.embedTitle}</h2>
-            <p>{L.embedBody}</p>
-            <p>
-              <strong>{L.embedStep1t}</strong> {L.embedStep1}
-            </p>
-            <p>
-              <strong>{L.embedStep2t}</strong> {L.embedStep2}
-            </p>
-            <textarea readOnly value={iframeCode} rows={4} />
-            <p>
-              <strong>{L.embedStep3t}</strong>
-            </p>
-            <ul>
-              <li>{L.embedStep3a}</li>
-              <li>{L.embedStep3b}</li>
-            </ul>
-            <p className="embed-warn">{L.embedWarn}</p>
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => {
-                  void navigator.clipboard.writeText(iframeCode)
-                  setCopied(true)
-                  setTimeout(() => setCopied(false), 1500)
-                }}
-              >
-                {copied ? L.copied : L.copy}
-              </button>
-              <button type="button" className="ghost" onClick={() => setShowEmbed(false)}>
-                {L.close}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   )

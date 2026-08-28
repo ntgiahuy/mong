@@ -53,8 +53,6 @@ export const t = {
     exporting: 'Đang xuất PDF…',
     sample: 'Nạp mẫu bản vẽ',
     reset: 'Mặc định',
-    blogger: 'Chèn vào Blogger',
-    downloadPages: 'Tải file GitHub Pages',
     resultTitle: 'SHOP THÉP VÀ KHỐI LƯỢNG MÓNG',
     sectionAA: 'MẶT CẮT A-A',
     sectionBB: 'MẶT CẮT B-B',
@@ -64,25 +62,6 @@ export const t = {
     download: 'Tải file PDF',
     print: 'In bản vẽ',
     errors: 'Không xuất được — sửa các lỗi sau:',
-    embedTitle: 'Hiện công cụ trên trang Blogger',
-    embedBody:
-      'Blogger không chạy được bản trên máy (127.0.0.1). Phải có địa chỉ https công khai, rồi nhúng bằng iframe.',
-    embedStep1t: '1. Đăng trang lên internet',
-    embedStep1:
-      'Bấm Publish (Vercel) trên Cursor, hoặc đưa project lên Vercel / Netlify / GitHub Pages. Mở URL dạng https://ten-trang.vercel.app — không dùng localhost.',
-    embedStep2t: '2. Copy mã iframe',
-    embedStep2:
-      'Mở đúng URL đã đăng, bấm lại nút này rồi Sao chép mã. Nếu bạn vẫn đang xem bản local, hãy thay URL trong mã bằng địa chỉ https thật.',
-    embedStep3t: '3. Dán vào Blogger',
-    embedStep3a:
-      'Trong bài viết: Bài viết → soạn bài → góc trên chọn HTML (không phải Soạn thảo) → dán mã → Xuất bản.',
-    embedStep3b:
-      'Cả trang / sidebar: Bố cục → Thêm gadget → HTML/JavaScript → dán mã → Lưu.',
-    embedWarn:
-      'Iframe phải https. Nếu khung trắng: dùng gadget HTML/JavaScript (theme đôi khi chặn iframe trong bài viết). Tăng height nếu bị cắt.',
-    close: 'Đóng',
-    copied: 'Đã sao chép',
-    copy: 'Sao chép mã',
   },
   en: {
     title: 'Foundation shop drawing — rebar, concrete, formwork',
@@ -136,8 +115,6 @@ export const t = {
     exporting: 'Exporting PDF…',
     sample: 'Load sample drawing',
     reset: 'Defaults',
-    blogger: 'Embed in Blogger',
-    downloadPages: 'Download GitHub Pages zip',
     resultTitle: 'FOUNDATION REBAR SHOP DRAWING AND QUANTITIES',
     sectionAA: 'SECTION A-A',
     sectionBB: 'SECTION B-B',
@@ -147,24 +124,5 @@ export const t = {
     download: 'Download PDF',
     print: 'Print drawing',
     errors: 'Cannot export — fix the following:',
-    embedTitle: 'Show this tool on Blogger',
-    embedBody:
-      'Blogger cannot run the local preview (127.0.0.1). Host the app on https, then embed it with an iframe.',
-    embedStep1t: '1. Publish the app',
-    embedStep1:
-      'Use Publish (Vercel) in Cursor, or deploy to Vercel / Netlify / GitHub Pages. Open the https://your-app.vercel.app URL — not localhost.',
-    embedStep2t: '2. Copy the iframe code',
-    embedStep2:
-      'Open the live URL, click this button again, then Copy. If you are still on the local preview, replace the URL in the snippet with your https address.',
-    embedStep3t: '3. Paste into Blogger',
-    embedStep3a:
-      'In a post: Posts → edit → switch to HTML (not Compose) → paste → Publish.',
-    embedStep3b:
-      'Whole page / sidebar: Layout → Add a gadget → HTML/JavaScript → paste → Save.',
-    embedWarn:
-      'The iframe must be https. If it is blank, use an HTML/JavaScript gadget (some themes strip iframes in posts). Increase height if it is clipped.',
-    close: 'Close',
-    copied: 'Copied',
-    copy: 'Copy code',
   },
 } as const

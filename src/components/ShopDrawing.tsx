@@ -71,6 +71,25 @@ function VDim({
   )
 }
 
+function DrawingCaption({ x, y, title }: { x: number; y: number; title: string }) {
+  const w = Math.max(96, title.length * 7.2)
+  return (
+    <g>
+      <text x={x} y={y} textAnchor="middle" fontSize={13} fontWeight={800} fill="#111">
+        {title}
+      </text>
+      <line
+        x1={x - w / 2}
+        x2={x + w / 2}
+        y1={y + 4}
+        y2={y + 4}
+        stroke="#111"
+        strokeWidth={1.2}
+      />
+    </g>
+  )
+}
+
 function Tag({ n, x, y }: { n: number; x: number; y: number }) {
   return (
     <g>
@@ -188,10 +207,9 @@ function SectionDrawing({
 
   const totalH = inp.hCom + inp.hCm + inp.hDm
   const W = 430
-  const H = 430
-  const s = Math.min(250 / widthMm, 260 / (totalH + inp.lining + (inp.fType === 'sand' ? 80 : 0)))
+  const s = Math.min(250 / widthMm, 250 / (totalH + inp.lining + (inp.fType === 'sand' ? 80 : 0)))
   const ox = 70
-  const oy = 36
+  const oy = 22
   const bw = widthMm * s
   const cw = colMm * s
   const left = leftMm * s
@@ -224,12 +242,11 @@ function SectionDrawing({
   const textAnchor = labelOnRight ? 'start' : 'end'
   const yMainLab = y0 + Math.max(22, hs.com * 0.32)
   const yStirLab = y0 + Math.max(10, hs.com * 0.12)
+  const captionY = y4 + sandH + 58
+  const H = captionY + 16
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
-      <text x={W / 2} y={16} textAnchor="middle" fontSize={13} fontWeight={700}>
-        {title}
-      </text>
       <rect x={colX} y={y0} width={cw} height={hs.com} fill="#e9e9e9" stroke="#111" strokeWidth={1.4} />
       <polygon
         points={`${ox},${y2} ${ox + bw},${y2} ${colX + cw},${y1} ${colX},${y1}`}
@@ -384,6 +401,7 @@ function SectionDrawing({
         {fmtLevel(inp.cdtn)}
       </text>
       <Level x={ox + bw + 8} y={y3} text={fmtLevel(result.cdm)} />
+      <DrawingCaption x={ox + bw / 2} y={captionY} title={title} />
     </svg>
   )
 }
@@ -399,10 +417,9 @@ function PlanDrawing({
   title: string
 }) {
   const W = 430
-  const H = 400
   const s = Math.min(300 / inp.xMong, 250 / inp.yMong)
   const ox = 55
-  const oy = 40
+  const oy = 28
   const w = inp.xMong * s
   const h = inp.yMong * s
   const cx = ox + inp.x1 * s
@@ -412,12 +429,11 @@ function PlanDrawing({
   const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
   const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
+  const captionY = oy + h + 68
+  const H = captionY + 16
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
-      <text x={W / 2} y={16} textAnchor="middle" fontSize={13} fontWeight={700}>
-        {title}
-      </text>
       <rect x={ox} y={oy} width={w} height={h} fill="#f3f3f3" stroke="#111" strokeWidth={1.5} />
       <rect x={cx} y={cy} width={cw} height={ch} fill="#e4e4e4" stroke="#111" strokeWidth={1.5} />
       <line x1={ox} y1={oy} x2={cx} y2={cy} stroke="#666" />
@@ -524,6 +540,7 @@ function PlanDrawing({
             />
           )
         })}
+      <DrawingCaption x={ox + w / 2} y={captionY} title={title} />
     </svg>
   )
 }
@@ -597,13 +614,13 @@ export function ShopDrawing({ inp, result, lang }: Props) {
   return (
     <div className="shop-sheet" id="shop-sheet">
       <h1 className="shop-title">{L.resultTitle}</h1>
-      <div className="shop-grid">
-        <DetailCallouts inp={inp} result={result} />
+      <div className="shop-a2-top">
         <SectionDrawing axis="x" inp={inp} result={result} title={L.sectionAA} />
         <SectionDrawing axis="y" inp={inp} result={result} title={L.sectionBB} />
-      </div>
-      <div className="shop-grid shop-grid-2">
         <PlanDrawing inp={inp} result={result} title={L.plan(inp.name, inp.qty)} />
+      </div>
+      <div className="shop-a2-bottom">
+        <DetailCallouts inp={inp} result={result} />
         <div className="schedule">
           <h2>{L.table}</h2>
           <div className="schedule-meta">
