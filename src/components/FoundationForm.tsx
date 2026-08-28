@@ -77,6 +77,29 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
       <div className="form-col">
       <fieldset className="panel">
         <legend>{L.quick}</legend>
+        <div className="footing-id">
+          <label className="footing-id-name">
+            <span className="footing-id-k">{L.nameMark}</span>
+            <input
+              className="footing-id-input"
+              value={inp.name}
+              onChange={(e) => onChange({ name: e.target.value })}
+              aria-label={L.nameMark}
+            />
+          </label>
+          <label className="footing-id-qty">
+            <span className="footing-id-k">{L.qtyShort}</span>
+            <input
+              className="footing-id-input footing-id-qty-input"
+              type="number"
+              min={1}
+              step={1}
+              value={Number.isFinite(inp.qty) ? inp.qty : 1}
+              onChange={(e) => onChange({ qty: Number(e.target.value) })}
+              aria-label={L.qtyShort}
+            />
+          </label>
+        </div>
         <div className="radios">
           {(
             [
@@ -202,16 +225,6 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
           {L.bottomX}
         </label>
       </fieldset>
-
-      <div className="panel name-row">
-        <span className="field-label">- {L.nameQty}</span>
-        <input
-          className="num num-wide"
-          value={inp.name}
-          onChange={(e) => onChange({ name: e.target.value })}
-        />
-        <Num value={inp.qty} onChange={(qty) => onChange({ qty })} />
-      </div>
 
       <fieldset className="panel">
         <legend>{L.settings}</legend>
