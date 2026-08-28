@@ -13,6 +13,7 @@ const CYAN = '#9fd4ff'
 const COL = '#7ec8ff'
 const RED = '#e25b5b'
 const SHOULDER = 50
+const LOT_PLAN = 100
 
 function DimH({
   x1,
@@ -124,11 +125,11 @@ function Tag({ n, x, y }: { n: number; x: number; y: number }) {
 }
 
 export function Schematic({ inp }: Props) {
-  const LEFT = 46
-  const RIGHT = 72
+  const LEFT = 52
+  const RIGHT = 96
   const TOP = 20
-  const GAP = 24
-  const BOT = 68
+  const GAP = 44
+  const BOT = 78
   const COL_W = 320
   const MAX_STACK = 560
 
@@ -142,6 +143,7 @@ export function Schematic({ inp }: Props) {
   const baseW = inp.xMong * s
   const colW = inp.xCo * s
   const left = inp.x1 * s
+  const lot = LOT_PLAN * s
   const sh = SHOULDER * s
   const hCom = inp.hCom * s
   const hCm = inp.hCm * s
@@ -173,9 +175,13 @@ export function Schematic({ inp }: Props) {
   const pch = inp.yCo * s
   const cx = px + inp.xCc * s
   const cy = py + inp.yCc * s
+  const sx = pcx - sh
+  const sy = pcy - sh
+  const sw = pcw + sh * 2
+  const shh = pch + sh * 2
 
   const W = Math.ceil(LEFT + baseW + RIGHT)
-  const H = Math.ceil(py + ph + BOT)
+  const H = Math.ceil(py + ph + lot + BOT)
 
   const dots = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const nStir = Math.min(7, Math.max(3, Math.floor(inp.hCom / Math.max(inp.aStirrup, 1))))
@@ -183,7 +189,15 @@ export function Schematic({ inp }: Props) {
 
   return (
     <div className="schematic-wrap">
-    <svg className="schematic" viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Sơ đồ móng cùng tỉ lệ">
+    <svg
+      className="schematic"
+      viewBox={`0 0 ${W} ${H}`}
+      width="100%"
+      preserveAspectRatio="xMinYMin meet"
+      style={{ aspectRatio: `${W} / ${H}` }}
+      role="img"
+      aria-label="Sơ đồ móng cùng tỉ lệ"
+    >
       <rect width={W} height={H} fill="#2f2f2f" />
 
       <line
@@ -202,13 +216,13 @@ export function Schematic({ inp }: Props) {
         stroke={OUTLINE}
       />
       <rect x={x0} y={yBaseTop} width={baseW} height={hDm} fill="#5a5a5a" stroke={OUTLINE} />
-      <rect x={x0 - 5} y={yBaseBot} width={baseW + 10} height={hLot} fill="#6b6b6b" stroke={OUTLINE} />
+      <rect x={x0 - lot} y={yBaseBot} width={baseW + lot * 2} height={hLot} fill="#6b6b6b" stroke={OUTLINE} />
       {Array.from({ length: 9 }).map((_, i) => (
         <line
           key={`lot${i}`}
-          x1={x0 - 4 + i * ((baseW + 8) / 8)}
+          x1={x0 - lot + i * ((baseW + lot * 2) / 8)}
           y1={yBaseBot}
-          x2={x0 - 10 + i * ((baseW + 8) / 8)}
+          x2={x0 - lot - 6 + i * ((baseW + lot * 2) / 8)}
           y2={yLotBot}
           stroke="#9a9a9a"
           strokeWidth={0.8}
@@ -309,6 +323,25 @@ export function Schematic({ inp }: Props) {
         FaY
       </text>
 
+      <line
+        x1={x0}
+        x2={x0}
+        y1={yBaseTop}
+        y2={py + ph}
+        stroke="#6a6a6a"
+        strokeWidth={0.7}
+        strokeDasharray="3 5"
+      />
+      <line
+        x1={x0 + baseW}
+        x2={x0 + baseW}
+        y1={yBaseTop}
+        y2={py + ph}
+        stroke="#6a6a6a"
+        strokeWidth={0.7}
+        strokeDasharray="3 5"
+      />
+      <DimH x1={x0} x2={x0 + baseW} y={yLotBot + 10} label="Xmong" color={YELLOW} />
       <DimV x={x0 - 16} y1={yColTop} y2={ySlopeTop} label="Hcom" color={YELLOW} />
       <DimV x={x0 - 16} y1={ySlopeTop} y2={yBaseTop} label="Hcm" color={YELLOW} />
       <DimV x={x0 - 16} y1={yBaseTop} y2={yBaseBot} label="Hdm" color={YELLOW} />
@@ -318,24 +351,34 @@ export function Schematic({ inp }: Props) {
       <ElevMark x={lx} y={yGround} label="CDTN" color={RED} />
       <ElevMark x={lx} y={yBaseBot} label="CDM" color={CYAN} />
 
-      <rect x={px} y={py} width={pw} height={ph} fill="none" stroke={OUTLINE} />
+      <rect
+        x={px - lot}
+        y={py - lot}
+        width={pw + lot * 2}
+        height={ph + lot * 2}
+        fill="#3d3d3d"
+        stroke="#c8c8c8"
+        strokeDasharray="5 3"
+      />
+      <rect x={px} y={py} width={pw} height={ph} fill="#2f2f2f" stroke={OUTLINE} />
+      <rect x={sx} y={sy} width={sw} height={shh} fill="none" stroke={YELLOW} />
       <rect x={pcx} y={pcy} width={pcw} height={pch} fill="none" stroke={COL} />
-      <line x1={px} y1={py} x2={pcx} y2={pcy} stroke="#888" />
-      <line x1={px + pw} y1={py} x2={pcx + pcw} y2={pcy} stroke="#888" />
-      <line x1={px} y1={py + ph} x2={pcx} y2={pcy + pch} stroke="#888" />
-      <line x1={px + pw} y1={py + ph} x2={pcx + pcw} y2={pcy + pch} stroke="#888" />
+      <line x1={px} y1={py} x2={sx} y2={sy} stroke="#888" />
+      <line x1={px + pw} y1={py} x2={sx + sw} y2={sy} stroke="#888" />
+      <line x1={px} y1={py + ph} x2={sx} y2={sy + shh} stroke="#888" />
+      <line x1={px + pw} y1={py + ph} x2={sx + sw} y2={sy + shh} stroke="#888" />
       <line
         x1={cx}
         x2={cx}
-        y1={py - 4}
-        y2={py + ph + 4}
+        y1={py - lot - 4}
+        y2={py + ph + lot + 4}
         stroke={COL}
         strokeWidth={0.7}
         strokeDasharray="5 3 1 3"
       />
       <line
-        x1={px - 4}
-        x2={px + pw + 4}
+        x1={px - lot - 4}
+        x2={px + pw + lot + 4}
         y1={cy}
         y2={cy}
         stroke={COL}
@@ -351,17 +394,28 @@ export function Schematic({ inp }: Props) {
         <circle key={`c${i}`} cx={x} cy={y} r={2.2} fill={STEEL} />
       ))}
 
-      <DimH x1={px} x2={pcx} y={py + ph + 12} label="X1" color={YELLOW} />
-      <DimH x1={pcx} x2={pcx + pcw} y={py + ph + 12} label="Xcot" color={COL} />
-      <DimH x1={px} x2={cx} y={py + ph + 28} label="Xcc" color={CYAN} />
-      <DimH x1={px} x2={px + pw} y={py + ph + 44} label="Xmong" color={YELLOW} />
+      <text x={px - lot + 4} y={py + ph + lot - 4} fill="#c8c8c8" fontSize={8} fontWeight={700}>
+        Lót
+      </text>
+      <text x={sx + 3} y={sy - 3} fill={YELLOW} fontSize={8} fontWeight={700}>
+        Vai
+      </text>
 
-      <DimV x={px + pw + 12} y1={py} y2={pcy} label="Y1" color={YELLOW} left={false} />
-      <DimV x={px + pw + 12} y1={pcy} y2={pcy + pch} label="Ycot" color={COL} left={false} />
-      <DimV x={px + pw + 28} y1={py} y2={cy} label="Ycc" color={CYAN} left={false} />
-      <DimV x={px + pw + 44} y1={py} y2={py + ph} label="Ymong" color={YELLOW} left={false} />
+      <DimH x1={px - lot} x2={px} y={py + ph + lot + 12} label="Lót" color="#c8c8c8" />
+      <DimH x1={px} x2={pcx} y={py + ph + lot + 12} label="X1" color={YELLOW} />
+      <DimH x1={pcx} x2={pcx + pcw} y={py + ph + lot + 12} label="Xcot" color={COL} />
+      <DimH x1={sx} x2={pcx} y={py + ph + lot + 28} label="Vai" color={YELLOW} />
+      <DimH x1={px} x2={cx} y={py + ph + lot + 28} label="Xcc" color={CYAN} />
+      <DimH x1={px} x2={px + pw} y={py + ph + lot + 44} label="Xmong" color={YELLOW} />
 
-      <text x={x0 + baseW / 2} y={yLotBot + 16} textAnchor="middle" fill="#c8c8c8" fontSize={9} fontWeight={700}>
+      <DimV x={px + pw + lot + 12} y1={py - lot} y2={py} label="Lót" color="#c8c8c8" left={false} />
+      <DimV x={px + pw + lot + 12} y1={py} y2={pcy} label="Y1" color={YELLOW} left={false} />
+      <DimV x={px + pw + lot + 12} y1={pcy} y2={pcy + pch} label="Ycot" color={COL} left={false} />
+      <DimV x={px + pw + lot + 28} y1={sy} y2={pcy} label="Vai" color={YELLOW} left={false} />
+      <DimV x={px + pw + lot + 28} y1={py} y2={cy} label="Ycc" color={CYAN} left={false} />
+      <DimV x={px + pw + lot + 44} y1={py} y2={py + ph} label="Ymong" color={YELLOW} left={false} />
+
+      <text x={x0 + baseW / 2} y={yLotBot + 36} textAnchor="middle" fill="#c8c8c8" fontSize={9} fontWeight={700}>
         MẶT ĐỨNG
       </text>
       <text x={px + pw / 2} y={H - 10} textAnchor="middle" fill="#c8c8c8" fontSize={9} fontWeight={700}>

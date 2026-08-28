@@ -14,6 +14,8 @@ const CALLOUT_W = 248
 const SHEET_W = 1782
 /** Pedestal shoulder under the column, each side (matches Xcot+0.1 / Ycot+0.1). */
 const SHOULDER_MM = 50
+/** Lean-concrete plan overhang each side (matches Xmong+0.2 / Ymong+0.2). */
+const LOT_PLAN_MM = 100
 /** Gap from footing bottom to view title — keep below the overall X-dimension numbers. */
 const SECTION_CAPTION_GAP = 114
 const SECTION_CAPTION_PAD = 22
@@ -468,7 +470,7 @@ function SectionDrawing({
         strokeWidth={1.4}
       />
       <rect x={ox} y={y2} width={bw} height={hs.dm} fill="#d8d8d8" stroke="#111" strokeWidth={1.4} />
-      <rect x={ox - 8} y={y3} width={bw + 16} height={lot} fill="#c4c4c4" stroke="#111" />
+      <rect x={ox - LOT_PLAN_MM * s} y={y3} width={bw + LOT_PLAN_MM * s * 2} height={lot} fill="#c4c4c4" stroke="#111" />
       {showBeam && (
         <g>
           <BeamStub xCol={colX} xEnd={beamLeftEnd} yTop={yBeam} h={beamH} side="left" />
@@ -641,7 +643,8 @@ function PlanDrawing({
   const colMark = result.bars.find((b) => b.shape === 'L')?.mark ?? 3
   const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
   const ox = OX
-  const oy = 16
+  const lot = LOT_PLAN_MM * s
+  const oy = 12 + lot
   const w = inp.xMong * s
   const h = inp.yMong * s
   const cx = ox + inp.x1 * s
@@ -657,15 +660,28 @@ function PlanDrawing({
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
   const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
   const cover = inp.coverBase * s
-  const dimY = oy + h + 22
+  const dimY = oy + h + lot + 22
   const bar1Y = dimY + 50
   const captionY = bar1Y + 40
   const extraRight = 78
-  const W = ox + w + RIGHT + extraRight
+  const W = ox + w + lot + RIGHT + extraRight
   const H = captionY + SECTION_CAPTION_PAD
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
+      <rect
+        x={ox - lot}
+        y={oy - lot}
+        width={w + lot * 2}
+        height={h + lot * 2}
+        fill="#dedede"
+        stroke="#111"
+        strokeWidth={1.2}
+        strokeDasharray="7 4"
+      />
+      <text x={ox - lot + 6} y={oy - lot + 12} fontSize={9} fontWeight={700} fill="#111">
+        BÊ TÔNG LÓT
+      </text>
       <rect x={ox} y={oy} width={w} height={h} fill="#f3f3f3" stroke="#111" strokeWidth={1.5} />
       <rect x={sx} y={sy} width={sw} height={shh} fill="#ececec" stroke="#111" strokeWidth={1.2} />
       <rect x={cx} y={cy} width={cw} height={ch} fill="#e4e4e4" stroke="#111" strokeWidth={1.5} />
@@ -766,6 +782,7 @@ function PlanDrawing({
         Ø{inp.dStirrup}a{inp.aStirrup}
       </text>
 
+      <HDim x1={ox - lot} x2={ox} y={dimY} label={LOT_PLAN_MM} below />
       <HDim x1={ox} x2={ox + cover} y={dimY} label={inp.coverBase} below />
       <HDim
         x1={ox + cover}
@@ -785,7 +802,9 @@ function PlanDrawing({
         below
       />
       <HDim x1={ox} x2={ox + w} y={dimY + 16} label={inp.xMong} below />
+      <HDim x1={ox + w} x2={ox + w + lot} y={dimY} label={LOT_PLAN_MM} below />
 
+      <VDim x={ox - 22} y1={oy - lot} y2={oy} label={LOT_PLAN_MM} left />
       <VDim x={ox - 22} y1={oy} y2={sy} label={Math.round(inp.y1 - SHOULDER_MM)} left />
       <VDim x={ox - 22} y1={sy} y2={cy} label={SHOULDER_MM} left />
       <VDim x={ox - 22} y1={cy} y2={cy + ch} label={inp.yCo} left />
