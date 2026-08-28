@@ -10,15 +10,15 @@ type Props = {
 
 const OX = 78
 const RIGHT = 148
-const CALLOUT_W = 248
+const CALLOUT_W = 220
 const SHEET_W = 1782
 /** Pedestal shoulder under the column, each side (matches Xcot+0.1 / Ycot+0.1). */
 const SHOULDER_MM = 50
 /** Lean-concrete plan overhang each side (matches Xmong+0.2 / Ymong+0.2). */
 const LOT_PLAN_MM = 100
-/** Gap from footing bottom to view title — keep below the overall X-dimension numbers. */
-const SECTION_CAPTION_GAP = 114
-const SECTION_CAPTION_PAD = 22
+/** Gap from footing bottom to view title — just below the overall X-dimension numbers. */
+const SECTION_CAPTION_GAP = 68
+const SECTION_CAPTION_PAD = 18
 
 function fmtLevel(mm: number): string {
   const m = mm / 1000
@@ -300,15 +300,15 @@ function Callouts({
   const oy = 22
   const stem = Math.max(80, (totalH - 100) * s)
   const hook = Math.max(16, Math.min(40, result.colHook * s * 0.5))
-  const pairW = 72
+  const pairW = 64
   const W = CALLOUT_W
   const hoopW = 40
   const hoopH = 62
-  const x1 = hook + 12
+  const x1 = hook + 6
   const x2 = x1 + pairW
   const y1 = oy
   const y2 = y1 + stem
-  const stirX = x2 + hook + 18
+  const stirX = x2 + hook + 10
   const stirY = y2 - hoopH
   const lBot = y2 + hook + 20
   const H = Math.max(height, lBot, stirY + hoopH + 26)
@@ -619,7 +619,7 @@ function SectionDrawing({
         ĐẤT TỰ NHIÊN
       </text>
       <Level x={lx} y={y3} text={fmtLevel(inp.cdn + result.cdm)} />
-      <text x={ox + bw + 8} y={y4 - 2} fontSize={9}>
+      <text x={ox + 6} y={y4 - 3} fontSize={9} fontWeight={700} fill="#111">
         LỚP BÊ TÔNG LÓT MÓNG
       </text>
       <DrawingCaption x={ox + bw / 2} y={captionY} title={title} />
@@ -679,7 +679,7 @@ function PlanDrawing({
         strokeWidth={1.2}
         strokeDasharray="7 4"
       />
-      <text x={ox - lot + 6} y={oy - lot + 12} fontSize={9} fontWeight={700} fill="#111">
+      <text x={ox + 8} y={oy + h + lot - 6} fontSize={11} fontWeight={700} fill="#111">
         BÊ TÔNG LÓT
       </text>
       <rect x={ox} y={oy} width={w} height={h} fill="#f3f3f3" stroke="#111" strokeWidth={1.5} />

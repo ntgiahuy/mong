@@ -404,9 +404,9 @@ p {
 
 .shop-a2 {
   display: grid;
-  grid-template-columns: max-content 248px minmax(480px, 1fr);
+  grid-template-columns: max-content 220px minmax(480px, 1fr);
   grid-template-rows: auto auto;
-  column-gap: 4px;
+  column-gap: 0;
   row-gap: 8px;
   align-items: start;
   justify-content: start;
@@ -421,6 +421,7 @@ p {
   grid-column: 2;
   grid-row: 1;
   justify-self: start;
+  margin-left: -56px;
 }
 
 .shop-bb {
@@ -550,7 +551,7 @@ p {
     min-height: 0;
   }
   .shop-a2 {
-    grid-template-columns: max-content 248px minmax(480px, 1fr) !important;
+    grid-template-columns: max-content 220px minmax(480px, 1fr) !important;
   }
   .shop-sheet {
     width: 1782px;

@@ -43,7 +43,7 @@ function DimH({
         x={mid}
         y={below ? y + 12 : y - 4}
         textAnchor="middle"
-        fontSize={9}
+        fontSize={10}
         fontWeight={700}
         stroke="none"
       >
@@ -81,7 +81,7 @@ function DimV({
         x={left ? x - 5 : x + 5}
         y={mid + 3}
         textAnchor={left ? 'end' : 'start'}
-        fontSize={9}
+        fontSize={10}
         fontWeight={700}
         stroke="none"
       >
@@ -394,10 +394,10 @@ export function Schematic({ inp }: Props) {
         <circle key={`c${i}`} cx={x} cy={y} r={2.2} fill={STEEL} />
       ))}
 
-      <text x={px - lot + 4} y={py + ph + lot - 4} fill="#c8c8c8" fontSize={8} fontWeight={700}>
+      <text x={px - lot + 4} y={py + ph + lot - 5} fill="#e8e8e8" fontSize={10} fontWeight={700}>
         Lót
       </text>
-      <text x={sx + 3} y={sy - 3} fill={YELLOW} fontSize={8} fontWeight={700}>
+      <text x={sx + 4} y={sy - 4} fill={YELLOW} fontSize={10} fontWeight={700}>
         Vai
       </text>
 
