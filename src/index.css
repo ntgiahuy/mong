@@ -238,8 +238,17 @@ p {
   top: 8px;
 }
 
-.schematic {
+.schematic-wrap {
+  overflow: auto;
+  max-height: min(72vh, 640px);
   border: 1px solid var(--line);
+  background: #2f2f2f;
+}
+
+.schematic {
+  display: block;
+  width: 100%;
+  height: auto;
   background: #2f2f2f;
 }
 

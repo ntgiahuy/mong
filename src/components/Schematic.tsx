@@ -124,10 +124,20 @@ function Tag({ n, x, y }: { n: number; x: number; y: number }) {
 }
 
 export function Schematic({ inp }: Props) {
-  const W = 320
-  const H = 572
+  const LEFT = 46
+  const RIGHT = 72
+  const TOP = 20
+  const GAP = 24
+  const BOT = 68
+  const COL_W = 320
+  const MAX_STACK = 560
+
   const totalH = inp.hCom + inp.hCm + inp.hDm
-  const s = 198 / Math.max(totalH + inp.lining, 1)
+  const elevMm = totalH + inp.lining
+  const planMm = inp.yMong
+  const sW = (COL_W - LEFT - RIGHT) / Math.max(inp.xMong, 1)
+  const sH = (MAX_STACK - TOP - GAP - BOT) / Math.max(elevMm + planMm, 1)
+  const s = Math.min(Math.max(Math.min(sW, sH), 0.072), 0.16)
 
   const baseW = inp.xMong * s
   const colW = inp.xCo * s
@@ -138,9 +148,11 @@ export function Schematic({ inp }: Props) {
   const hDm = inp.hDm * s
   const hLot = inp.lining * s
   const hBeam = inp.hBeam * s
+  const barW = Math.max(1.3, Math.min(2.4, inp.dMain * s * 0.12))
+  const stirW = Math.max(0.9, Math.min(1.6, inp.dStirrup * s * 0.16))
 
-  const x0 = 48
-  const yColTop = 22
+  const x0 = LEFT
+  const yColTop = TOP
   const colX = x0 + left
   const ySlopeTop = yColTop + hCom
   const yBaseTop = ySlopeTop + hCm
@@ -151,23 +163,27 @@ export function Schematic({ inp }: Props) {
   const yGround = yAtElev(inp.cdtn)
   const lx = x0 + baseW + 10
 
-  const ps = 132 / Math.max(inp.xMong, inp.yMong, 1)
-  const pw = inp.xMong * ps
-  const ph = inp.yMong * ps
-  const px = 44
-  const py = yLotBot + 40
-  const pcx = px + inp.x1 * ps
-  const pcy = py + inp.y1 * ps
-  const pcw = inp.xCo * ps
-  const pch = inp.yCo * ps
-  const cx = px + inp.xCc * ps
-  const cy = py + inp.yCc * ps
+  const pw = baseW
+  const ph = inp.yMong * s
+  const px = x0
+  const py = yLotBot + GAP
+  const pcx = px + inp.x1 * s
+  const pcy = py + inp.y1 * s
+  const pcw = inp.xCo * s
+  const pch = inp.yCo * s
+  const cx = px + inp.xCc * s
+  const cy = py + inp.yCc * s
+
+  const W = Math.ceil(LEFT + baseW + RIGHT)
+  const H = Math.ceil(py + ph + BOT)
 
   const dots = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const nStir = Math.min(7, Math.max(3, Math.floor(inp.hCom / Math.max(inp.aStirrup, 1))))
+  const tickStep = Math.max(14, 22 * (s / 0.1))
 
   return (
-    <svg className="schematic" viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Sơ đồ móng">
+    <div className="schematic-wrap">
+    <svg className="schematic" viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Sơ đồ móng cùng tỉ lệ">
       <rect width={W} height={H} fill="#2f2f2f" />
 
       <line
@@ -223,8 +239,8 @@ export function Schematic({ inp }: Props) {
       <g stroke={RED} fill="none">
         <line x1={x0 - 8} y1={yGround} x2={colX - 1} y2={yGround} />
         <line x1={colX + colW + 1} y1={yGround} x2={x0 + baseW + 8} y2={yGround} />
-        {Array.from({ length: 5 }).map((_, i) => {
-          const x = x0 + 8 + i * 16
+        {Array.from({ length: 6 }).map((_, i) => {
+          const x = x0 + 8 + i * tickStep
           if (x > colX - 10) return null
           return (
             <g key={`gl${i}`}>
@@ -234,8 +250,8 @@ export function Schematic({ inp }: Props) {
             </g>
           )
         })}
-        {Array.from({ length: 5 }).map((_, i) => {
-          const x = colX + colW + 10 + i * 16
+        {Array.from({ length: 6 }).map((_, i) => {
+          const x = colX + colW + 10 + i * tickStep
           if (x > x0 + baseW) return null
           return (
             <g key={`gr${i}`}>
@@ -258,7 +274,7 @@ export function Schematic({ inp }: Props) {
             d={`M ${x} ${yColTop + 5} L ${x} ${yBaseBot - 8} L ${x + dir * 11} ${yBaseBot - 8}`}
             fill="none"
             stroke={STEEL}
-            strokeWidth={2}
+            strokeWidth={barW}
           />
         )
       })}
@@ -270,7 +286,7 @@ export function Schematic({ inp }: Props) {
           y1={yColTop + 12 + i * ((hCom - 22) / Math.max(nStir - 1, 1))}
           y2={yColTop + 12 + i * ((hCom - 22) / Math.max(nStir - 1, 1))}
           stroke={STIR}
-          strokeWidth={1.2}
+          strokeWidth={stirW}
         />
       ))}
       <line
@@ -344,6 +360,14 @@ export function Schematic({ inp }: Props) {
       <DimV x={px + pw + 12} y1={pcy} y2={pcy + pch} label="Ycot" color={COL} left={false} />
       <DimV x={px + pw + 28} y1={py} y2={cy} label="Ycc" color={CYAN} left={false} />
       <DimV x={px + pw + 44} y1={py} y2={py + ph} label="Ymong" color={YELLOW} left={false} />
+
+      <text x={x0 + baseW / 2} y={yLotBot + 16} textAnchor="middle" fill="#c8c8c8" fontSize={9} fontWeight={700}>
+        MẶT ĐỨNG
+      </text>
+      <text x={px + pw / 2} y={H - 10} textAnchor="middle" fill="#c8c8c8" fontSize={9} fontWeight={700}>
+        MẶT BẰNG
+      </text>
     </svg>
+    </div>
   )
 }
