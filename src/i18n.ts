@@ -53,7 +53,7 @@ export const t = {
     exporting: 'Đang xuất PDF…',
     sample: 'Nạp mẫu bản vẽ',
     reset: 'Mặc định',
-    resultTitle: 'SHOP THÉP VÀ KHỐI LƯỢNG MÓNG',
+    resultTitle: 'SHOP THÉP VÀ KHỐI LƯỢNG MÓNG (BY GIAHUY.NET)',
     sectionAA: 'MẶT CẮT A-A',
     sectionBB: 'MẶT CẮT B-B',
     plan: (name: string, sl: number) => `MẶT BẰNG MÓNG ${name}(SL:${sl})`,

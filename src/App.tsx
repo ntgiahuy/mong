@@ -13,9 +13,9 @@ import type { Inputs } from './types'
 
 export default function App() {
   const [lang, setLang] = useState<Lang>('vi')
-  const [inp, setInp] = useState<Inputs>(DEFAULT_INPUTS)
+  const [inp, setInp] = useState<Inputs>(SAMPLE_PDF)
   const [busy, setBusy] = useState(false)
-  const [showResult, setShowResult] = useState(false)
+  const [showResult, setShowResult] = useState(true)
   const [pdfError, setPdfError] = useState('')
   const result = useMemo(() => compute(inp), [inp])
   const L = t[lang]

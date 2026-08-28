@@ -35,7 +35,7 @@ p {
 }
 
 .app {
-  max-width: 1280px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 12px 12px 48px;
 }
@@ -276,8 +276,8 @@ p {
   color: #111;
   padding: 14px 16px 18px;
   font-family: Arial, 'Segoe UI', sans-serif;
-  width: 100%;
-  max-width: 1684px;
+  width: 1520px;
+  max-width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
 }
@@ -293,18 +293,39 @@ p {
   color: #111;
 }
 
-.shop-cols {
+.shop-a2 {
   display: grid;
-  grid-template-columns: max-content minmax(240px, 1fr);
-  gap: 8px;
+  grid-template-columns: 170px max-content minmax(420px, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  row-gap: 4px;
   align-items: start;
+  justify-content: start;
 }
 
-.shop-col-x,
-.shop-col-side {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.shop-callouts {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.shop-aa {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.shop-bb {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.shop-plan {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.shop-sched {
+  grid-column: 3;
+  grid-row: 2;
   min-width: 0;
 }
 
@@ -319,15 +340,10 @@ p {
 
 .schedule h2 {
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   margin-bottom: 4px;
   color: #111;
-}
-
-.schedule-compact h2 {
-  font-size: 11px;
-  margin-bottom: 2px;
 }
 
 .schedule-meta {
@@ -340,12 +356,8 @@ p {
 .schedule table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 9px;
+  font-size: 10px;
   color: #111;
-}
-
-.schedule-compact table {
-  font-size: 8.5px;
 }
 
 .schedule th,
@@ -360,7 +372,7 @@ p {
   padding: 0;
 }
 
-.schedule-compact .shape-cell svg {
+.schedule .shape-cell svg {
   display: block;
   margin: 0 auto;
 }
@@ -370,11 +382,11 @@ p {
 }
 
 .qty-notes {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   padding-left: 0;
   list-style: none;
-  font-size: 9px;
-  line-height: 1.35;
+  font-size: 10px;
+  line-height: 1.4;
   color: #111;
 }
 
@@ -385,10 +397,16 @@ p {
   .side {
     position: static;
   }
-  .shop-cols,
-  .shop-a2-top,
-  .shop-a2-bottom {
+  .shop-a2 {
     grid-template-columns: 1fr;
+  }
+  .shop-callouts,
+  .shop-aa,
+  .shop-bb,
+  .shop-plan,
+  .shop-sched {
+    grid-column: 1;
+    grid-row: auto;
   }
 }
 
@@ -400,7 +418,7 @@ p {
 
 @media print {
   @page {
-    size: A2 landscape;
+    size: A2 portrait;
     margin: 8mm;
   }
   .topbar,
@@ -417,7 +435,7 @@ p {
     max-width: none;
     min-height: 0;
   }
-  .shop-cols {
-    grid-template-columns: max-content minmax(200px, 1fr) !important;
+  .shop-a2 {
+    grid-template-columns: 170px max-content minmax(420px, 1fr) !important;
   }
 }
