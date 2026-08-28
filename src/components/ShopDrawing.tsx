@@ -9,7 +9,7 @@ type Props = {
 }
 
 const OX = 78
-const RIGHT = 96
+const RIGHT = 148
 const CALLOUT_W = 248
 const SHEET_W = 1782
 /** Pedestal shoulder under the column, each side (matches Xcot+0.1 / Ycot+0.1). */
@@ -114,13 +114,60 @@ function Tag({ n, x, y }: { n: number; x: number; y: number }) {
 }
 
 function Level({ x, y, text }: { x: number; y: number; text: string }) {
+  const mid = x + 14
   return (
     <g>
-      <polygon points={`${x},${y} ${x + 8},${y - 5} ${x + 8},${y + 5}`} fill="#111" />
-      <line x1={x} y1={y} x2={x + 36} y2={y} stroke="#111" />
-      <text x={x + 40} y={y + 3} fontSize={10} fill="#111">
+      <line x1={x} y1={y} x2={x + 38} y2={y} stroke="#111" strokeWidth={1.05} />
+      <polygon points={`${mid},${y} ${mid - 6.2},${y - 11} ${mid + 6.2},${y - 11}`} fill="#111" />
+      <text x={x + 42} y={y - 3} fontSize={11} fontWeight={700} fill="#111">
         {text}
       </text>
+    </g>
+  )
+}
+
+function EarthGround({ x1, x2, y }: { x1: number; x2: number; y: number }) {
+  const span = x2 - x1
+  if (span < 16) return null
+  const marks: number[] = []
+  for (let x = x1 + 8; x < x2 - 16; x += 26) marks.push(x)
+  return (
+    <g>
+      <line x1={x1} y1={y} x2={x2} y2={y} stroke="#111" strokeWidth={1.15} />
+      {marks.map((x) => (
+        <g key={x}>
+          <line x1={x} y1={y + 1} x2={x + 7} y2={y + 9} stroke="#111" strokeWidth={0.95} />
+          <line x1={x + 3.5} y1={y + 1} x2={x + 10.5} y2={y + 9} stroke="#111" strokeWidth={0.95} />
+          <line x1={x + 7} y1={y + 1} x2={x + 14} y2={y + 9} stroke="#111" strokeWidth={0.95} />
+        </g>
+      ))}
+    </g>
+  )
+}
+
+function BeamStub({
+  xCol,
+  xEnd,
+  yTop,
+  h,
+  side,
+}: {
+  xCol: number
+  xEnd: number
+  yTop: number
+  h: number
+  side: 'left' | 'right'
+}) {
+  if (Math.abs(xEnd - xCol) < 12 || h < 6) return null
+  const yBot = yTop + h
+  const zig = 7
+  const outward = side === 'left' ? -1 : 1
+  const fill = `M ${xCol} ${yTop} H ${xEnd} L ${xEnd + outward * zig} ${yTop + h * 0.28} L ${xEnd - outward * zig} ${yTop + h * 0.52} L ${xEnd + outward * zig} ${yTop + h * 0.76} L ${xEnd} ${yBot} H ${xCol} Z`
+  const edge = `M ${xCol} ${yTop} H ${xEnd} L ${xEnd + outward * zig} ${yTop + h * 0.28} L ${xEnd - outward * zig} ${yTop + h * 0.52} L ${xEnd + outward * zig} ${yTop + h * 0.76} L ${xEnd} ${yBot} H ${xCol}`
+  return (
+    <g>
+      <path d={fill} fill="#e8e8e8" stroke="none" />
+      <path d={edge} fill="none" stroke="#111" strokeWidth={1.25} strokeLinejoin="miter" />
     </g>
   )
 }
@@ -394,6 +441,14 @@ function SectionDrawing({
   const yMainLab = y0 + Math.max(28, hs.com * 0.38)
   const yStirLab = y0 + Math.max(12, hs.com * 0.14)
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
+  const yAtElev = (elevMm: number) => y0 - (elevMm - inp.cdn) * s
+  const yBeam = yAtElev(inp.cdg)
+  const yGround = yAtElev(inp.cdtn)
+  const beamH = Math.max(8, inp.hBeam * s)
+  const showBeam = inp.hasBeam && inp.hBeam > 0
+  const lx = ox + bw + 10
+  const beamLeftEnd = ox + 16
+  const beamRightEnd = ox + bw - 16
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
@@ -412,9 +467,17 @@ function SectionDrawing({
         stroke="#111"
         strokeWidth={1.4}
       />
-      <rect x={colX} y={y0} width={cw} height={hs.com} fill="#e9e9e9" stroke="#111" strokeWidth={1.4} />
       <rect x={ox} y={y2} width={bw} height={hs.dm} fill="#d8d8d8" stroke="#111" strokeWidth={1.4} />
       <rect x={ox - 8} y={y3} width={bw + 16} height={lot} fill="#c4c4c4" stroke="#111" />
+      {showBeam && (
+        <g>
+          <BeamStub xCol={colX} xEnd={beamLeftEnd} yTop={yBeam} h={beamH} side="left" />
+          <BeamStub xCol={colX + cw} xEnd={beamRightEnd} yTop={yBeam} h={beamH} side="right" />
+        </g>
+      )}
+      <EarthGround x1={ox - 16} x2={colX - 1} y={yGround} />
+      <EarthGround x1={colX + cw + 1} x2={ox + bw + 16} y={yGround} />
+      <rect x={colX} y={y0} width={cw} height={hs.com} fill="#e9e9e9" stroke="#111" strokeWidth={1.4} />
       {inp.fType === 'sand' && (
         <rect x={ox - 10} y={y4} width={bw + 20} height={sandH} fill="#e6d7a8" stroke="#111" />
       )}
@@ -538,20 +601,22 @@ function SectionDrawing({
       <VDim x={ox - 22} y1={y1} y2={y2} label={inp.hCm} left />
       <VDim x={ox - 44} y1={y0} y2={y3} label={totalH} left />
 
-      <Level x={ox + bw + 8} y={y0} text={fmtLevel(0)} />
-      <Level x={ox + bw + 8} y={y0 - inp.cdn * s} text={fmtLevel(inp.cdn)} />
-      <line
-        x1={ox}
-        x2={ox + bw}
-        y1={y0 - inp.cdtn * s}
-        y2={y0 - inp.cdtn * s}
-        stroke="#c33"
-        strokeDasharray="5 3"
-      />
-      <text x={ox + bw + 48} y={y0 - inp.cdtn * s + 3} fontSize={10} fill="#c33">
-        {fmtLevel(inp.cdtn)}
+      <Level x={lx} y={y0} text={fmtLevel(inp.cdn)} />
+      {showBeam && Math.abs(inp.cdg - inp.cdn) > 5 && (
+        <Level x={lx} y={yBeam} text={fmtLevel(inp.cdg)} />
+      )}
+      <Level x={lx} y={yGround} text={fmtLevel(inp.cdtn)} />
+      <text
+        x={(ox + colX) / 2}
+        y={yGround + 20}
+        textAnchor="middle"
+        fontSize={8}
+        fontWeight={600}
+        fill="#111"
+      >
+        ĐẤT TỰ NHIÊN
       </text>
-      <Level x={ox + bw + 8} y={y3} text={fmtLevel(result.cdm)} />
+      <Level x={lx} y={y3} text={fmtLevel(inp.cdn + result.cdm)} />
       <text x={ox + bw + 8} y={y4 - 2} fontSize={9}>
         LỚP BÊ TÔNG LÓT MÓNG
       </text>

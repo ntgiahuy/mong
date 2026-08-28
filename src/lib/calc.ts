@@ -17,7 +17,7 @@ export const DEFAULT_INPUTS: Inputs = {
   yCc: 800,
   x1: 600,
   y1: 650,
-  cdn: -50,
+  cdn: 0,
   cdtn: -600,
   cdg: -50,
   cx: 4,
@@ -61,7 +61,7 @@ export const SAMPLE_PDF: Inputs = {
   y1: 800,
   xCc: 1225,
   yCc: 1100,
-  cdn: -100,
+  cdn: 0,
   cdtn: -800,
   cdg: -100,
   cx: 4,
@@ -78,7 +78,8 @@ export const SAMPLE_PDF: Inputs = {
   lining: 50,
   coverBase: 50,
   coverCol: 25,
-  hasBeam: false,
+  hasBeam: true,
+  hBeam: 300,
 }
 
 const STEEL_DENSITY = 7850
