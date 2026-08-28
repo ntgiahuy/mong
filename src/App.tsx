@@ -93,7 +93,18 @@ export default function App() {
         <aside className="side">
           <Schematic inp={inp} />
           <button type="button" className="go" onClick={showShop}>
-            {L.action}
+            <span className="go-label">{L.action}</span>
+            <span className="go-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 12h12.5M13 6.5 19.5 12 13 17.5"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
           </button>
         </aside>
       </div>
