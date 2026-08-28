@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FoundationForm } from './components/FoundationForm'
 import { Schematic } from './components/Schematic'
 import { ShopDrawing } from './components/ShopDrawing'
@@ -9,6 +9,7 @@ import {
   DEFAULT_INPUTS,
   SAMPLE_PDF,
 } from './lib/calc'
+import { fitShopSheetForPrint, resetShopSheetAfterPrint } from './lib/print-sheet'
 import type { Inputs } from './types'
 
 export default function App() {
@@ -19,6 +20,17 @@ export default function App() {
   const [pdfError, setPdfError] = useState('')
   const result = useMemo(() => compute(inp), [inp])
   const L = t[lang]
+
+  useEffect(() => {
+    const before = () => fitShopSheetForPrint()
+    const after = () => resetShopSheetAfterPrint()
+    window.addEventListener('beforeprint', before)
+    window.addEventListener('afterprint', after)
+    return () => {
+      window.removeEventListener('beforeprint', before)
+      window.removeEventListener('afterprint', after)
+    }
+  }, [])
 
   const patch = (partial: Partial<Inputs>, edited?: keyof Inputs) => {
     setInp((prev) => applyGeometry({ ...prev, ...partial }, edited))
@@ -131,7 +143,14 @@ export default function App() {
             <button type="button" className="ghost" onClick={() => void downloadPdf()} disabled={busy}>
               {busy ? L.exporting : L.download}
             </button>
-            <button type="button" className="ghost" onClick={() => window.print()}>
+            <button
+              type="button"
+              className="ghost"
+              onClick={() => {
+                fitShopSheetForPrint()
+                window.print()
+              }}
+            >
               {L.print}
             </button>
           </div>

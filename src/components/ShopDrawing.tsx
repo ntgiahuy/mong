@@ -9,7 +9,7 @@ type Props = {
 }
 
 const OX = 78
-const RIGHT = 148
+const RIGHT = 118
 const CALLOUT_W = 220
 const SHEET_W = 1782
 /** Pedestal shoulder under the column, each side (matches Xcot+0.1 / Ycot+0.1). */
@@ -903,12 +903,13 @@ export function ShopDrawing({ inp, result, lang }: Props) {
     lang === 'vi' ? 'SHOP THÉP VÀ KHỐI LƯỢNG MÓNG (BY GIAHUY.NET)' : `${L.resultTitle} (BY GIAHUY.NET)`
 
   return (
-    <div className="shop-sheet" id="shop-sheet">
-      <h1 className="shop-title">
-        <span>{title}</span>
-        <span className="shop-sheet-size">KHỔ A2 NẰM</span>
-      </h1>
-      <div className="shop-a2">
+    <div className="shop-scroll">
+      <div className="shop-sheet" id="shop-sheet">
+        <h1 className="shop-title">
+          <span>{title}</span>
+          <span className="shop-sheet-size">KHỔ A2 NẰM</span>
+        </h1>
+        <div className="shop-a2">
         <div className="shop-aa">
           <SectionDrawing axis="x" inp={inp} result={result} title={L.sectionAA} s={s} />
         </div>
@@ -993,6 +994,7 @@ export function ShopDrawing({ inp, result, lang }: Props) {
             </ul>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

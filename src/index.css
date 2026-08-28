@@ -368,16 +368,23 @@ p {
   margin-bottom: 8px;
 }
 
+.shop-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
 .shop-sheet {
   background: #fff;
   color: #111;
-  padding: 10px 14px 12px;
+  padding: 10px 28px 14px 14px;
   font-family: Arial, 'Segoe UI', sans-serif;
   width: 1782px;
-  max-width: 100%;
+  max-width: none;
   box-sizing: border-box;
-  overflow-x: auto;
-  border: 1.5px solid #111;
+  overflow: visible;
+  border: 2px solid #111;
 }
 
 .shop-title {
@@ -404,7 +411,7 @@ p {
 
 .shop-a2 {
   display: grid;
-  grid-template-columns: max-content 220px minmax(480px, 1fr);
+  grid-template-columns: max-content 220px max-content;
   grid-template-rows: auto auto;
   column-gap: 0;
   row-gap: 8px;
@@ -421,13 +428,14 @@ p {
   grid-column: 2;
   grid-row: 1;
   justify-self: start;
-  margin-left: -56px;
+  margin-left: -48px;
+  width: 220px;
 }
 
 .shop-bb {
   grid-column: 3;
   grid-row: 1;
-  margin-left: 16px;
+  margin-left: -40px;
 }
 
 .shop-plan {
@@ -439,7 +447,7 @@ p {
   grid-column: 3;
   grid-row: 2;
   min-width: 0;
-  margin-left: 16px;
+  margin-left: -40px;
 }
 
 .cad {
@@ -504,28 +512,16 @@ p {
   color: #111;
 }
 
-@media (max-width: 1024px) {
+@media screen and (max-width: 1024px) {
   .workspace {
     grid-template-columns: 1fr;
   }
   .side {
     position: static;
   }
-  .shop-a2 {
-    grid-template-columns: 1fr;
-  }
-  .shop-callouts,
-  .shop-aa,
-  .shop-bb,
-  .shop-plan,
-  .shop-sched {
-    grid-column: 1;
-    grid-row: auto;
-    margin-left: 0;
-  }
 }
 
-@media (max-width: 760px) {
+@media screen and (max-width: 760px) {
   .form-cols {
     grid-template-columns: 1fr;
   }
@@ -536,25 +532,81 @@ p {
     size: A2 landscape;
     margin: 8mm;
   }
+  html,
+  body,
+  #root,
+  .app {
+    background: #fff !important;
+    color: #111;
+    max-width: none !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
   .topbar,
   .workspace,
   .result-toolbar,
   .banner {
     display: none !important;
   }
-  .result-wrap,
+  .result-wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  .shop-scroll {
+    overflow: visible !important;
+    max-width: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    page-break-after: avoid;
+    page-break-before: avoid;
+  }
   .shop-sheet {
-    background: #fff;
-    padding: 0;
-    box-shadow: none;
-    max-width: none;
-    min-height: 0;
+    width: 1782px !important;
+    max-width: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+    padding: 10px 28px 14px 14px !important;
+    border: 2px solid #111 !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    page-break-after: avoid;
+    page-break-before: avoid;
   }
   .shop-a2 {
-    grid-template-columns: max-content 220px minmax(480px, 1fr) !important;
+    display: grid !important;
+    grid-template-columns: max-content 220px max-content !important;
+    grid-template-rows: auto auto !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
-  .shop-sheet {
-    width: 1782px;
-    border: 0;
+  .shop-aa {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+  .shop-callouts {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    margin-left: -48px !important;
+  }
+  .shop-bb {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    margin-left: -40px !important;
+  }
+  .shop-plan {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+  .shop-sched {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+    margin-left: -40px !important;
   }
 }
