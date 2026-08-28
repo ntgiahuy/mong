@@ -55,7 +55,7 @@ export function Schematic({ inp }: Props) {
         stroke={outline}
       />
       <polygon
-        points={`${x0},${yBaseTop} ${colX},${ySlopeTop} ${colX + colW},${ySlopeTop} ${x0 + baseW},${yBaseTop}`}
+        points={`${x0},${yBaseTop} ${colX - 50 * s},${ySlopeTop} ${colX + colW + 50 * s},${ySlopeTop} ${x0 + baseW},${yBaseTop}`}
         fill="#525252"
         stroke={outline}
       />

@@ -12,6 +12,8 @@ const OX = 78
 const RIGHT = 96
 const CALLOUT_W = 168
 const SHEET_W = 1782
+/** Pedestal shoulder under the column, each side (matches Xcot+0.1 / Ycot+0.1). */
+const SHOULDER_MM = 50
 /** Gap from footing bottom to view title — keep below the overall X-dimension numbers. */
 const SECTION_CAPTION_GAP = 114
 const SECTION_CAPTION_PAD = 22
@@ -370,6 +372,9 @@ function SectionDrawing({
   const y3 = y2 + hs.dm
   const y4 = y3 + lot
   const colX = ox + left
+  const sh = SHOULDER_MM * s
+  const topL = Math.max(ox, colX - sh)
+  const topR = Math.min(ox + bw, colX + cw + sh)
   const sandH = inp.fType === 'sand' ? 18 : 0
   const cover = inp.coverBase * s
   const colCover = inp.coverCol * s
@@ -401,13 +406,13 @@ function SectionDrawing({
         strokeWidth={0.8}
         strokeDasharray="10 4 2 4"
       />
-      <rect x={colX} y={y0} width={cw} height={hs.com} fill="#e9e9e9" stroke="#111" strokeWidth={1.4} />
       <polygon
-        points={`${ox},${y2} ${ox + bw},${y2} ${colX + cw},${y1} ${colX},${y1}`}
+        points={`${ox},${y2} ${ox + bw},${y2} ${topR},${y1} ${colX + cw},${y1} ${colX},${y1} ${topL},${y1}`}
         fill="#dedede"
         stroke="#111"
         strokeWidth={1.4}
       />
+      <rect x={colX} y={y0} width={cw} height={hs.com} fill="#e9e9e9" stroke="#111" strokeWidth={1.4} />
       <rect x={ox} y={y2} width={bw} height={hs.dm} fill="#d8d8d8" stroke="#111" strokeWidth={1.4} />
       <rect x={ox - 8} y={y3} width={bw + 16} height={lot} fill="#c4c4c4" stroke="#111" />
       {inp.fType === 'sand' && (
@@ -508,13 +513,21 @@ function SectionDrawing({
       </text>
 
       <HDim x1={ox} x2={ox + cover} y={y4 + sandH + 18} label={inp.coverBase} below />
-      <HDim x1={ox + cover} x2={colX} y={y4 + sandH + 18} label={Math.round(leftMm - inp.coverBase)} below />
-      <HDim x1={colX} x2={colX + cw} y={y4 + sandH + 18} label={colMm} below />
       <HDim
-        x1={colX + cw}
+        x1={ox + cover}
+        x2={topL}
+        y={y4 + sandH + 18}
+        label={Math.round(leftMm - inp.coverBase - SHOULDER_MM)}
+        below
+      />
+      <HDim x1={topL} x2={colX} y={y4 + sandH + 18} label={SHOULDER_MM} below />
+      <HDim x1={colX} x2={colX + cw} y={y4 + sandH + 18} label={colMm} below />
+      <HDim x1={colX + cw} x2={topR} y={y4 + sandH + 18} label={SHOULDER_MM} below />
+      <HDim
+        x1={topR}
         x2={ox + bw - cover}
         y={y4 + sandH + 18}
-        label={Math.round(widthMm - leftMm - colMm - inp.coverBase)}
+        label={Math.round(widthMm - leftMm - colMm - inp.coverBase - SHOULDER_MM)}
         below
       />
       <HDim x1={ox + bw - cover} x2={ox + bw} y={y4 + sandH + 18} label={inp.coverBase} below />
@@ -570,6 +583,11 @@ function PlanDrawing({
   const cy = oy + inp.y1 * s
   const cw = inp.xCo * s
   const ch = inp.yCo * s
+  const sh = SHOULDER_MM * s
+  const sx = cx - sh
+  const sy = cy - sh
+  const sw = cw + sh * 2
+  const shh = ch + sh * 2
   const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
   const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
@@ -584,11 +602,12 @@ function PlanDrawing({
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
       <rect x={ox} y={oy} width={w} height={h} fill="#f3f3f3" stroke="#111" strokeWidth={1.5} />
+      <rect x={sx} y={sy} width={sw} height={shh} fill="#ececec" stroke="#111" strokeWidth={1.2} />
       <rect x={cx} y={cy} width={cw} height={ch} fill="#e4e4e4" stroke="#111" strokeWidth={1.5} />
-      <line x1={ox} y1={oy} x2={cx} y2={cy} stroke="#666" />
-      <line x1={ox + w} y1={oy} x2={cx + cw} y2={cy} stroke="#666" />
-      <line x1={ox} y1={oy + h} x2={cx} y2={cy + ch} stroke="#666" />
-      <line x1={ox + w} y1={oy + h} x2={cx + cw} y2={cy + ch} stroke="#666" />
+      <line x1={ox} y1={oy} x2={sx} y2={sy} stroke="#666" />
+      <line x1={ox + w} y1={oy} x2={sx + sw} y2={sy} stroke="#666" />
+      <line x1={ox} y1={oy + h} x2={sx} y2={sy + shh} stroke="#666" />
+      <line x1={ox + w} y1={oy + h} x2={sx + sw} y2={sy + shh} stroke="#666" />
 
       {ny.map((mm, i) => {
         const y = oy + mm * s
@@ -683,20 +702,36 @@ function PlanDrawing({
       </text>
 
       <HDim x1={ox} x2={ox + cover} y={dimY} label={inp.coverBase} below />
-      <HDim x1={ox + cover} x2={cx} y={dimY} label={Math.round(inp.x1 - inp.coverBase)} below />
-      <HDim x1={cx} x2={cx + cw} y={dimY} label={inp.xCo} below />
       <HDim
-        x1={cx + cw}
+        x1={ox + cover}
+        x2={sx}
+        y={dimY}
+        label={Math.round(inp.x1 - inp.coverBase - SHOULDER_MM)}
+        below
+      />
+      <HDim x1={sx} x2={cx} y={dimY} label={SHOULDER_MM} below />
+      <HDim x1={cx} x2={cx + cw} y={dimY} label={inp.xCo} below />
+      <HDim x1={cx + cw} x2={sx + sw} y={dimY} label={SHOULDER_MM} below />
+      <HDim
+        x1={sx + sw}
         x2={ox + w - cover}
         y={dimY}
-        label={Math.round(result.x2 - inp.coverBase)}
+        label={Math.round(result.x2 - inp.coverBase - SHOULDER_MM)}
         below
       />
       <HDim x1={ox} x2={ox + w} y={dimY + 16} label={inp.xMong} below />
 
-      <VDim x={ox - 22} y1={oy} y2={cy} label={inp.y1} left />
+      <VDim x={ox - 22} y1={oy} y2={sy} label={Math.round(inp.y1 - SHOULDER_MM)} left />
+      <VDim x={ox - 22} y1={sy} y2={cy} label={SHOULDER_MM} left />
       <VDim x={ox - 22} y1={cy} y2={cy + ch} label={inp.yCo} left />
-      <VDim x={ox - 22} y1={cy + ch} y2={oy + h} label={Math.round(inp.yMong - inp.y1 - inp.yCo)} left />
+      <VDim x={ox - 22} y1={cy + ch} y2={sy + shh} label={SHOULDER_MM} left />
+      <VDim
+        x={ox - 22}
+        y1={sy + shh}
+        y2={oy + h}
+        label={Math.round(inp.yMong - inp.y1 - inp.yCo - SHOULDER_MM)}
+        left
+      />
       <VDim x={ox - 44} y1={oy} y2={oy + h} label={inp.yMong} left />
 
       {bar1 && (
