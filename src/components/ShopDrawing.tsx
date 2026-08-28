@@ -1,6 +1,6 @@
 import type { CalcResult, Inputs, RebarRow } from '../types'
 import { t, type Lang } from '../i18n'
-import { columnPerimeterPts, faceStations, meshStations } from '../lib/calc'
+import { columnPerimeterPts, columnTieGeom, faceStations, meshStations } from '../lib/calc'
 
 type Props = {
   inp: Inputs
@@ -10,7 +10,9 @@ type Props = {
 
 const OX = 78
 const RIGHT = 96
-const CALLOUT_W = 170
+const CALLOUT_W = 168
+const LEFT_COL = 268
+const SHEET_W = 1780
 /** Gap from footing bottom to view title — keep below the overall X-dimension numbers. */
 const SECTION_CAPTION_GAP = 114
 const SECTION_CAPTION_PAD = 22
@@ -185,12 +187,138 @@ function BarShape({ row }: { row: RebarRow }) {
 
 function sheetScale(inp: Inputs): number {
   const totalH = inp.hCom + inp.hCm + inp.hDm + inp.lining + (inp.fType === 'sand' ? 80 : 0)
-  const sheetW = 1520
-  const availW = sheetW - CALLOUT_W - 16 - (OX + RIGHT) * 2
+  const availW = SHEET_W - LEFT_COL - 28 - (OX + RIGHT) * 2
   const sW = availW / Math.max(inp.xMong + inp.yMong, 1)
-  const sSec = 480 / Math.max(totalH, 1)
-  const sPlan = 420 / Math.max(inp.yMong, 1)
-  return Math.min(sW, sSec, sPlan, 0.26)
+  const sSec = 420 / Math.max(totalH, 1)
+  const sPlan = 380 / Math.max(inp.yMong, 1)
+  return Math.min(sW, sSec, sPlan, 0.28)
+}
+
+function GroundHatch({ x1, x2, y }: { x1: number; x2: number; y: number }) {
+  const ticks: number[] = []
+  for (let x = x1; x <= x2; x += 9) ticks.push(x)
+  return (
+    <g>
+      <line x1={x1} y1={y} x2={x2} y2={y} stroke="#111" />
+      {ticks.map((x) => (
+        <line key={x} x1={x} y1={y} x2={x - 5} y2={y + 9} stroke="#111" strokeWidth={1} />
+      ))}
+    </g>
+  )
+}
+
+function ColumnSteel({
+  x,
+  y,
+  sMm,
+  inp,
+  result,
+  labels,
+}: {
+  x: number
+  y: number
+  sMm: number
+  inp: Inputs
+  result: CalcResult
+  labels?: boolean
+}) {
+  const dots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
+  const { stir, xTies } = columnTieGeom(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
+  const r = Math.max(2.3, (inp.dMain / 7) * Math.min(1.2, sMm / 0.22))
+  const sw = Math.max(1.3, inp.dStirrup / 5.5)
+  const colMark = result.bars.find((b) => b.shape === 'L')?.mark ?? 3
+  const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
+  return (
+    <g>
+      <rect
+        x={x + stir.x * sMm}
+        y={y + stir.y * sMm}
+        width={stir.w * sMm}
+        height={stir.h * sMm}
+        fill="none"
+        stroke="#111"
+        strokeWidth={sw}
+      />
+      {xTies.map((ln, i) => (
+        <line
+          key={`x${i}`}
+          x1={x + ln.x1 * sMm}
+          y1={y + ln.y1 * sMm}
+          x2={x + ln.x2 * sMm}
+          y2={y + ln.y2 * sMm}
+          stroke="#111"
+          strokeWidth={Math.max(1.1, sw * 0.85)}
+        />
+      ))}
+      {dots.map((p, i) => (
+        <circle key={`c${i}`} cx={x + p.x * sMm} cy={y + p.y * sMm} r={r} fill="#111" />
+      ))}
+      {labels && (
+        <>
+          <Tag n={colMark} x={x + inp.xCo * sMm * 0.55} y={y + 12} />
+          <text x={x + inp.xCo * sMm * 0.55 + 12} y={y + 16} fontSize={11} fontWeight={700}>
+            {result.nCol}Ø{inp.dMain}
+          </text>
+          <Tag n={stirMark} x={x + inp.xCo * sMm + 14} y={y + inp.yCo * sMm * 0.42} />
+          <text x={x + inp.xCo * sMm + 26} y={y + inp.yCo * sMm * 0.42 + 4} fontSize={10} fontWeight={700}>
+            Ø{inp.dStirrup}a{inp.aStirrup}
+          </text>
+        </>
+      )}
+    </g>
+  )
+}
+
+function ColumnDetail({ inp, result, title }: { inp: Inputs; result: CalcResult; title: string }) {
+  const sCol = Math.min(0.46, 200 / Math.max(inp.xCo, 1), 230 / Math.max(inp.yCo, 1))
+  const ox = 44
+  const oy = 32
+  const w = inp.xCo * sCol
+  const h = inp.yCo * sCol
+  const outer = 20
+  const W = ox + w + 82
+  const captionY = oy + h + 40
+  const H = captionY + 18
+  return (
+    <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
+      <rect
+        x={ox - outer}
+        y={oy - outer}
+        width={w + outer * 2}
+        height={h + outer * 2}
+        fill="none"
+        stroke="#888"
+        strokeWidth={0.8}
+      />
+      <line x1={ox - outer} y1={oy - outer} x2={ox} y2={oy} stroke="#888" />
+      <line x1={ox + w + outer} y1={oy - outer} x2={ox + w} y2={oy} stroke="#888" />
+      <line x1={ox - outer} y1={oy + h + outer} x2={ox} y2={oy + h} stroke="#888" />
+      <line x1={ox + w + outer} y1={oy + h + outer} x2={ox + w} y2={oy + h} stroke="#888" />
+      <rect x={ox} y={oy} width={w} height={h} fill="#f4f4f4" stroke="#111" strokeWidth={1.5} />
+      <line
+        x1={ox + w / 2}
+        y1={oy - 10}
+        x2={ox + w / 2}
+        y2={oy + h + 10}
+        stroke="#111"
+        strokeDasharray="8 3 2 3"
+        strokeWidth={0.8}
+      />
+      <line
+        x1={ox - 10}
+        y1={oy + h / 2}
+        x2={ox + w + 10}
+        y2={oy + h / 2}
+        stroke="#111"
+        strokeDasharray="8 3 2 3"
+        strokeWidth={0.8}
+      />
+      <ColumnSteel x={ox} y={oy} sMm={sCol} inp={inp} result={result} labels />
+      <HDim x1={ox} x2={ox + w} y={oy - 14} label={inp.xCo} />
+      <VDim x={ox + w + 18} y1={oy} y2={oy + h} label={inp.yCo} />
+      <DrawingCaption x={ox + w / 2} y={captionY} title={title} />
+    </svg>
+  )
 }
 
 function sectionSize(inp: Inputs, axis: 'x' | 'y', s: number) {
@@ -210,69 +338,64 @@ function Callouts({
   inp,
   result,
   s,
-  height,
 }: {
   inp: Inputs
   result: CalcResult
   s: number
-  height: number
 }) {
   const colBars = result.bars.filter((b) => b.shape === 'L')
   const stirrup = result.bars.find((b) => b.shape === 'stirrup')
-  const stem = Math.max(90, (inp.hCom + inp.hCm + inp.hDm - 100) * s)
-  const hook = Math.max(18, Math.min(48, result.colHook * s * 0.55))
-  const pairW = 52
-  const top = 18
-  const stirH = 56
-  const stirY = top
-  const lTop = stirY + stirH + 18
-  const lBot = lTop + stem
+  const stem = Math.max(88, (inp.hCom + inp.hCm + inp.hDm - 100) * s * 0.72)
+  const hook = Math.max(16, Math.min(40, result.colHook * s * 0.45))
+  const pairW = 48
+  const top = 10
+  const stirH = 54
+  const pairs = colBars.length > 1 ? colBars : [...colBars, ...colBars]
   const W = CALLOUT_W
-  const H = Math.max(height, lBot + hook + 24)
+  const H = top + stirH + pairs.length * (stem + hook + 26) + 8
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
       {stirrup && (
-        <g transform={`translate(28, ${stirY})`}>
+        <g transform={`translate(18, ${top})`}>
           <Tag n={stirrup.mark} x={10} y={8} />
           <text x={22} y={12} fontSize={10} fontWeight={700}>
             {stirrup.n1}Ø{stirrup.d}-L={stirrup.length}
           </text>
-          <rect x={36} y={18} width={48} height={32} fill="none" stroke="#111" strokeWidth={2} />
-          <path d="M36 24 H24" stroke="#111" strokeWidth={2} />
-          <path d="M36 44 H24" stroke="#111" strokeWidth={2} />
-          <text x={60} y={38} textAnchor="middle" fontSize={8}>
+          <rect x={40} y={18} width={46} height={28} fill="none" stroke="#111" strokeWidth={2} />
+          <path d="M40 24 H28" stroke="#111" strokeWidth={2} />
+          <path d="M40 40 H28" stroke="#111" strokeWidth={2} />
+          <text x={63} y={36} textAnchor="middle" fontSize={8}>
             {stirrup.segs[1]}
           </text>
-          <text x={90} y={38} fontSize={8}>
+          <text x={92} y={36} fontSize={8}>
             {stirrup.segs[0]}
           </text>
         </g>
       )}
-      {colBars.map((b, i) => {
-        const y0 = lTop + i * (stem + hook + 28)
-        const x1 = 48
+      {pairs.map((b, i) => {
+        const y0 = top + stirH + 16 + i * (stem + hook + 24)
+        const x1 = 46
         const x2 = x1 + pairW
-        const y1 = y0
         const y2 = y0 + stem
-        const mid = (y1 + y2) / 2
+        const mid = (y0 + y2) / 2
         return (
-          <g key={b.mark}>
+          <g key={`${b.mark}-${i}`}>
             <path
-              d={`M ${x1} ${y1} V ${y2} H ${x1 - hook}`}
+              d={`M ${x1} ${y0} V ${y2} H ${x1 - hook}`}
               fill="none"
               stroke="#111"
               strokeWidth={2.2}
               strokeLinecap="square"
             />
             <path
-              d={`M ${x2} ${y1} V ${y2} H ${x2 + hook}`}
+              d={`M ${x2} ${y0} V ${y2} H ${x2 + hook}`}
               fill="none"
               stroke="#111"
               strokeWidth={2.2}
               strokeLinecap="square"
             />
-            <Tag n={b.mark} x={14} y={y1 + 10} />
+            <Tag n={b.mark} x={14} y={y0 + 10} />
             <text
               x={18}
               y={mid}
@@ -379,7 +502,7 @@ function SectionDrawing({
         strokeWidth={1.4}
       />
       <rect x={ox} y={y2} width={bw} height={hs.dm} fill="#d8d8d8" stroke="#111" strokeWidth={1.4} />
-      <rect x={ox - 8} y={y3} width={bw + 16} height={lot} fill="#c4c4c4" stroke="#111" />
+      <rect x={ox - 50 * s} y={y3} width={bw + 100 * s} height={lot} fill="#c4c4c4" stroke="#111" />
       {inp.fType === 'sand' && (
         <rect x={ox - 10} y={y4} width={bw + 20} height={sandH} fill="#e6d7a8" stroke="#111" />
       )}
@@ -413,7 +536,7 @@ function SectionDrawing({
 
       {Array.from({ length: result.nStirrup }).map((_, i) => {
         const y = y0 + (inp.coverCol + i * inp.aStirrup) * s
-        if (y > y1 - 3) return null
+        if (y > y2 - 4) return null
         return (
           <line
             key={`st${i}`}
@@ -497,15 +620,9 @@ function SectionDrawing({
 
       <Level x={ox + bw + 8} y={y0} text={fmtLevel(0)} />
       <Level x={ox + bw + 8} y={y0 - inp.cdn * s} text={fmtLevel(inp.cdn)} />
-      <line
-        x1={ox}
-        x2={ox + bw}
-        y1={y0 - inp.cdtn * s}
-        y2={y0 - inp.cdtn * s}
-        stroke="#c33"
-        strokeDasharray="5 3"
-      />
-      <text x={ox + bw + 48} y={y0 - inp.cdtn * s + 3} fontSize={10} fill="#c33">
+      <GroundHatch x1={ox - 18} x2={colX - 6} y={y0 - inp.cdtn * s} />
+      <GroundHatch x1={colX + cw + 6} x2={ox + bw + 18} y={y0 - inp.cdtn * s} />
+      <text x={ox + bw + 48} y={y0 - inp.cdtn * s + 3} fontSize={10} fill="#111">
         {fmtLevel(inp.cdtn)}
       </text>
       <Level x={ox + bw + 8} y={y3} text={fmtLevel(result.cdm)} />
@@ -542,7 +659,6 @@ function PlanDrawing({
   const ch = inp.yCo * s
   const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
-  const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
   const cover = inp.coverBase * s
   const dimY = oy + h + 22
   const bar1Y = dimY + 50
@@ -589,15 +705,7 @@ function PlanDrawing({
         )
       })}
 
-      {colDots.map((p, i) => (
-        <circle
-          key={`c${i}`}
-          cx={cx + p.x * s}
-          cy={cy + p.y * s}
-          r={Math.max(2.4, inp.dMain / 8)}
-          fill="#111"
-        />
-      ))}
+      <ColumnSteel x={cx} y={cy} sMm={s} inp={inp} result={result} />
 
       <line
         x1={ox - 10}
@@ -742,7 +850,6 @@ function PlanDrawing({
 export function ShopDrawing({ inp, result, lang }: Props) {
   const L = t[lang]
   const s = sheetScale(inp)
-  const aa = sectionSize(inp, 'x', s)
   const title =
     lang === 'vi' ? 'SHOP THÉP VÀ KHỐI LƯỢNG MÓNG (BY GIAHUY.NET)' : `${L.resultTitle} (BY GIAHUY.NET)`
 
@@ -750,8 +857,9 @@ export function ShopDrawing({ inp, result, lang }: Props) {
     <div className="shop-sheet" id="shop-sheet">
       <h1 className="shop-title">{title}</h1>
       <div className="shop-a2">
-        <div className="shop-callouts">
-          <Callouts inp={inp} result={result} s={s} height={aa.H} />
+        <div className="shop-left">
+          <Callouts inp={inp} result={result} s={s} />
+          <ColumnDetail inp={inp} result={result} title={L.colDetail} />
         </div>
         <div className="shop-aa">
           <SectionDrawing axis="x" inp={inp} result={result} title={L.sectionAA} s={s} />
@@ -826,6 +934,9 @@ export function ShopDrawing({ inp, result, lang }: Props) {
               {result.stirrupNote.map((n) => (
                 <li key={n}>- {n}</li>
               ))}
+              <li>
+                - Đai cấu tạo chữ X (cùng Ø{inp.dStirrup}a{inp.aStirrup}) giữ các thanh giữa cạnh cổ cột
+              </li>
               <li>- Ván khuôn móng: {result.formworkFootingExpr}</li>
               <li>- Ván khuôn cổ cột: {result.formworkNeckExpr}</li>
               <li>- Bê tông cổ cột: {result.concreteNeckExpr}</li>

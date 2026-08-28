@@ -64,8 +64,8 @@ export const SAMPLE_PDF: Inputs = {
   cdn: -100,
   cdtn: -800,
   cdg: -100,
-  cx: 4,
-  cy: 3,
+  cx: 3,
+  cy: 4,
   dMain: 18,
   dStirrup: 8,
   aStirrup: 150,
@@ -73,12 +73,13 @@ export const SAMPLE_PDF: Inputs = {
   aFaX: 150,
   dFaY: 12,
   aFaY: 150,
-  name: 'M2',
-  qty: 22,
+  name: 'MD1',
+  qty: 1,
   lining: 50,
   coverBase: 50,
   coverCol: 25,
   hasBeam: false,
+  hooked: true,
 }
 
 const STEEL_DENSITY = 7850
@@ -149,6 +150,34 @@ export function columnPerimeterPts(
     pts.push({ x: xs[xs.length - 1], y: ys[j] })
   }
   return pts
+}
+
+/** Closed stirrup rectangle plus X-shaped construction ties (mm, column-local). */
+export function columnTieGeom(
+  cx: number,
+  cy: number,
+  width: number,
+  height: number,
+  cover: number,
+): {
+  stir: { x: number; y: number; w: number; h: number }
+  xTies: { x1: number; y1: number; x2: number; y2: number }[]
+} {
+  const xs = faceStations(cx, width, cover)
+  const ys = faceStations(cy, height, cover)
+  const x0 = xs[0]
+  const y0 = ys[0]
+  const x1 = xs[xs.length - 1]
+  const y1 = ys[ys.length - 1]
+  const padX = Math.max(8, (x1 - x0) * 0.12)
+  const padY = Math.max(8, (y1 - y0) * 0.12)
+  return {
+    stir: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 },
+    xTies: [
+      { x1: x0 + padX, y1: y0 + padY, x2: x1 - padX, y2: y1 - padY },
+      { x1: x1 - padX, y1: y0 + padY, x2: x0 + padX, y2: y1 - padY },
+    ],
+  }
 }
 
 export function applyGeometry(i: Inputs, edited?: keyof Inputs): Inputs {
@@ -229,7 +258,10 @@ export function compute(i: Inputs): CalcResult {
   const stirrupB = Math.max(40, roundTo(i.yCo - 2 * i.coverCol, 10))
   const stirrupHook = Math.max(50, 6 * i.dStirrup)
   const stirrupL = 2 * (stirrupA + stirrupB) + 2 * stirrupHook
-  const nStirrup = Math.max(2, Math.floor(Math.max(i.hCom - i.coverCol, 0) / i.aStirrup) + 1)
+  const nStirrup = Math.max(
+    2,
+    Math.floor(Math.max(i.hCom + i.hCm - i.coverCol, 0) / i.aStirrup) + 1,
+  )
 
   const colHook = 300
   const colStraightLen = Math.max(0, totalH - 100)

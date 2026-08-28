@@ -274,9 +274,9 @@ p {
 .shop-sheet {
   background: #fff;
   color: #111;
-  padding: 14px 16px 18px;
+  padding: 12px 16px 16px;
   font-family: Arial, 'Segoe UI', sans-serif;
-  width: 1520px;
+  width: 1780px;
   max-width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
@@ -295,17 +295,21 @@ p {
 
 .shop-a2 {
   display: grid;
-  grid-template-columns: 170px max-content minmax(420px, 1fr);
+  grid-template-columns: 268px max-content minmax(520px, 1fr);
   grid-template-rows: auto auto;
-  column-gap: 8px;
-  row-gap: 4px;
+  column-gap: 10px;
+  row-gap: 6px;
   align-items: start;
   justify-content: start;
 }
 
-.shop-callouts {
+.shop-left {
   grid-column: 1;
-  grid-row: 1;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
 }
 
 .shop-aa {
@@ -400,7 +404,7 @@ p {
   .shop-a2 {
     grid-template-columns: 1fr;
   }
-  .shop-callouts,
+  .shop-left,
   .shop-aa,
   .shop-bb,
   .shop-plan,
@@ -418,7 +422,7 @@ p {
 
 @media print {
   @page {
-    size: A2 portrait;
+    size: A2 landscape;
     margin: 8mm;
   }
   .topbar,
@@ -436,6 +440,6 @@ p {
     min-height: 0;
   }
   .shop-a2 {
-    grid-template-columns: 170px max-content minmax(420px, 1fr) !important;
+    grid-template-columns: 268px max-content minmax(520px, 1fr) !important;
   }
 }
