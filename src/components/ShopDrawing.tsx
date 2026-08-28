@@ -122,15 +122,42 @@ function Level({ x, y, text }: { x: number; y: number; text: string }) {
   )
 }
 
+function StirrupHoop({
+  x,
+  y,
+  w,
+  h,
+  strokeWidth = 1.8,
+}: {
+  x: number
+  y: number
+  w: number
+  h: number
+  strokeWidth?: number
+}) {
+  const r = Math.min(6, w * 0.14, h * 0.14)
+  const hook = Math.min(16, Math.max(9, Math.min(w, h) * 0.28))
+  const hx = x + w - r * 0.15
+  const hy = y + r * 0.15
+  const dx = -hook * 0.7
+  const dy = hook * 0.7
+  const gap = Math.max(2.4, strokeWidth * 1.15)
+  return (
+    <g fill="none" stroke="#111" strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round">
+      <rect x={x} y={y} width={w} height={h} rx={r} ry={r} />
+      <line x1={hx} y1={hy} x2={hx + dx} y2={hy + dy} />
+      <line x1={hx - gap} y1={hy + gap * 0.35} x2={hx - gap + dx} y2={hy + gap * 0.35 + dy} />
+    </g>
+  )
+}
+
 function BarShape({ row }: { row: RebarRow }) {
-  const h = 40
-  const w = 118
   if (row.shape === 'straight') {
     const L = row.segs[0] ?? row.length
     return (
-      <svg width={w} height={h} viewBox="0 0 118 40">
-        <line x1={10} y1={24} x2={108} y2={24} stroke="#111" strokeWidth={1.6} />
-        <text x={59} y={16} textAnchor="middle" fontSize={9}>
+      <svg width={132} height={40} viewBox="0 0 132 40">
+        <line x1={10} y1={24} x2={122} y2={24} stroke="#111" strokeWidth={1.7} />
+        <text x={66} y={16} textAnchor="middle" fontSize={9}>
           {L}
         </text>
       </svg>
@@ -139,12 +166,12 @@ function BarShape({ row }: { row: RebarRow }) {
   if (row.shape === 'u') {
     const [leg, mid] = row.segs
     return (
-      <svg width={w} height={h} viewBox="0 0 118 40">
-        <path d="M18 8 V30 H100 V8" fill="none" stroke="#111" strokeWidth={1.6} />
-        <text x={59} y={39} textAnchor="middle" fontSize={9}>
+      <svg width={132} height={42} viewBox="0 0 132 42">
+        <path d="M16 8 V32 H116 V8" fill="none" stroke="#111" strokeWidth={1.7} />
+        <text x={66} y={41} textAnchor="middle" fontSize={9}>
           {mid}
         </text>
-        <text x={2} y={22} fontSize={9}>
+        <text x={2} y={24} fontSize={9}>
           {leg}
         </text>
       </svg>
@@ -153,12 +180,12 @@ function BarShape({ row }: { row: RebarRow }) {
   if (row.shape === 'L') {
     const [hook, straight] = row.segs
     return (
-      <svg width={w} height={h} viewBox="0 0 118 40">
-        <path d="M14 32 H42 V6" fill="none" stroke="#111" strokeWidth={1.6} />
-        <text x={28} y={39} textAnchor="middle" fontSize={9}>
+      <svg width={148} height={46} viewBox="0 0 148 46">
+        <path d="M22 10 V38 M22 10 H140" fill="none" stroke="#111" strokeWidth={1.8} strokeLinecap="square" />
+        <text x={2} y={30} fontSize={9}>
           {hook}
         </text>
-        <text x={48} y={20} fontSize={9}>
+        <text x={82} y={8} textAnchor="middle" fontSize={9}>
           {straight}
         </text>
       </svg>
@@ -166,17 +193,16 @@ function BarShape({ row }: { row: RebarRow }) {
   }
   const [a, b, hook] = row.segs
   return (
-    <svg width={w} height={h} viewBox="0 0 118 40">
-      <rect x={32} y={8} width={52} height={22} fill="none" stroke="#111" strokeWidth={1.6} />
-      <path d="M32 12 H20" stroke="#111" strokeWidth={1.6} fill="none" />
-      <path d="M32 26 H20" stroke="#111" strokeWidth={1.6} fill="none" />
-      <text x={58} y={23} textAnchor="middle" fontSize={9}>
-        {b}
-      </text>
-      <text x={88} y={23} fontSize={9}>
+    <svg width={148} height={50} viewBox="0 0 148 50">
+      <path d="M34 16 H106 V42 H34 Z" fill="none" stroke="#111" strokeWidth={1.7} />
+      <path d="M106 16 H132" fill="none" stroke="#111" strokeWidth={1.7} />
+      <text x={70} y={13} textAnchor="middle" fontSize={9}>
         {a}
       </text>
-      <text x={8} y={12} fontSize={8}>
+      <text x={4} y={32} fontSize={9}>
+        {b}
+      </text>
+      <text x={119} y={13} textAnchor="middle" fontSize={9}>
         {hook}
       </text>
     </svg>
@@ -223,9 +249,9 @@ function Callouts({
   const hook = Math.max(18, Math.min(48, result.colHook * s * 0.55))
   const pairW = 52
   const top = 18
-  const stirH = 56
+  const stirH = 88
   const stirY = top
-  const lTop = stirY + stirH + 18
+  const lTop = stirY + stirH + 10
   const lBot = lTop + stem
   const W = CALLOUT_W
   const H = Math.max(height, lBot + hook + 24)
@@ -233,18 +259,16 @@ function Callouts({
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
       {stirrup && (
-        <g transform={`translate(28, ${stirY})`}>
+        <g transform={`translate(22, ${stirY})`}>
           <Tag n={stirrup.mark} x={10} y={8} />
           <text x={22} y={12} fontSize={10} fontWeight={700}>
             {stirrup.n1}Ø{stirrup.d}-L={stirrup.length}
           </text>
-          <rect x={36} y={18} width={48} height={32} fill="none" stroke="#111" strokeWidth={2} />
-          <path d="M36 24 H24" stroke="#111" strokeWidth={2} />
-          <path d="M36 44 H24" stroke="#111" strokeWidth={2} />
-          <text x={60} y={38} textAnchor="middle" fontSize={8}>
+          <StirrupHoop x={52} y={18} w={32} h={50} strokeWidth={2} />
+          <text x={40} y={46} fontSize={8} textAnchor="end">
             {stirrup.segs[1]}
           </text>
-          <text x={90} y={38} fontSize={8}>
+          <text x={68} y={78} fontSize={8} textAnchor="middle">
             {stirrup.segs[0]}
           </text>
         </g>
@@ -589,6 +613,13 @@ function PlanDrawing({
         )
       })}
 
+      <StirrupHoop
+        x={cx + inp.coverCol * s}
+        y={cy + inp.coverCol * s}
+        w={cw - 2 * inp.coverCol * s}
+        h={ch - 2 * inp.coverCol * s}
+        strokeWidth={Math.max(1.4, inp.dStirrup / 5)}
+      />
       {colDots.map((p, i) => (
         <circle
           key={`c${i}`}

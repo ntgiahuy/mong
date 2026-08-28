@@ -374,7 +374,8 @@ p {
 
 .schedule .shape-cell svg {
   display: block;
-  margin: 0 auto;
+  margin: 2px auto;
+  overflow: visible;
 }
 
 .sum-table {
