@@ -1,5 +1,6 @@
 import type { CalcResult, Inputs, RebarRow } from '../types'
 import { t, type Lang } from '../i18n'
+import { columnPerimeterPts, faceStations, meshStations } from '../lib/calc'
 
 type Props = {
   inp: Inputs
@@ -155,83 +156,68 @@ function BarShape({ row }: { row: RebarRow }) {
 }
 
 function SectionDrawing({
-  widthMm,
-  colMm,
-  leftMm,
-  lining,
-  hDm,
-  hCm,
-  hCom,
-  cover,
-  nCol,
-  dMain,
-  dStirrup,
-  aStirrup,
-  faBottom,
-  faTop,
-  nBottom,
-  dFaBot,
-  aFaBot,
-  dFaTop,
-  aFaTop,
-  cdn,
-  cdtn,
-  cdm,
+  axis,
+  inp,
+  result,
   title,
-  sand,
-  tram,
 }: {
-  widthMm: number
-  colMm: number
-  leftMm: number
-  lining: number
-  hDm: number
-  hCm: number
-  hCom: number
-  cover: number
-  nCol: number
-  dMain: number
-  dStirrup: number
-  aStirrup: number
-  faBottom: 1 | 2
-  faTop: 1 | 2
-  nBottom: number
-  dFaBot: number
-  aFaBot: number
-  dFaTop: number
-  aFaTop: number
-  cdn: number
-  cdtn: number
-  cdm: number
+  axis: 'x' | 'y'
+  inp: Inputs
+  result: CalcResult
   title: string
-  sand: boolean
-  tram: boolean
 }) {
-  const totalH = hCom + hCm + hDm
+  const widthMm = axis === 'x' ? inp.xMong : inp.yMong
+  const colMm = axis === 'x' ? inp.xCo : inp.yCo
+  const leftMm = axis === 'x' ? inp.x1 : inp.y1
+  const nFace = Math.max(2, axis === 'x' ? inp.cx : inp.cy)
+  const faceName = axis === 'x' ? 'Cx' : 'Cy'
+  // A-A (cắt theo X): FaX là thanh nằm, FaY là chấm. B-B ngược lại.
+  const aDot = axis === 'x' ? inp.aFaY : inp.aFaX
+  const dDot = axis === 'x' ? inp.dFaY : inp.dFaX
+  const dLine = axis === 'x' ? inp.dFaX : inp.dFaY
+  const aLine = axis === 'x' ? inp.aFaX : inp.aFaY
+  const nLine = axis === 'x' ? result.nMeshX : result.nMeshY
+  const nDot = axis === 'x' ? result.nMeshY : result.nMeshX
+  const lineIsBottom = axis === 'x' ? inp.bottomLayerX : !inp.bottomLayerX
+  const meshX = result.bars.find((b) => b.label.includes('FaX'))
+  const meshY = result.bars.find((b) => b.label.includes('FaY'))
+  const markLong = (axis === 'x' ? meshX : meshY)?.mark ?? (axis === 'x' ? 1 : 2)
+  const markTrans = (axis === 'x' ? meshY : meshX)?.mark ?? (axis === 'x' ? 2 : 1)
+  const colMark = result.bars.find((b) => b.shape === 'L')?.mark ?? 3
+  const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
+
+  const totalH = inp.hCom + inp.hCm + inp.hDm
   const W = 430
   const H = 430
-  const s = Math.min(250 / widthMm, 260 / (totalH + lining + (sand ? 80 : 0)))
+  const s = Math.min(250 / widthMm, 260 / (totalH + inp.lining + (inp.fType === 'sand' ? 80 : 0)))
   const ox = 70
   const oy = 36
   const bw = widthMm * s
   const cw = colMm * s
   const left = leftMm * s
-  const lot = lining * s
-  const hs = {
-    com: hCom * s,
-    cm: hCm * s,
-    dm: hDm * s,
-  }
+  const lot = inp.lining * s
+  const hs = { com: inp.hCom * s, cm: inp.hCm * s, dm: inp.hDm * s }
   const y0 = oy
   const y1 = y0 + hs.com
   const y2 = y1 + hs.cm
   const y3 = y2 + hs.dm
   const y4 = y3 + lot
   const colX = ox + left
-  const sandH = sand ? 18 : 0
+  const sandH = inp.fType === 'sand' ? 18 : 0
+  const cover = inp.coverBase * s
+  const colCover = inp.coverCol * s
+  const yHook = y3 - cover
+  const barW = Math.max(1.8, inp.dMain / 8)
+  const lineW = Math.max(1.4, dLine / 10)
+  const dotR = Math.max(2.0, dDot / 5)
+  const hookPx = Math.min(32, Math.max(14, result.colHook * s))
 
-  const nDots = Math.max(4, Math.min(14, nBottom))
-  const nVert = Math.max(4, Math.min(12, nCol))
+  const faceXs = faceStations(nFace, colMm, inp.coverCol).map((mm) => colX + mm * s)
+  const transXs = meshStations(widthMm, inp.coverBase, aDot).map((mm) => ox + mm * s)
+
+  const yLong = lineIsBottom ? y3 - cover : y3 - cover - dotR * 2 - 4
+  const yTrans = lineIsBottom ? y3 - cover - lineW - dotR - 3 : y3 - cover
+  const yTrans2 = yTrans + (lineIsBottom ? -(dotR * 2 + 3) : dotR * 2 + 3)
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
@@ -247,108 +233,155 @@ function SectionDrawing({
       />
       <rect x={ox} y={y2} width={bw} height={hs.dm} fill="#d8d8d8" stroke="#111" strokeWidth={1.4} />
       <rect x={ox - 8} y={y3} width={bw + 16} height={lot} fill="#c4c4c4" stroke="#111" />
-      {sand && (
+      {inp.fType === 'sand' && (
         <rect x={ox - 10} y={y4} width={bw + 20} height={sandH} fill="#e6d7a8" stroke="#111" />
       )}
-      {tram &&
+      {inp.fType === 'tram' &&
         Array.from({ length: 5 }).map((_, i) => (
-          <g key={i}>
-            <line
-              x1={ox + 20 + i * ((bw - 40) / 4)}
-              y1={y4 + sandH}
-              x2={ox + 20 + i * ((bw - 40) / 4)}
-              y2={y4 + sandH + 22}
-              stroke="#111"
-              strokeWidth={3}
-            />
-          </g>
+          <line
+            key={i}
+            x1={ox + 20 + i * ((bw - 40) / 4)}
+            y1={y4 + sandH}
+            x2={ox + 20 + i * ((bw - 40) / 4)}
+            y2={y4 + sandH + 22}
+            stroke="#111"
+            strokeWidth={3}
+          />
         ))}
 
-      {Array.from({ length: nVert }).map((_, i) => {
-        const x = colX + 8 + (i * (cw - 16)) / Math.max(nVert - 1, 1)
+      {faceXs.map((x, i) => {
+        const dir = x < colX + cw / 2 ? -1 : 1
         return (
-          <line key={i} x1={x} y1={y0 + 8} x2={x} y2={y3 - cover * s} stroke="#111" strokeWidth={1.4} />
+          <path
+            key={`v${i}`}
+            d={`M ${x} ${y0 + 4} L ${x} ${yHook} L ${x + dir * hookPx} ${yHook}`}
+            fill="none"
+            stroke="#111"
+            strokeWidth={barW}
+            strokeLinejoin="miter"
+            strokeLinecap="square"
+          />
         )
       })}
-      {Array.from({ length: 5 }).map((_, i) => (
-        <rect
-          key={i}
-          x={colX + 6}
-          y={y0 + 18 + i * Math.max(16, hs.com / 6)}
-          width={cw - 12}
-          height={5}
-          fill="none"
-          stroke="#111"
-          strokeWidth={1}
-        />
-      ))}
-      <line x1={ox + cover * s} y1={y3 - 7} x2={ox + bw - cover * s} y2={y3 - 7} stroke="#111" strokeWidth={1.6} />
-      {Array.from({ length: nDots }).map((_, i) => (
-        <circle
-          key={i}
-          cx={ox + cover * s + 4 + (i * (bw - 2 * cover * s - 8)) / Math.max(nDots - 1, 1)}
-          cy={y3 - 14}
-          r={2.4}
-          fill="#111"
-        />
-      ))}
 
-      <Tag n={3} x={colX + cw / 2} y={y0 + hs.com * 0.45} />
-      <text x={colX + cw / 2 + 14} y={y0 + hs.com * 0.45 + 4} fontSize={10}>
-        {nCol}Ø{dMain}
+      {Array.from({ length: result.nStirrup }).map((_, i) => {
+        const y = y0 + (inp.coverCol + i * inp.aStirrup) * s
+        if (y > y1 - 3) return null
+        return (
+          <line
+            key={`st${i}`}
+            x1={colX + colCover}
+            y1={y}
+            x2={colX + cw - colCover}
+            y2={y}
+            stroke="#111"
+            strokeWidth={Math.max(1.1, inp.dStirrup / 6)}
+          />
+        )
+      })}
+
+      <line
+        x1={ox + cover}
+        y1={yLong}
+        x2={ox + bw - cover}
+        y2={yLong}
+        stroke="#111"
+        strokeWidth={lineW}
+      />
+      {inp.hooked && (
+        <>
+          <path
+            d={`M ${ox + cover} ${yLong} L ${ox + cover} ${yLong - hs.dm * 0.45}`}
+            fill="none"
+            stroke="#111"
+            strokeWidth={lineW}
+          />
+          <path
+            d={`M ${ox + bw - cover} ${yLong} L ${ox + bw - cover} ${yLong - hs.dm * 0.45}`}
+            fill="none"
+            stroke="#111"
+            strokeWidth={lineW}
+          />
+        </>
+      )}
+      {inp.doubleLayer && (
+        <line
+          x1={ox + cover}
+          y1={yLong - lineW - 3}
+          x2={ox + bw - cover}
+          y2={yLong - lineW - 3}
+          stroke="#111"
+          strokeWidth={lineW}
+        />
+      )}
+      {transXs.map((x, i) => (
+        <circle key={`d${i}`} cx={x} cy={yTrans} r={dotR} fill="#111" />
+      ))}
+      {inp.doubleLayer &&
+        transXs.map((x, i) => (
+          <circle key={`d2${i}`} cx={x} cy={yTrans2} r={dotR} fill="#111" />
+        ))}
+
+      <Tag n={colMark} x={colX + cw / 2} y={y0 + hs.com * 0.38} />
+      <text x={colX + cw / 2 + 14} y={y0 + hs.com * 0.38 + 3} fontSize={10} fontWeight={700}>
+        {faceName} {nFace}Ø{inp.dMain}
       </text>
-      <Tag n={4} x={colX + cw + 16} y={y0 + hs.com * 0.22} />
-      <text x={colX + cw + 26} y={y0 + hs.com * 0.22 + 4} fontSize={10}>
-        Ø{dStirrup}a{aStirrup}
+      <text x={colX + cw / 2 + 14} y={y0 + hs.com * 0.38 + 15} fontSize={9} fill="#333">
+        Σ {result.nCol}Ø{inp.dMain}
       </text>
-      <Tag n={faBottom} x={ox + bw * 0.28} y={y3 - 28} />
-      <text x={ox + bw * 0.28 + 12} y={y3 - 24} fontSize={10}>
-        Ø{dFaBot}a{aFaBot}
+      <Tag n={stirMark} x={colX + cw + 14} y={y0 + hs.com * 0.18} />
+      <text x={colX + cw + 24} y={y0 + hs.com * 0.18 + 4} fontSize={10}>
+        Ø{inp.dStirrup}a{inp.aStirrup}
       </text>
-      <Tag n={faTop} x={ox + bw * 0.62} y={y3 - 28} />
-      <text x={ox + bw * 0.62 + 12} y={y3 - 24} fontSize={10}>
-        Ø{dFaTop}a{aFaTop}
+      <Tag n={markLong} x={ox + bw * 0.22} y={yLong - 16} />
+      <text x={ox + bw * 0.22 + 12} y={yLong - 12} fontSize={10}>
+        {axis === 'x' ? 'FaX' : 'FaY'} {nLine}Ø{dLine}a{aLine}
+      </text>
+      <Tag n={markTrans} x={ox + bw * 0.62} y={yTrans - 16} />
+      <text x={ox + bw * 0.62 + 12} y={yTrans - 12} fontSize={10}>
+        {axis === 'x' ? 'FaY' : 'FaX'} {nDot}Ø{dDot}a{aDot}
       </text>
 
       <text x={ox + bw + 8} y={y4 - 2} fontSize={9}>
         LỚP BÊ TÔNG LÓT MÓNG
       </text>
 
-      <HDim x1={ox} x2={ox + cover * s} y={y4 + sandH + 18} label={cover} below />
-      <HDim x1={ox + cover * s} x2={colX} y={y4 + sandH + 18} label={Math.round(leftMm - cover)} below />
+      <HDim x1={ox} x2={ox + cover} y={y4 + sandH + 18} label={inp.coverBase} below />
+      <HDim x1={ox + cover} x2={colX} y={y4 + sandH + 18} label={Math.round(leftMm - inp.coverBase)} below />
       <HDim x1={colX} x2={colX + cw} y={y4 + sandH + 18} label={colMm} below />
       <HDim
         x1={colX + cw}
-        x2={ox + bw - cover * s}
+        x2={ox + bw - cover}
         y={y4 + sandH + 18}
-        label={Math.round(widthMm - leftMm - colMm - cover)}
+        label={Math.round(widthMm - leftMm - colMm - inp.coverBase)}
         below
       />
-      <HDim x1={ox + bw - cover * s} x2={ox + bw} y={y4 + sandH + 18} label={cover} below />
+      <HDim x1={ox + bw - cover} x2={ox + bw} y={y4 + sandH + 18} label={inp.coverBase} below />
       <HDim x1={ox} x2={ox + bw} y={y4 + sandH + 36} label={widthMm} below />
 
-      <VDim x={ox - 22} y1={y3} y2={y4} label={lining} />
-      <VDim x={ox - 22} y1={y2} y2={y3} label={hDm} />
-      <VDim x={ox - 22} y1={y1} y2={y2} label={hCm} />
+      <VDim x={ox - 22} y1={y3} y2={y4} label={inp.lining} />
+      <VDim x={ox - 22} y1={y2} y2={y3} label={inp.hDm} />
+      <VDim x={ox - 22} y1={y1} y2={y2} label={inp.hCm} />
       <VDim x={ox - 44} y1={y0} y2={y3} label={totalH} />
 
       <Level x={ox + bw + 8} y={y0} text={fmtLevel(0)} />
-      <Level x={ox + bw + 8} y={y0 - cdn * s} text={fmtLevel(cdn)} />
+      <Level x={ox + bw + 8} y={y0 - inp.cdn * s} text={fmtLevel(inp.cdn)} />
       <line
         x1={ox}
         x2={ox + bw}
-        y1={y0 - cdtn * s}
-        y2={y0 - cdtn * s}
+        y1={y0 - inp.cdtn * s}
+        y2={y0 - inp.cdtn * s}
         stroke="#c33"
         strokeDasharray="5 3"
       />
-      <text x={ox + bw + 48} y={y0 - cdtn * s + 3} fontSize={10} fill="#c33">
-        {fmtLevel(cdtn)}
+      <text x={ox + bw + 48} y={y0 - inp.cdtn * s + 3} fontSize={10} fill="#c33">
+        {fmtLevel(inp.cdtn)}
       </text>
-      <Level x={ox + bw + 8} y={y3} text={fmtLevel(cdm)} />
+      <Level x={ox + bw + 8} y={y3} text={fmtLevel(result.cdm)} />
     </svg>
   )
 }
+
 
 function PlanDrawing({
   inp,
@@ -370,8 +403,9 @@ function PlanDrawing({
   const cy = oy + inp.y1 * s
   const cw = inp.xCo * s
   const ch = inp.yCo * s
-  const nx = Math.min(12, result.nMeshY)
-  const ny = Math.min(12, result.nMeshX)
+  const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
+  const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
+  const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
 
   return (
     <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
@@ -385,24 +419,44 @@ function PlanDrawing({
       <line x1={ox} y1={oy + h} x2={cx} y2={cy + ch} stroke="#666" />
       <line x1={ox + w} y1={oy + h} x2={cx + cw} y2={cy + ch} stroke="#666" />
 
-      {Array.from({ length: nx }).map((_, i) => {
-        const x = ox + 10 + (i * (w - 20)) / Math.max(nx - 1, 1)
-        return <line key={`x${i}`} x1={x} y1={oy + 8} x2={x} y2={oy + h - 8} stroke="#333" strokeWidth={0.8} />
+      {nx.map((mm, i) => {
+        const x = ox + mm * s
+        return (
+          <line
+            key={`x${i}`}
+            x1={x}
+            y1={oy + inp.coverBase * s}
+            x2={x}
+            y2={oy + h - inp.coverBase * s}
+            stroke="#333"
+            strokeWidth={Math.max(0.7, inp.dFaY / 16)}
+          />
+        )
       })}
-      {Array.from({ length: ny }).map((_, i) => {
-        const y = oy + 10 + (i * (h - 20)) / Math.max(ny - 1, 1)
-        return <line key={`y${i}`} x1={ox + 8} y1={y} x2={ox + w - 8} y2={y} stroke="#333" strokeWidth={0.8} />
+      {ny.map((mm, i) => {
+        const y = oy + mm * s
+        return (
+          <line
+            key={`y${i}`}
+            x1={ox + inp.coverBase * s}
+            y1={y}
+            x2={ox + w - inp.coverBase * s}
+            y2={y}
+            stroke="#333"
+            strokeWidth={Math.max(0.7, inp.dFaX / 16)}
+          />
+        )
       })}
 
-      {Array.from({ length: Math.min(result.nCol, 16) }).map((_, i) => {
-        const cols = Math.max(2, inp.cx)
-        const rows = Math.max(2, inp.cy)
-        const col = i % cols
-        const row = Math.floor(i / cols) % rows
-        const x = cx + 8 + (col * (cw - 16)) / Math.max(cols - 1, 1)
-        const y = cy + 8 + (row * (ch - 16)) / Math.max(rows - 1, 1)
-        return <circle key={i} cx={x} cy={y} r={3} fill="#111" />
-      })}
+      {colDots.map((p, i) => (
+        <circle
+          key={`c${i}`}
+          cx={cx + p.x * s}
+          cy={cy + p.y * s}
+          r={Math.max(2.4, inp.dMain / 8)}
+          fill="#111"
+        />
+      ))}
 
       <line x1={ox - 8} y1={oy + h / 2} x2={ox + w + 8} y2={oy + h / 2} stroke="#111" strokeDasharray="8 4" />
       <text x={ox - 18} y={oy + h / 2 - 4} fontSize={11} fontWeight={700}>
@@ -437,15 +491,15 @@ function PlanDrawing({
 
       <Tag n={1} x={ox + 24} y={oy + 22} />
       <text x={ox + 36} y={oy + 26} fontSize={10}>
-        Ø{inp.dFaX}a{inp.aFaX}
+        FaX {result.nMeshX}Ø{inp.dFaX}a{inp.aFaX}
       </text>
-      <Tag n={2} x={ox + w - 70} y={oy + 22} />
-      <text x={ox + w - 58} y={oy + 26} fontSize={10}>
-        Ø{inp.dFaY}a{inp.aFaY}
+      <Tag n={2} x={ox + w - 90} y={oy + 22} />
+      <text x={ox + w - 78} y={oy + 26} fontSize={10}>
+        FaY {result.nMeshY}Ø{inp.dFaY}a{inp.aFaY}
       </text>
       <Tag n={3} x={cx + cw / 2} y={cy + ch / 2} />
       <text x={cx + cw / 2 + 12} y={cy + ch / 2 + 4} fontSize={10}>
-        {result.nCol}Ø{inp.dMain}
+        Cx×Cy {inp.cx}×{inp.cy} = {result.nCol}Ø{inp.dMain}
       </text>
 
       {inp.fType === 'tram' &&
@@ -533,68 +587,14 @@ function DetailCallouts({ inp, result }: { inp: Inputs; result: CalcResult }) {
 
 export function ShopDrawing({ inp, result, lang }: Props) {
   const L = t[lang]
-  const faBot = inp.bottomLayerX ? 1 : 2
-  const faTop = inp.bottomLayerX ? 2 : 1
 
   return (
     <div className="shop-sheet" id="shop-sheet">
       <h1 className="shop-title">{L.resultTitle}</h1>
       <div className="shop-grid">
         <DetailCallouts inp={inp} result={result} />
-        <SectionDrawing
-          widthMm={inp.xMong}
-          colMm={inp.xCo}
-          leftMm={inp.x1}
-          lining={inp.lining}
-          hDm={inp.hDm}
-          hCm={inp.hCm}
-          hCom={inp.hCom}
-          cover={inp.coverBase}
-          nCol={result.nCol}
-          dMain={inp.dMain}
-          dStirrup={inp.dStirrup}
-          aStirrup={inp.aStirrup}
-          faBottom={faBot}
-          faTop={faTop}
-          nBottom={result.nMeshX}
-          dFaBot={inp.bottomLayerX ? inp.dFaX : inp.dFaY}
-          aFaBot={inp.bottomLayerX ? inp.aFaX : inp.aFaY}
-          dFaTop={inp.bottomLayerX ? inp.dFaY : inp.dFaX}
-          aFaTop={inp.bottomLayerX ? inp.aFaY : inp.aFaX}
-          cdn={inp.cdn}
-          cdtn={inp.cdtn}
-          cdm={result.cdm}
-          title={L.sectionAA}
-          sand={inp.fType === 'sand'}
-          tram={inp.fType === 'tram'}
-        />
-        <SectionDrawing
-          widthMm={inp.yMong}
-          colMm={inp.yCo}
-          leftMm={inp.y1}
-          lining={inp.lining}
-          hDm={inp.hDm}
-          hCm={inp.hCm}
-          hCom={inp.hCom}
-          cover={inp.coverBase}
-          nCol={result.nCol}
-          dMain={inp.dMain}
-          dStirrup={inp.dStirrup}
-          aStirrup={inp.aStirrup}
-          faBottom={faBot}
-          faTop={faTop}
-          nBottom={result.nMeshY}
-          dFaBot={inp.bottomLayerX ? inp.dFaX : inp.dFaY}
-          aFaBot={inp.bottomLayerX ? inp.aFaX : inp.aFaY}
-          dFaTop={inp.bottomLayerX ? inp.dFaY : inp.dFaX}
-          aFaTop={inp.bottomLayerX ? inp.aFaY : inp.aFaX}
-          cdn={inp.cdn}
-          cdtn={inp.cdtn}
-          cdm={result.cdm}
-          title={L.sectionBB}
-          sand={inp.fType === 'sand'}
-          tram={inp.fType === 'tram'}
-        />
+        <SectionDrawing axis="x" inp={inp} result={result} title={L.sectionAA} />
+        <SectionDrawing axis="y" inp={inp} result={result} title={L.sectionBB} />
       </div>
       <div className="shop-grid shop-grid-2">
         <PlanDrawing inp={inp} result={result} title={L.plan(inp.name, inp.qty)} />

@@ -1,4 +1,5 @@
 import type { Inputs } from '../types'
+import { faceStations, meshStations } from '../lib/calc'
 
 type Props = {
   inp: Inputs
@@ -61,23 +62,35 @@ export function Schematic({ inp }: Props) {
       <rect x={colX} y={yColTop} width={colW} height={hCom} fill="#4a4a4a" stroke={outline} />
       <rect x={x0 - 6} y={yBaseBot} width={baseW + 12} height={hLot} fill="#6b6b6b" stroke={outline} />
 
-      <line x1={colX + 8} x2={colX + 8} y1={yColTop + 8} y2={yBaseBot - 8} stroke={steel} strokeWidth={2} />
-      <line x1={colX + colW - 8} x2={colX + colW - 8} y1={yColTop + 8} y2={yBaseBot - 8} stroke={steel} strokeWidth={2} />
-      {[0, 1, 2, 3, 4].map((i) => (
+      {faceStations(inp.cy, inp.yCo, inp.coverCol).map((mm, i) => {
+        const x = colX + mm * s
+        const dir = x < colX + colW / 2 ? -1 : 1
+        const hook = 12
+        return (
+          <path
+            key={`cy${i}`}
+            d={`M ${x} ${yColTop + 6} L ${x} ${yBaseBot - 8} L ${x + dir * hook} ${yBaseBot - 8}`}
+            fill="none"
+            stroke={steel}
+            strokeWidth={2}
+          />
+        )
+      })}
+      {Array.from({ length: Math.min(6, Math.max(2, Math.floor(inp.hCom / inp.aStirrup))) }).map((_, i) => (
         <line
-          key={i}
-          x1={colX + 8}
-          x2={colX + colW - 8}
-          y1={yColTop + 24 + i * Math.max(18, hCom / 6)}
-          y2={yColTop + 24 + i * Math.max(18, hCom / 6)}
+          key={`st${i}`}
+          x1={colX + 6}
+          x2={colX + colW - 6}
+          y1={yColTop + 16 + i * Math.max(14, (hCom - 24) / 5)}
+          y2={yColTop + 16 + i * Math.max(14, (hCom - 24) / 5)}
           stroke={steel}
           strokeWidth={1}
           opacity={0.8}
         />
       ))}
       <line x1={x0 + 10} x2={x0 + baseW - 10} y1={yBaseBot - 10} y2={yBaseBot - 10} stroke={steel} strokeWidth={2} />
-      {Array.from({ length: 8 }).map((_, i) => (
-        <circle key={i} cx={x0 + 18 + i * ((baseW - 36) / 7)} cy={yBaseBot - 10} r={2.2} fill={steel} />
+      {meshStations(inp.yMong, inp.coverBase, inp.aFaX).map((mm, i) => (
+        <circle key={`fa${i}`} cx={x0 + mm * s} cy={yBaseBot - 10} r={2.2} fill={steel} />
       ))}
 
       <text x={W - pad + 8} y={yColTop + hCom / 2} fill={yellow} fontSize={11} textAnchor="end">

@@ -96,16 +96,59 @@ function roundTo(n: number, step: number): number {
   return Math.round(n / step) * step
 }
 
-function meshCount(span: number, cover: number, spacing: number): number {
+/** Positions of mesh bars (mm from the start of the span), first/last at cover. */
+export function meshStations(span: number, cover: number, spacing: number): number[] {
   const clear = span - 2 * cover
-  if (clear <= 0 || spacing <= 0) return 0
-  return Math.max(2, Math.floor(clear / spacing) + 1)
+  if (clear <= 0 || spacing <= 0) return [span / 2]
+  const n = Math.max(2, Math.floor(clear / spacing) + 1)
+  const pts: number[] = []
+  for (let i = 0; i < n; i++) {
+    const p = cover + i * spacing
+    if (p > span - cover + 0.5) break
+    pts.push(p)
+  }
+  if (pts.length === 0) pts.push(span / 2)
+  if (pts.length === 1) pts.push(Math.max(pts[0], span - cover))
+  return pts
+}
+
+function meshCount(span: number, cover: number, spacing: number): number {
+  return meshStations(span, cover, spacing).length
 }
 
 function colBarCount(cx: number, cy: number): number {
   const nx = Math.max(2, cx)
   const ny = Math.max(2, cy)
   return 2 * (nx + ny - 2)
+}
+
+/** Evenly spaced bars on one column face, including corners, inside cover. */
+export function faceStations(count: number, size: number, cover: number): number[] {
+  const n = Math.max(2, Math.round(count) || 2)
+  const inner = Math.max(size - 2 * cover, 1)
+  return Array.from({ length: n }, (_, i) => cover + (i * inner) / (n - 1))
+}
+
+/** Perimeter column bars in local coordinates (origin at column corner). */
+export function columnPerimeterPts(
+  cx: number,
+  cy: number,
+  width: number,
+  height: number,
+  cover: number,
+): { x: number; y: number }[] {
+  const xs = faceStations(cx, width, cover)
+  const ys = faceStations(cy, height, cover)
+  const pts: { x: number; y: number }[] = []
+  for (const x of xs) {
+    pts.push({ x, y: ys[0] })
+    pts.push({ x, y: ys[ys.length - 1] })
+  }
+  for (let j = 1; j < ys.length - 1; j++) {
+    pts.push({ x: xs[0], y: ys[j] })
+    pts.push({ x: xs[xs.length - 1], y: ys[j] })
+  }
+  return pts
 }
 
 export function applyGeometry(i: Inputs, edited?: keyof Inputs): Inputs {
