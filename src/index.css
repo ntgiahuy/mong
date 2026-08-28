@@ -279,6 +279,7 @@ p {
   width: 100%;
   max-width: 1684px;
   box-sizing: border-box;
+  overflow-x: auto;
 }
 
 .shop-title {
@@ -292,23 +293,28 @@ p {
   color: #111;
 }
 
-.shop-a2-top {
+.shop-cols {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
+  grid-template-columns: max-content minmax(240px, 1fr);
   gap: 8px;
   align-items: start;
 }
 
-.shop-a2-bottom {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 8px;
-  margin-top: 8px;
-  align-items: start;
+.shop-col-x,
+.shop-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
 .cad {
+  display: block;
   background: #fff;
+  width: auto;
+  max-width: none;
+  height: auto;
+  flex: none;
 }
 
 .schedule h2 {
@@ -379,6 +385,7 @@ p {
   .side {
     position: static;
   }
+  .shop-cols,
   .shop-a2-top,
   .shop-a2-bottom {
     grid-template-columns: 1fr;
@@ -410,10 +417,7 @@ p {
     max-width: none;
     min-height: 0;
   }
-  .shop-a2-top {
-    grid-template-columns: 1.15fr 1fr !important;
-  }
-  .shop-a2-bottom {
-    grid-template-columns: 1.15fr 0.85fr !important;
+  .shop-cols {
+    grid-template-columns: max-content minmax(200px, 1fr) !important;
   }
 }

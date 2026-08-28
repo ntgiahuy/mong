@@ -174,16 +174,35 @@ function BarShape({ row }: { row: RebarRow }) {
   )
 }
 
+function sheetScale(inp: Inputs): number {
+  const totalH = inp.hCom + inp.hCm + inp.hDm
+  const extra = inp.lining + (inp.fType === 'sand' ? 80 : 0)
+  return Math.min(
+    300 / Math.max(inp.xMong, 1),
+    210 / Math.max(inp.yMong, 1),
+    230 / Math.max(totalH + extra, 1),
+  )
+}
+
+const ALIGN_OX = 90
+const ALIGN_W = 600
+
 function SectionDrawing({
   axis,
   inp,
   result,
   title,
+  s: sIn,
+  ox: oxIn,
+  viewW,
 }: {
   axis: 'x' | 'y'
   inp: Inputs
   result: CalcResult
   title: string
+  s?: number
+  ox?: number
+  viewW?: number
 }) {
   const widthMm = axis === 'x' ? inp.xMong : inp.yMong
   const colMm = axis === 'x' ? inp.xCo : inp.yCo
@@ -209,9 +228,10 @@ function SectionDrawing({
   const show34 = axis === 'x'
 
   const totalH = inp.hCom + inp.hCm + inp.hDm
-  const W = show34 ? 560 : 430
-  const s = Math.min(250 / widthMm, 250 / (totalH + inp.lining + (inp.fType === 'sand' ? 80 : 0)))
-  const ox = 70
+  const autoS = Math.min(250 / widthMm, 250 / (totalH + inp.lining + (inp.fType === 'sand' ? 80 : 0)))
+  const s = sIn ?? autoS
+  const ox = oxIn ?? 70
+  const W = viewW ?? (show34 ? 560 : 430)
   const oy = 22
   const bw = widthMm * s
   const cw = colMm * s
@@ -249,7 +269,13 @@ function SectionDrawing({
   const H = Math.max(captionY + 16, show34 ? y0 + 220 : captionY + 16)
 
   return (
-    <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
+    <svg
+      className="cad"
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      preserveAspectRatio="xMinYMin meet"
+    >
       <rect x={colX} y={y0} width={cw} height={hs.com} fill="#e9e9e9" stroke="#111" strokeWidth={1.4} />
       <polygon
         points={`${ox},${y2} ${ox + bw},${y2} ${colX + cw},${y1} ${colX},${y1}`}
@@ -449,17 +475,24 @@ function PlanDrawing({
   inp,
   result,
   title,
+  s: sIn,
+  ox: oxIn,
+  viewW,
 }: {
   inp: Inputs
   result: CalcResult
   title: string
+  s?: number
+  ox?: number
+  viewW?: number
 }) {
-  const barFaX = result.bars.find((b) => b.label.includes('FaX'))
+  const bar1 = result.bars.find((b) => b.mark === 1)
   const barFaY = result.bars.find((b) => b.label.includes('FaY'))
-  const W = 470
-  const s = Math.min(280 / inp.xMong, 230 / inp.yMong)
-  const ox = 88
-  const oy = 28
+  const s = sIn ?? Math.min(280 / inp.xMong, 230 / inp.yMong)
+  const ox = oxIn ?? 88
+  const W = viewW ?? 470
+  const head = 56
+  const oy = head
   const w = inp.xMong * s
   const h = inp.yMong * s
   const cx = ox + inp.x1 * s
@@ -469,11 +502,18 @@ function PlanDrawing({
   const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
   const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
-  const captionY = oy + h + 86
+  const captionY = oy + h + 68
   const H = captionY + 16
+  const bar1Y = 22
 
   return (
-    <svg className="cad" viewBox={`0 0 ${W} ${H}`} width="100%">
+    <svg
+      className="cad"
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      preserveAspectRatio="xMinYMin meet"
+    >
       <rect x={ox} y={oy} width={w} height={h} fill="#f3f3f3" stroke="#111" strokeWidth={1.5} />
       <rect x={cx} y={cy} width={cw} height={ch} fill="#e4e4e4" stroke="#111" strokeWidth={1.5} />
       <line x1={ox} y1={oy} x2={cx} y2={cy} stroke="#666" />
@@ -527,8 +567,8 @@ function PlanDrawing({
       <text x={ox + w + 12} y={oy + h / 2 - 4} fontSize={11} fontWeight={700}>
         A
       </text>
-      <line x1={ox + w / 2} y1={oy - 8} x2={ox + w / 2} y2={oy + h + 8} stroke="#111" strokeDasharray="8 4" />
-      <text x={ox + w / 2 + 4} y={oy - 10} fontSize={11} fontWeight={700}>
+      <line x1={ox + w / 2} y1={oy - 6} x2={ox + w / 2} y2={oy + h + 8} stroke="#111" strokeDasharray="8 4" />
+      <text x={ox + w / 2 + 4} y={oy - 8} fontSize={11} fontWeight={700}>
         B
       </text>
       <text x={ox + w / 2 + 4} y={oy + h + 18} fontSize={11} fontWeight={700}>
@@ -551,37 +591,37 @@ function PlanDrawing({
       <VDim x={ox + w + 18} y1={cy} y2={cy + ch} label={inp.yCo} />
       <VDim x={ox + w + 40} y1={oy} y2={oy + h} label={inp.yMong} />
 
-      <Tag n={barFaX?.mark ?? 1} x={ox + 20} y={oy + h - 18} />
-      <text x={ox + 32} y={oy + h - 14} fontSize={10} fontWeight={700}>
-        {barFaX?.n1 ?? result.nMeshX}Ø{inp.dFaX}a{inp.aFaX} (X)
-      </text>
-      <Tag n={barFaY?.mark ?? 2} x={ox + w - 22} y={oy + 20} />
-      <text x={ox + w - 34} y={oy + 24} textAnchor="end" fontSize={10} fontWeight={700}>
-        {barFaY?.n1 ?? result.nMeshY}Ø{inp.dFaY}a{inp.aFaY} (Y)
-      </text>
-
-      {barFaX && (
+      {bar1 && (
         <g>
           <line
             x1={ox}
-            y1={oy + h + 62}
+            y1={bar1Y}
             x2={ox + w}
-            y2={oy + h + 62}
+            y2={bar1Y}
             stroke="#111"
             strokeWidth={2.2}
           />
           {inp.hooked && (
             <>
-              <path d={`M ${ox} ${oy + h + 62} V ${oy + h + 48}`} fill="none" stroke="#111" strokeWidth={2.2} />
-              <path d={`M ${ox + w} ${oy + h + 62} V ${oy + h + 48}`} fill="none" stroke="#111" strokeWidth={2.2} />
+              <path d={`M ${ox} ${bar1Y} V ${bar1Y + 14}`} fill="none" stroke="#111" strokeWidth={2.2} />
+              <path d={`M ${ox + w} ${bar1Y} V ${bar1Y + 14}`} fill="none" stroke="#111" strokeWidth={2.2} />
             </>
           )}
-          <Tag n={barFaX.mark} x={ox - 16} y={oy + h + 62} />
-          <text x={ox + w / 2} y={oy + h + 56} textAnchor="middle" fontSize={9} fontWeight={700}>
-            {barFaX.n1}Ø{barFaX.d}-L={barFaX.length} phương X
+          <Tag n={bar1.mark} x={ox - 16} y={bar1Y} />
+          <text x={ox + w / 2} y={bar1Y - 8} textAnchor="middle" fontSize={10} fontWeight={700}>
+            {bar1.n1}Ø{bar1.d}-L={bar1.length} phương X
           </text>
         </g>
       )}
+
+      <Tag n={bar1?.mark ?? 1} x={ox + 20} y={oy + 18} />
+      <text x={ox + 32} y={oy + 22} fontSize={10} fontWeight={700}>
+        {bar1?.n1 ?? result.nMeshX}Ø{bar1?.d ?? inp.dFaX}a{inp.bottomLayerX ? inp.aFaX : inp.aFaY} (X)
+      </text>
+      <Tag n={barFaY?.mark ?? 2} x={ox + w - 22} y={oy + 20} />
+      <text x={ox + w - 34} y={oy + 24} textAnchor="end" fontSize={10} fontWeight={700}>
+        {barFaY?.n1 ?? result.nMeshY}Ø{inp.dFaY}a{inp.aFaY} (Y)
+      </text>
       {barFaY && (
         <g>
           <line
@@ -628,17 +668,42 @@ function PlanDrawing({
 
 export function ShopDrawing({ inp, result, lang }: Props) {
   const L = t[lang]
+  const s = sheetScale(inp)
 
   return (
     <div className="shop-sheet" id="shop-sheet">
       <h1 className="shop-title">{L.resultTitle}</h1>
-      <div className="shop-a2-top">
-        <SectionDrawing axis="x" inp={inp} result={result} title={L.sectionAA} />
-        <SectionDrawing axis="y" inp={inp} result={result} title={L.sectionBB} />
-      </div>
-      <div className="shop-a2-bottom">
-        <PlanDrawing inp={inp} result={result} title={L.plan(inp.name, inp.qty)} />
-        <div className="schedule schedule-compact">
+      <div className="shop-cols">
+        <div className="shop-col-x">
+          <SectionDrawing
+            axis="x"
+            inp={inp}
+            result={result}
+            title={L.sectionAA}
+            s={s}
+            ox={ALIGN_OX}
+            viewW={ALIGN_W}
+          />
+          <PlanDrawing
+            inp={inp}
+            result={result}
+            title={L.plan(inp.name, inp.qty)}
+            s={s}
+            ox={ALIGN_OX}
+            viewW={ALIGN_W}
+          />
+        </div>
+        <div className="shop-col-side">
+          <SectionDrawing
+            axis="y"
+            inp={inp}
+            result={result}
+            title={L.sectionBB}
+            s={s}
+            ox={ALIGN_OX}
+            viewW={ALIGN_W}
+          />
+          <div className="schedule schedule-compact">
           <h2>{L.table}</h2>
           <div className="schedule-meta">
             <strong>{inp.name}</strong>
@@ -717,6 +782,7 @@ export function ShopDrawing({ inp, result, lang }: Props) {
               - Bê tông lót: {result.concreteLiningExpr}
             </li>
           </ul>
+        </div>
         </div>
       </div>
     </div>
