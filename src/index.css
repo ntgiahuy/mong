@@ -378,7 +378,7 @@ p {
 .shop-sheet {
   background: #fff;
   color: #111;
-  padding: 10px 28px 14px 14px;
+  padding: 10px 44px 16px 14px;
   font-family: Arial, 'Segoe UI', sans-serif;
   width: 1782px;
   max-width: none;
@@ -411,11 +411,12 @@ p {
 
 .shop-a2 {
   display: grid;
-  grid-template-columns: max-content 220px max-content;
+  grid-template-columns: max-content 220px max-content minmax(36px, 1fr);
   grid-template-rows: auto auto;
   column-gap: 0;
   row-gap: 8px;
   align-items: start;
+  justify-items: start;
   justify-content: start;
 }
 
@@ -435,7 +436,7 @@ p {
 .shop-bb {
   grid-column: 3;
   grid-row: 1;
-  margin-left: -40px;
+  margin-left: -72px;
 }
 
 .shop-plan {
@@ -447,7 +448,10 @@ p {
   grid-column: 3;
   grid-row: 2;
   min-width: 0;
-  margin-left: -40px;
+  max-width: 820px;
+  margin-left: -72px;
+  padding-right: 8px;
+  box-sizing: border-box;
 }
 
 .cad {
@@ -476,27 +480,53 @@ p {
 
 .schedule table {
   width: 100%;
-  border-collapse: collapse;
+  max-width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 10px;
   color: #111;
+  border: 1.5px solid #111;
+  box-sizing: border-box;
 }
 
 .schedule th,
 .schedule td {
-  border: 1px solid #111;
-  padding: 1px 2px;
+  border: 0;
+  border-right: 1px solid #111;
+  border-bottom: 1px solid #111;
+  padding: 3px 4px;
   text-align: center;
   vertical-align: middle;
+  word-break: break-word;
+}
+
+.schedule tr > *:last-child {
+  border-right: 0;
+}
+
+.schedule tbody tr:last-child th,
+.schedule tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.schedule table:not(.sum-table) th:nth-child(2) {
+  width: 30%;
+}
+
+.schedule .sum-table th:last-child {
+  width: 32%;
 }
 
 .schedule .shape-cell {
-  padding: 0;
+  padding: 2px 0;
 }
 
 .schedule .shape-cell svg {
   display: block;
   margin: 2px auto;
-  overflow: visible;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .sum-table {
@@ -569,7 +599,7 @@ p {
     max-width: none !important;
     overflow: visible !important;
     background: #fff !important;
-    padding: 10px 28px 14px 14px !important;
+    padding: 10px 44px 16px 14px !important;
     border: 2px solid #111 !important;
     box-shadow: none !important;
     -webkit-print-color-adjust: exact;
@@ -581,8 +611,9 @@ p {
   }
   .shop-a2 {
     display: grid !important;
-    grid-template-columns: max-content 220px max-content !important;
+    grid-template-columns: max-content 220px max-content minmax(36px, 1fr) !important;
     grid-template-rows: auto auto !important;
+    justify-items: start !important;
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -598,7 +629,7 @@ p {
   .shop-bb {
     grid-column: 3 !important;
     grid-row: 1 !important;
-    margin-left: -40px !important;
+    margin-left: -72px !important;
   }
   .shop-plan {
     grid-column: 1 !important;
@@ -607,6 +638,8 @@ p {
   .shop-sched {
     grid-column: 3 !important;
     grid-row: 2 !important;
-    margin-left: -40px !important;
+    margin-left: -72px !important;
+    max-width: 820px !important;
+    padding-right: 8px !important;
   }
 }

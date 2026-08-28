@@ -24,18 +24,20 @@ const CLONE_CSS = `
   border: 2px solid #111 !important;
   box-shadow: none !important;
   background: #fff !important;
+  padding: 10px 44px 16px 14px !important;
 }
 .shop-a2 {
   display: grid !important;
-  grid-template-columns: max-content 220px max-content !important;
+  grid-template-columns: max-content 220px max-content minmax(36px, 1fr) !important;
   grid-template-rows: auto auto !important;
   column-gap: 0 !important;
+  justify-items: start !important;
 }
 .shop-aa { grid-column: 1 !important; grid-row: 1 !important; margin-left: 0 !important; }
 .shop-callouts { grid-column: 2 !important; grid-row: 1 !important; margin-left: -48px !important; }
-.shop-bb { grid-column: 3 !important; grid-row: 1 !important; margin-left: -40px !important; }
+.shop-bb { grid-column: 3 !important; grid-row: 1 !important; margin-left: -72px !important; }
 .shop-plan { grid-column: 1 !important; grid-row: 2 !important; margin-left: 0 !important; }
-.shop-sched { grid-column: 3 !important; grid-row: 2 !important; margin-left: -40px !important; }
+.shop-sched { grid-column: 3 !important; grid-row: 2 !important; margin-left: -72px !important; max-width: 820px !important; padding-right: 8px !important; }
 `
 
 export async function exportShopPdf(el: HTMLElement, filename: string): Promise<void> {

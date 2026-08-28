@@ -965,7 +965,11 @@ export function ShopDrawing({ inp, result, lang }: Props) {
                   <th>Đường kính</th>
                   <th>Trọng lượng (kg)</th>
                   <th>Chiều dài (m)</th>
-                  <th>Số lượng thép 11.7m (cây)</th>
+                  <th>
+                    Số lượng thép
+                    <br />
+                    11.7m (cây)
+                  </th>
                 </tr>
               </thead>
               <tbody>
