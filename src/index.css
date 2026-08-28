@@ -1,0 +1,425 @@
+@import 'tailwindcss';
+
+:root {
+  --bg: #3a3a3a;
+  --panel: #4a4a4a;
+  --line: #8a8a8a;
+  --text: #f4f4f4;
+  --muted: #d8d8d8;
+  --green: #39ff14;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 12px 48px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.topbar h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.topbar p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 12px;
+  align-items: start;
+}
+
+.form-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 8px 10px 10px;
+  margin: 0;
+}
+
+.panel legend {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 6px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  font-size: 13px;
+}
+
+.field-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.num {
+  width: 72px;
+  height: 24px;
+  border: 0;
+  padding: 0 6px;
+  background: #fff;
+  color: #111;
+  font-size: 13px;
+}
+
+.num-wide {
+  width: 88px;
+}
+
+.unit,
+.a-lab,
+.minus {
+  font-size: 12px;
+  color: #fff;
+}
+
+.radios {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.radios.wrap {
+  grid-template-columns: 1fr;
+}
+
+.radios label,
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  min-height: 26px;
+}
+
+.dia {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dia select {
+  height: 24px;
+  background: #fff;
+  color: #111;
+  border: 0;
+}
+
+.phi {
+  font-size: 15px;
+}
+
+.live {
+  font-size: 12px;
+  color: #f0f0a8;
+  margin-top: 4px;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  top: 8px;
+}
+
+.schematic {
+  border: 1px solid var(--line);
+  background: #2f2f2f;
+}
+
+.go {
+  min-height: 56px;
+  background: #1c1c1c;
+  color: var(--green);
+  border: 1px solid #0a0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  text-shadow: 0 0 10px rgba(57, 255, 20, 0.55);
+  cursor: pointer;
+  padding: 10px 8px;
+}
+
+.go:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.ghost,
+.en-btn {
+  background: #222;
+  color: #fff;
+  border: 1px solid #777;
+  height: 32px;
+  padding: 0 10px;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.en-btn {
+  min-width: 44px;
+}
+
+.banner {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #c66;
+  background: #5a3030;
+}
+
+.result-wrap {
+  margin-top: 18px;
+  background: #cfcfcf;
+  padding: 12px;
+}
+
+.result-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.shop-sheet {
+  background: #fff;
+  color: #111;
+  padding: 16px 18px 24px;
+  font-family: Arial, 'Segoe UI', sans-serif;
+}
+
+.shop-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  border-bottom: 2px solid #111;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr 1fr;
+  gap: 8px;
+}
+
+.shop-grid-2 {
+  grid-template-columns: 1fr 1.2fr;
+  margin-top: 8px;
+}
+
+.cad {
+  background: #fff;
+}
+
+.schedule h2 {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: #111;
+}
+
+.schedule-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.schedule table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  color: #111;
+}
+
+.schedule th,
+.schedule td {
+  border: 1px solid #111;
+  padding: 3px 4px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.schedule .shape-cell {
+  padding: 0;
+}
+
+.sum-table {
+  margin-top: 8px;
+}
+
+.qty-notes {
+  margin: 8px 0 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #111;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 20;
+}
+
+.modal-card {
+  background: #2b2b2b;
+  border: 1px solid #888;
+  padding: 16px;
+  max-width: 640px;
+  width: 100%;
+}
+
+.modal-card p,
+.modal-card li {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.modal-card ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.embed-warn {
+  color: #f0d78c !important;
+}
+
+.modal-card textarea {
+  width: 100%;
+  margin-top: 10px;
+  background: #111;
+  color: #9f9;
+  border: 1px solid #555;
+  padding: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1024px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .side {
+    position: static;
+  }
+  .shop-grid,
+  .shop-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .form-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .topbar,
+  .workspace,
+  .result-toolbar,
+  .banner,
+  .modal {
+    display: none !important;
+  }
+  .result-wrap,
+  .shop-sheet {
+    background: #fff;
+    padding: 0;
+    box-shadow: none;
+  }
+}

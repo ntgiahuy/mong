@@ -1,0 +1,22 @@
+SHOP THÉP MÓNG — GỬI LÊN GITHUB PAGES
+=====================================
+
+Bộ file này đã build xong. Không cần npm / Node.
+
+1. Tạo repo trống trên GitHub (không tick Add README).
+2. Upload TOÀN BỘ nội dung thư mục này lên gốc repo:
+     .nojekyll
+     index.html
+     favicon.svg
+     assets/
+3. Vào repo: Settings → Pages
+     Source: Deploy from a branch
+     Branch: main
+     Folder: / (root)
+     Save
+4. Đợi ~1 phút, mở:
+     https://<ten-user>.github.io/<ten-repo>/
+
+Nhúng Blogger: dán iframe trỏ tới URL trên.
+
+Không mở index.html bằng double-click trên máy (file://). Phải qua GitHub Pages.
