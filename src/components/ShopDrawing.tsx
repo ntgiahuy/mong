@@ -10,7 +10,7 @@ type Props = {
 
 const OX = 78
 const RIGHT = 96
-const CALLOUT_W = 168
+const CALLOUT_W = 248
 const SHEET_W = 1782
 /** Pedestal shoulder under the column, each side (matches Xcot+0.1 / Ycot+0.1). */
 const SHOULDER_MM = 50
@@ -251,15 +251,15 @@ function Callouts({
   const oy = 22
   const stem = Math.max(80, (totalH - 100) * s)
   const hook = Math.max(16, Math.min(40, result.colHook * s * 0.5))
-  const pairW = 56
+  const pairW = 72
   const W = CALLOUT_W
-  const hoopW = 30
-  const hoopH = 48
-  const x2 = W - hook - 6
-  const x1 = x2 - pairW
+  const hoopW = 40
+  const hoopH = 62
+  const x1 = hook + 12
+  const x2 = x1 + pairW
   const y1 = oy
   const y2 = y1 + stem
-  const stirX = 8
+  const stirX = x2 + hook + 18
   const stirY = y2 - hoopH
   const lBot = y2 + hook + 20
   const H = Math.max(height, lBot, stirY + hoopH + 26)
@@ -287,13 +287,13 @@ function Callouts({
               strokeWidth={2.2}
               strokeLinecap="square"
             />
-            <Tag n={b.mark} x={(x1 + x2) / 2} y={ya + 12} />
+            <Tag n={b.mark} x={(x1 + x2) / 2} y={ya + 14} />
             <text
               x={(x1 + x2) / 2}
-              y={mid + 8}
-              fontSize={10}
+              y={mid + 10}
+              fontSize={11}
               fontWeight={700}
-              transform={`rotate(-90, ${(x1 + x2) / 2}, ${mid + 8})`}
+              transform={`rotate(-90, ${(x1 + x2) / 2}, ${mid + 10})`}
               textAnchor="middle"
             >
               {inp.cx}Ø{b.d}-L={b.length}
@@ -310,9 +310,9 @@ function Callouts({
       {stirrup && (
         <g>
           <line
-            x1={stirX + hoopW}
-            y1={stirY + hoopH / 2}
-            x2={x1}
+            x1={x2 + hook}
+            y1={y2}
+            x2={stirX}
             y2={stirY + hoopH / 2}
             stroke="#111"
             strokeWidth={0.9}
@@ -825,11 +825,11 @@ export function ShopDrawing({ inp, result, lang }: Props) {
         <span className="shop-sheet-size">KHỔ A2 NẰM</span>
       </h1>
       <div className="shop-a2">
-        <div className="shop-callouts">
-          <Callouts inp={inp} result={result} s={s} height={aa.H} />
-        </div>
         <div className="shop-aa">
           <SectionDrawing axis="x" inp={inp} result={result} title={L.sectionAA} s={s} />
+        </div>
+        <div className="shop-callouts">
+          <Callouts inp={inp} result={result} s={s} height={aa.H} />
         </div>
         <div className="shop-bb">
           <SectionDrawing axis="y" inp={inp} result={result} title={L.sectionBB} s={s} />

@@ -307,33 +307,33 @@ p {
 
 .shop-a2 {
   display: grid;
-  grid-template-columns: 168px max-content minmax(520px, 1fr);
+  grid-template-columns: max-content 248px minmax(480px, 1fr);
   grid-template-rows: auto auto;
-  column-gap: 2px;
+  column-gap: 4px;
   row-gap: 8px;
   align-items: start;
   justify-content: start;
 }
 
-.shop-callouts {
+.shop-aa {
   grid-column: 1;
   grid-row: 1;
-  justify-self: end;
 }
 
-.shop-aa {
+.shop-callouts {
   grid-column: 2;
   grid-row: 1;
+  justify-self: start;
 }
 
 .shop-bb {
   grid-column: 3;
   grid-row: 1;
-  margin-left: 20px;
+  margin-left: 16px;
 }
 
 .shop-plan {
-  grid-column: 2;
+  grid-column: 1;
   grid-row: 2;
 }
 
@@ -341,7 +341,7 @@ p {
   grid-column: 3;
   grid-row: 2;
   min-width: 0;
-  margin-left: 20px;
+  margin-left: 16px;
 }
 
 .cad {
@@ -453,7 +453,7 @@ p {
     min-height: 0;
   }
   .shop-a2 {
-    grid-template-columns: 168px max-content minmax(520px, 1fr) !important;
+    grid-template-columns: max-content 248px minmax(480px, 1fr) !important;
   }
   .shop-sheet {
     width: 1782px;
