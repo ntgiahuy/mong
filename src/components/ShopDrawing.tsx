@@ -224,7 +224,7 @@ function SectionDrawing({
   const sandH = inp.fType === 'sand' ? 18 : 0
   const cover = inp.coverBase * s
   const colCover = inp.coverCol * s
-  const yHook = y3 - cover
+  const yHook = y3 - 100 * s
   const barW = Math.max(1.8, inp.dMain / 8)
   const lineW = Math.max(1.4, dLine / 10)
   const dotR = Math.max(2.0, dDot / 5)

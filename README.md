@@ -65,6 +65,7 @@ Ymong*Xmong*Hdm
 
 Số thanh lưới đế: `floor((cạnh - 2*cover) / a) + 1`.
 Số thanh dọc cổ cột: `2 * (Cx + Cy - 2)` (tối thiểu 2 thanh mỗi phương).
+Thép chủ số 3 (L): đoạn thẳng `HCOM+HCM+HDM − 100 mm`, móc vuông góc `300 mm`.
 Đai: `floor(Hcom / a) + 1`, chu vi `2*(A+B) + 2*móc`.
 
 ## Nhúng vào Blogger

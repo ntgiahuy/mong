@@ -231,11 +231,10 @@ export function compute(i: Inputs): CalcResult {
   const stirrupL = 2 * (stirrupA + stirrupB) + 2 * stirrupHook
   const nStirrup = Math.max(2, Math.floor(Math.max(i.hCom - i.coverCol, 0) / i.aStirrup) + 1)
 
-  const colHook = roundTo(Math.max(250, 16 * i.dMain), 10)
-  const splice = 40 * i.dMain
-  const embed = i.hCm + i.hDm - i.coverBase
-  const straightA = i.hCom + embed + splice
-  const straightB = i.stagger ? straightA + 40 * i.dMain : straightA
+  const colHook = 300
+  const colStraightLen = Math.max(0, totalH - 100)
+  const straightA = colStraightLen
+  const straightB = i.stagger ? colStraightLen + 40 * i.dMain : colStraightLen
   const colStraight = i.stagger
     ? [roundTo(straightA, 10), roundTo(straightB, 10)]
     : [roundTo(straightA, 10)]
