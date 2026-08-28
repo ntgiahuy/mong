@@ -28,7 +28,16 @@ export default function App() {
 
   const iframeCode = `<iframe src="${typeof window !== 'undefined' ? window.location.href.split('#')[0] : ''}" width="100%" height="980" style="border:0;max-width:1200px" loading="lazy" allow="download"></iframe>`
 
-  async function runShop() {
+  function showShop() {
+    setPdfError('')
+    setShowResult(true)
+    if (result.errors.length) return
+    requestAnimationFrame(() => {
+      document.getElementById('shop-sheet')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+
+  async function downloadPdf() {
     if (result.errors.length) {
       setShowResult(true)
       return
@@ -43,7 +52,6 @@ export default function App() {
       setBusy(false)
       return
     }
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     try {
       const { exportShopPdf } = await import('./lib/pdf')
       await exportShopPdf(el, `${inp.name || 'mong'}-shop-thep.pdf`)
@@ -86,8 +94,8 @@ export default function App() {
         </div>
         <aside className="side">
           <Schematic inp={inp} />
-          <button type="button" className="go" disabled={busy} onClick={() => void runShop()}>
-            {busy ? L.exporting : L.action}
+          <button type="button" className="go" onClick={showShop}>
+            {L.action}
           </button>
         </aside>
       </div>
@@ -111,8 +119,8 @@ export default function App() {
       {showResult && result.errors.length === 0 && (
         <section className="result-wrap">
           <div className="result-toolbar">
-            <button type="button" className="ghost" onClick={() => void runShop()} disabled={busy}>
-              {L.download}
+            <button type="button" className="ghost" onClick={() => void downloadPdf()} disabled={busy}>
+              {busy ? L.exporting : L.download}
             </button>
             <button type="button" className="ghost" onClick={() => window.print()}>
               {L.print}

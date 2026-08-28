@@ -42,7 +42,7 @@ npm run preview
 1. Chọn lệch tâm / đúng tâm, nhập `Xmong`, `Ymong`, cổ cột / cột, cao `HCOM` `HCM` `HDM`.
 2. Khai báo thép cổ cột (`Cx`, `Cy`, đường kính, đai) và thép đế (`FaX`, `FaY`, khoảng `a`).
 3. Bấm **Shop thép - Bê tông - Cốt pha**.
-4. Bản vẽ hiện ngay dưới form; file PDF tải về tự động.
+4. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A3.
 
 Nút **Nạp mẫu bản vẽ** điền số liệu gần với file shop mẫu (móng M2, 2000×2200).
 

@@ -3,7 +3,7 @@ export type Lang = 'vi' | 'en'
 export const t = {
   vi: {
     title: 'Shop thép móng — Bê tông — Cốt pha',
-    subtitle: 'Nhập kích thước móng, bấm nút xanh để ra bản vẽ shop và file PDF.',
+    subtitle: 'Nhập kích thước móng, bấm nút xanh để xem bản vẽ. Tải PDF khi cần.',
     quick: 'Cài đặt nhanh móng',
     eccX: 'Lệch tâm phương X',
     eccY: 'Lệch tâm phương Y',
@@ -61,7 +61,7 @@ export const t = {
     plan: (name: string, sl: number) => `MẶT BẰNG MÓNG ${name}(SL:${sl})`,
     table: 'BẢNG THỐNG KÊ CỐT THÉP',
     liningNote: 'LỚP BÊ TÔNG LÓT MÓNG',
-    download: 'Tải lại PDF',
+    download: 'Tải file PDF',
     print: 'In bản vẽ',
     errors: 'Không xuất được — sửa các lỗi sau:',
     embedTitle: 'Hiện công cụ trên trang Blogger',
@@ -86,7 +86,7 @@ export const t = {
   },
   en: {
     title: 'Foundation shop drawing — rebar, concrete, formwork',
-    subtitle: 'Enter footing data, then generate the shop sheet and PDF.',
+    subtitle: 'Enter footing data, then show the shop sheet. Download PDF when you need it.',
     quick: 'Quick footing setup',
     eccX: 'Eccentric in X',
     eccY: 'Eccentric in Y',
@@ -144,7 +144,7 @@ export const t = {
     plan: (name: string, sl: number) => `FOUNDATION PLAN ${name}(QTY:${sl})`,
     table: 'REINFORCEMENT SCHEDULE',
     liningNote: 'BLINDING CONCRETE',
-    download: 'Download PDF again',
+    download: 'Download PDF',
     print: 'Print drawing',
     errors: 'Cannot export — fix the following:',
     embedTitle: 'Show this tool on Blogger',
