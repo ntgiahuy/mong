@@ -14,7 +14,7 @@ export async function exportShopPdf(el: HTMLElement, filename: string): Promise<
     },
   })
   const img = canvas.toDataURL('image/png')
-  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a2' })
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a2' })
   const pageW = pdf.internal.pageSize.getWidth()
   const pageH = pdf.internal.pageSize.getHeight()
   const margin = 8
