@@ -92,5 +92,5 @@ Blogger chặn script lạ trong bài viết; iframe tới trang đã host là c
 ## Ghi chú kỹ thuật
 
 - Không thay thế phần mềm kết cấu / kiểm tra TCVN. Đây là shop thép và thống kê khối lượng từ số liệu bạn nhập.
-- PDF vẽ lại từ SVG (không phải xuất DWG AutoCAD). File **DXF** là bản CAD vector (layer bê tông / thép / kích thước / chữ) mở được trong AutoCAD.
+- PDF vẽ lại từ SVG (không phải xuất DWG AutoCAD). File **DXF** là bản CAD vector (layer bê tông / thép / kích thước / chữ) mở được trong AutoCAD. Cỡ chữ DXF lấy theo view CAD trên web (px → mm), bảng thống kê tự xuống dòng như trên màn hình. Chữ tiếng Việt và ký hiệu Ø/± mã theo AutoCAD (`\\U+` / `%%c`). Mỗi lần tải DXF dùng tên có giờ phút. Nếu AutoCAD báo *currently in use or is read-only*: đóng bản vẽ cũ, copy file ra Desktop, Unblock, rồi File → Open (không mở đè file đang khóa trong Downloads).
 - `Cx` / `Cy` là số thanh trên một mặt cổ cột (kể cả góc). Mặt cắt A-A vẽ đúng `Cx` thanh dọc theo `Xcot`; B-B vẽ `Cy` thanh theo `Ycot`. Lưới đế: A-A hiện FaX bằng nét, FaY bằng chấm (B-B ngược lại). Mặt bằng bố trí thép cột theo chu vi `2*(Cx+Cy-2)`.

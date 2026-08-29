@@ -1,3 +1,5 @@
+import { htmlBlockLines, wrapTextByWidth } from './dxf-layout'
+import { encodeDxfString } from './dxf-text'
 import { parseSvgPath } from './svg-path'
 
 const LAYERS = ['KHUNG', 'BE_TONG', 'THEP', 'KICH_THUOC', 'TRUC', 'CHU', 'BANG'] as const
@@ -8,49 +10,72 @@ function f(n: number): string {
   return (Math.round(n * 1000) / 1000).toString()
 }
 
-function dxfText(s: string): string {
-  return s.replace(/\r?\n/g, ' ').replace(/^\s+|\s+$/g, '').slice(0, 250)
-}
-
 class Dxf {
   private body: string[] = []
+  private xmin = Infinity
+  private ymin = Infinity
+  private xmax = -Infinity
+  private ymax = -Infinity
 
   pair(code: number, value: string | number) {
     this.body.push(String(code), String(value))
   }
 
+  private touch(x: number, y: number) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return
+    this.xmin = Math.min(this.xmin, x)
+    this.ymin = Math.min(this.ymin, y)
+    this.xmax = Math.max(this.xmax, x)
+    this.ymax = Math.max(this.ymax, y)
+  }
+
   line(layer: Layer, x1: number, y1: number, x2: number, y2: number) {
+    if (!Number.isFinite(x1 + y1 + x2 + y2)) return
     if (Math.hypot(x2 - x1, y2 - y1) < 0.05) return
+    this.touch(x1, y1)
+    this.touch(x2, y2)
     this.pair(0, 'LINE')
     this.pair(8, layer)
     this.pair(10, f(x1))
     this.pair(20, f(y1))
+    this.pair(30, 0)
     this.pair(11, f(x2))
     this.pair(21, f(y2))
+    this.pair(31, 0)
   }
 
   circle(layer: Layer, x: number, y: number, r: number) {
-    if (r < 0.05) return
+    if (!Number.isFinite(x + y + r) || r < 0.05) return
+    this.touch(x - r, y - r)
+    this.touch(x + r, y + r)
     this.pair(0, 'CIRCLE')
     this.pair(8, layer)
     this.pair(10, f(x))
     this.pair(20, f(y))
+    this.pair(30, 0)
     this.pair(40, f(r))
   }
 
   polyline(layer: Layer, pts: { x: number; y: number }[], closed: boolean) {
-    if (pts.length < 2) return
+    const clean = pts.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
+    if (clean.length < 2) return
+    for (const p of clean) this.touch(p.x, p.y)
     this.pair(0, 'POLYLINE')
     this.pair(8, layer)
     this.pair(66, 1)
+    this.pair(10, 0)
+    this.pair(20, 0)
+    this.pair(30, 0)
     this.pair(70, closed ? 1 : 0)
-    for (const p of pts) {
+    for (const p of clean) {
       this.pair(0, 'VERTEX')
       this.pair(8, layer)
       this.pair(10, f(p.x))
       this.pair(20, f(p.y))
+      this.pair(30, 0)
     }
     this.pair(0, 'SEQEND')
+    this.pair(8, layer)
   }
 
   text(
@@ -62,20 +87,26 @@ class Dxf {
     align: 'left' | 'center' | 'right',
     rotation = 0,
   ) {
-    const t = dxfText(value)
-    if (!t) return
+    const t = encodeDxfString(value)
+    if (!t || !Number.isFinite(x + y)) return
     const h = Math.max(1.2, height)
+    this.touch(x, y)
     this.pair(0, 'TEXT')
     this.pair(8, layer)
+    this.pair(7, 'STANDARD')
     this.pair(10, f(x))
     this.pair(20, f(y))
+    this.pair(30, 0)
     this.pair(40, f(h))
     this.pair(1, t)
-    this.pair(50, f(rotation))
-    this.pair(72, align === 'center' ? 1 : align === 'right' ? 2 : 0)
-    this.pair(73, 2)
-    this.pair(11, f(x))
-    this.pair(21, f(y))
+    this.pair(50, f(Number.isFinite(rotation) ? rotation : 0))
+    const hz = align === 'center' ? 1 : align === 'right' ? 2 : 0
+    if (hz) {
+      this.pair(72, hz)
+      this.pair(11, f(x))
+      this.pair(21, f(y))
+      this.pair(31, 0)
+    }
   }
 
   serialize(): string {
@@ -83,15 +114,49 @@ class Dxf {
     const p = (c: number, v: string | number) => {
       o.push(String(c), String(v))
     }
+    const pad = 20
+    const x0 = Number.isFinite(this.xmin) ? this.xmin - pad : 0
+    const y0 = Number.isFinite(this.ymin) ? this.ymin - pad : 0
+    const x1 = Number.isFinite(this.xmax) ? this.xmax + pad : 100
+    const y1 = Number.isFinite(this.ymax) ? this.ymax + pad : 100
     p(0, 'SECTION')
     p(2, 'HEADER')
     p(9, '$ACADVER')
     p(1, 'AC1009')
     p(9, '$INSUNITS')
     p(70, 4)
+    p(9, '$FILLMODE')
+    p(70, 0)
+    p(9, '$TEXTSIZE')
+    p(40, 2.5)
+    p(9, '$EXTMIN')
+    p(10, f(x0))
+    p(20, f(y0))
+    p(30, 0)
+    p(9, '$EXTMAX')
+    p(10, f(x1))
+    p(20, f(y1))
+    p(30, 0)
+    p(9, '$LIMMIN')
+    p(10, f(x0))
+    p(20, f(y0))
+    p(9, '$LIMMAX')
+    p(10, f(x1))
+    p(20, f(y1))
     p(0, 'ENDSEC')
     p(0, 'SECTION')
     p(2, 'TABLES')
+    p(0, 'TABLE')
+    p(2, 'LTYPE')
+    p(70, 1)
+    p(0, 'LTYPE')
+    p(2, 'CONTINUOUS')
+    p(70, 0)
+    p(3, 'Solid line')
+    p(72, 65)
+    p(73, 0)
+    p(40, 0)
+    p(0, 'ENDTAB')
     p(0, 'TABLE')
     p(2, 'LAYER')
     p(70, LAYERS.length)
@@ -103,13 +168,30 @@ class Dxf {
       p(6, 'CONTINUOUS')
     }
     p(0, 'ENDTAB')
+    p(0, 'TABLE')
+    p(2, 'STYLE')
+    p(70, 1)
+    p(0, 'STYLE')
+    p(2, 'STANDARD')
+    p(70, 0)
+    p(40, 0)
+    p(41, 1)
+    p(50, 0)
+    p(71, 0)
+    p(42, 2.5)
+    p(3, 'arial.ttf')
+    p(4, '')
+    p(0, 'ENDTAB')
+    p(0, 'ENDSEC')
+    p(0, 'SECTION')
+    p(2, 'BLOCKS')
     p(0, 'ENDSEC')
     p(0, 'SECTION')
     p(2, 'ENTITIES')
     o.push(...this.body)
     p(0, 'ENDSEC')
     p(0, 'EOF')
-    return o.join('\n') + '\n'
+    return o.join('\r\n') + '\r\n'
   }
 }
 
@@ -157,6 +239,91 @@ function screenToWorld(sheet: DOMRect, s: number, sx: number, sy: number): Pt {
   return { x: px / s, y: (sheet.height - py) / s }
 }
 
+function ctmScale(svg: SVGSVGElement): number {
+  const ctm = svg.getScreenCTM()
+  if (!ctm) return 1
+  const n = Math.hypot(ctm.a, ctm.b)
+  return Number.isFinite(n) && n > 0.01 ? n : 1
+}
+
+function mmFromPx(px: number, s: number): number {
+  return Math.max(0.8, px / s)
+}
+
+function svgFontPx(el: SVGTextElement): number {
+  const attr = Number(el.getAttribute('font-size') || el.getAttribute('fontSize') || '')
+  if (Number.isFinite(attr) && attr > 0) return attr
+  const cs = parseFloat(getComputedStyle(el).fontSize)
+  return Number.isFinite(cs) && cs > 0 ? cs : 10
+}
+
+let measureCtx: CanvasRenderingContext2D | null = null
+
+function canvasMeasure(): CanvasRenderingContext2D | null {
+  if (measureCtx) return measureCtx
+  const c = document.createElement('canvas').getContext('2d')
+  measureCtx = c
+  return c
+}
+
+function measurePx(text: string, fontPx: number, weight: string): number {
+  const ctx = canvasMeasure()
+  if (!ctx) return text.length * fontPx * 0.56
+  ctx.font = `${weight} ${fontPx}px Arial, 'Segoe UI', sans-serif`
+  return ctx.measureText(text).width
+}
+
+function fittedLines(text: string, fontPx: number, maxPx: number, weight: string): string[] {
+  return wrapTextByWidth(text, Math.max(8, maxPx), (s) => measurePx(s, fontPx, weight))
+}
+
+function lineHeightPx(cs: CSSStyleDeclaration, fontPx: number): number {
+  const raw = cs.lineHeight.trim()
+  if (!raw || raw === 'normal') return fontPx * 1.25
+  if (raw.endsWith('px')) {
+    const px = parseFloat(raw)
+    return Number.isFinite(px) && px > 0 ? px : fontPx * 1.25
+  }
+  const n = parseFloat(raw)
+  if (!Number.isFinite(n) || n <= 0) return fontPx * 1.25
+  if (n < 8) return n * fontPx
+  return n
+}
+
+function addHtmlBlock(
+  dxf: Dxf,
+  el: Element,
+  sheet: DOMRect,
+  s: number,
+  layer: Layer,
+  align: 'left' | 'center' | 'right',
+) {
+  const r = el.getBoundingClientRect()
+  if (r.width < 2 || r.height < 2) return
+  const cs = getComputedStyle(el)
+  const fontPx = parseFloat(cs.fontSize) || 10
+  const weight = cs.fontWeight || '400'
+  const padL = parseFloat(cs.paddingLeft) || 0
+  const padR = parseFloat(cs.paddingRight) || 0
+  const padT = parseFloat(cs.paddingTop) || 0
+  const maxPx = Math.max(8, r.width - padL - padR)
+  const linePx = lineHeightPx(cs, fontPx)
+  const h = mmFromPx(fontPx, s)
+  const blocks = htmlBlockLines(el)
+  if (!blocks.length) return
+  const lines = blocks.flatMap((b) => fittedLines(b, fontPx, maxPx, weight))
+  if (!lines.length) return
+  const total = lines.length * linePx
+  const top = r.top + padT + Math.max(0, (r.height - padT - (parseFloat(cs.paddingBottom) || 0) - total) / 2)
+  const xPx =
+    align === 'center' ? r.left + r.width / 2 : align === 'right' ? r.right - padR : r.left + padL
+  for (let i = 0; i < lines.length; i++) {
+    const baseline = top + i * linePx + fontPx * 0.82
+    const p = screenToWorld(sheet, s, xPx, baseline)
+    dxf.text(layer, p.x, p.y, h, lines[i], align)
+  }
+}
+
 function addSvgTree(dxf: Dxf, svg: SVGSVGElement, sheet: DOMRect, s: number) {
   const world = (x: number, y: number) => svgToWorld(svg, x, y, sheet, s)
 
@@ -177,8 +344,15 @@ function addSvgTree(dxf: Dxf, svg: SVGSVGElement, sheet: DOMRect, s: number) {
     const y = el.y.baseVal.value
     const w = el.width.baseVal.value
     const h = el.height.baseVal.value
-    const pts = [world(x, y), world(x + w, y), world(x + w, y + h), world(x, y + h)]
-    dxf.polyline(layerOf(el, 'line'), pts, true)
+    const a = world(x, y)
+    const b = world(x + w, y)
+    const c = world(x + w, y + h)
+    const d = world(x, y + h)
+    const layer = layerOf(el, 'line')
+    dxf.line(layer, a.x, a.y, b.x, b.y)
+    dxf.line(layer, b.x, b.y, c.x, c.y)
+    dxf.line(layer, c.x, c.y, d.x, d.y)
+    dxf.line(layer, d.x, d.y, a.x, a.y)
   }
 
   const polygons = svg.querySelectorAll('polygon')
@@ -226,16 +400,17 @@ function addSvgTree(dxf: Dxf, svg: SVGSVGElement, sheet: DOMRect, s: number) {
   }
 
   const texts = svg.querySelectorAll('text')
+  const scale = ctmScale(svg)
   for (const el of texts) {
     const raw = (el.textContent || '').replace(/\s+/g, ' ').trim()
     if (!raw) continue
     const x = el.x.baseVal.length ? el.x.baseVal.getItem(0).value : 0
     const y = el.y.baseVal.length ? el.y.baseVal.getItem(0).value : 0
-    const fs = Number(el.getAttribute('font-size') || el.getAttribute('fontSize') || '10')
+    const fs = svgFontPx(el)
     const anchor = el.getAttribute('text-anchor') || 'start'
     const rot = rotateAttr(el)
     const p = world(x, y)
-    const h = fs / s
+    const h = mmFromPx(fs * scale, s)
     const align = anchor === 'middle' ? 'center' : anchor === 'end' ? 'right' : 'left'
     dxf.text('CHU', p.x, p.y, h, raw, align, rot ? -rot.deg : 0)
   }
@@ -253,10 +428,8 @@ function addHtmlTable(dxf: Dxf, table: HTMLTableElement, sheet: DOMRect, s: numb
     dxf.line('BANG', tr.x, tr.y, br.x, br.y)
     dxf.line('BANG', br.x, br.y, bl.x, bl.y)
     dxf.line('BANG', bl.x, bl.y, tl.x, tl.y)
-    const text = (cell.textContent || '').replace(/\s+/g, ' ').trim()
-    if (!text || cell.querySelector('svg')) continue
-    const mid = screenToWorld(sheet, s, r.left + r.width / 2, r.top + r.height / 2)
-    dxf.text('BANG', mid.x, mid.y, Math.max(12, (r.height * 0.35) / s), text, 'center')
+    if (cell.querySelector('svg')) continue
+    addHtmlBlock(dxf, cell, sheet, s, 'BANG', 'center')
   }
   for (const svg of table.querySelectorAll('svg')) {
     addSvgTree(dxf, svg as SVGSVGElement, sheet, s)
@@ -264,20 +437,22 @@ function addHtmlTable(dxf: Dxf, table: HTMLTableElement, sheet: DOMRect, s: numb
 }
 
 function addTitle(dxf: Dxf, root: HTMLElement, sheet: DOMRect, s: number) {
-  const title = root.querySelector('.shop-title')
-  if (!title) return
-  const r = title.getBoundingClientRect()
-  const p = screenToWorld(sheet, s, r.left + r.width / 2, r.top + r.height / 2)
-  dxf.text('CHU', p.x, p.y, 28, (title.textContent || '').replace(/\s+/g, ' ').trim(), 'center')
+  const spans = root.querySelectorAll('.shop-title span')
+  const els = spans.length ? spans : root.querySelectorAll('.shop-title')
+  for (const el of els) {
+    addHtmlBlock(dxf, el, sheet, s, 'CHU', 'center')
+  }
 }
 
 function addNotes(dxf: Dxf, root: HTMLElement, sheet: DOMRect, s: number) {
-  const notes = root.querySelectorAll('.qty-notes li, .schedule-meta, .schedule h2')
-  for (const el of notes) {
-    const r = el.getBoundingClientRect()
-    const p = screenToWorld(sheet, s, r.left, r.top + r.height / 2)
-    const t = (el.textContent || '').replace(/\s+/g, ' ').trim()
-    dxf.text('CHU', p.x, p.y, Math.max(10, (r.height * 0.7) / s), t, 'left')
+  for (const el of root.querySelectorAll('.schedule h2')) {
+    addHtmlBlock(dxf, el, sheet, s, 'CHU', 'center')
+  }
+  for (const el of root.querySelectorAll('.schedule-meta')) {
+    addHtmlBlock(dxf, el, sheet, s, 'CHU', 'left')
+  }
+  for (const el of root.querySelectorAll('.qty-notes li')) {
+    addHtmlBlock(dxf, el, sheet, s, 'CHU', 'left')
   }
 }
 
@@ -316,8 +491,8 @@ export function exportShopDxf(root: HTMLElement, filename: string): void {
   if (inner) inner.style.transform = 'none'
   try {
     const content = buildShopDxf(root)
-    const blob = new Blob([content], { type: 'application/dxf;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
+    const file = new File([content], filename, { type: 'application/octet-stream' })
+    const url = URL.createObjectURL(file)
     const a = document.createElement('a')
     a.href = url
     a.download = filename
@@ -325,7 +500,7 @@ export function exportShopDxf(root: HTMLElement, filename: string): void {
     document.body.appendChild(a)
     a.click()
     a.remove()
-    URL.revokeObjectURL(url)
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
   } finally {
     if (inner && prev != null) inner.style.transform = prev
   }

@@ -380,6 +380,27 @@ p {
   color: #222;
 }
 
+.cad-lock {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  background: #fff6d6;
+  border: 1px solid #c9a227;
+  color: #1a1a1a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.cad-lock ol {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+.cad-mode .cad-lock {
+  background: #3a3418;
+  border-color: #c9a227;
+  color: #f4e9c0;
+}
+
 .cad-mode .cad-note {
   color: #ddd;
 }
@@ -640,6 +661,7 @@ p {
   .workspace,
   .result-toolbar,
   .cad-note,
+  .cad-lock,
   .cad-hud,
   .banner {
     display: none !important;

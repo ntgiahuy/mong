@@ -68,7 +68,15 @@ export const t = {
     downloadCad: 'Tải file CAD (DXF)',
     exportingCad: 'Đang xuất CAD…',
     cadHint: 'Kéo để pan · lăn chuột zoom · DXF mở bằng AutoCAD / LibreCAD',
-    cadNote: 'DXF (AutoCAD). Trình duyệt không xuất được DWG gốc — DXF mở trực tiếp trong AutoCAD.',
+    cadNote:
+      'DXF R12, cỡ chữ theo view CAD (bảng tự xuống dòng). File tải có giờ phút. Nếu AutoCAD báo “in use / read-only”: đóng bản vẽ cũ, copy file ra Desktop, Unblock, rồi File → Open.',
+    cadLockTitle: 'AutoCAD báo file đang dùng / read-only — không phải DXF hỏng',
+    cadLockSteps: [
+      'Trong hộp thoại bấm No, rồi đóng bản vẽ cũ (Close). Đừng mở đè file đang khóa.',
+      'Tải lại trên web: file mới có giờ phút, không trùng M2-shop-thep.dxf.',
+      'Copy file ra Desktop. Chuột phải → Properties → Unblock (nếu có) → Apply.',
+      'Trong AutoCAD: File → Open, chọn file trên Desktop. Không kéo từ cửa sổ Chrome.',
+    ],
     errors: 'Không xuất được — sửa các lỗi sau:',
   },
   en: {
@@ -138,7 +146,15 @@ export const t = {
     downloadCad: 'Download CAD (DXF)',
     exportingCad: 'Exporting CAD…',
     cadHint: 'Drag to pan · wheel to zoom · DXF opens in AutoCAD / LibreCAD',
-    cadNote: 'DXF for AutoCAD. Browsers cannot write native DWG — AutoCAD opens DXF directly.',
+    cadNote:
+      'DXF R12, text sized like CAD view (table headers wrap). Each download has a unique timestamp. If AutoCAD says “in use / read-only”: close the old drawing, copy the file to Desktop, Unblock, then File → Open.',
+    cadLockTitle: 'AutoCAD says the file is in use / read-only — the DXF is not corrupt',
+    cadLockSteps: [
+      'Click No in the dialog, then Close the old drawing. Do not reopen the locked file.',
+      'Download again: the new file has a timestamp and will not clash with M2-shop-thep.dxf.',
+      'Copy it to Desktop. Right-click → Properties → Unblock (if shown) → Apply.',
+      'In AutoCAD: File → Open, pick the Desktop copy. Do not drag it from Chrome.',
+    ],
     errors: 'Cannot export — fix the following:',
   },
 } as const

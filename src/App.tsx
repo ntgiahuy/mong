@@ -19,6 +19,7 @@ export default function App() {
   const [busy, setBusy] = useState<'pdf' | 'cad' | null>(null)
   const [showResult, setShowResult] = useState(true)
   const [cadView, setCadView] = useState(false)
+  const [cadHint, setCadHint] = useState(false)
   const [ioError, setIoError] = useState('')
   const result = useMemo(() => compute(inp), [inp])
   const L = t[lang]
@@ -78,10 +79,19 @@ export default function App() {
     })
   }
 
+  function cadFilename(name: string): string {
+    const base = (name || 'mong').replace(/[^\w.-]+/g, '_') || 'mong'
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    const stamp = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`
+    return `${base}-shop-thep-${stamp}.dxf`
+  }
+
   function downloadCad() {
     void withSheet('cad', async (el) => {
       const { exportShopDxf } = await import('./lib/dxf')
-      exportShopDxf(el, `${inp.name || 'mong'}-shop-thep.dxf`)
+      exportShopDxf(el, cadFilename(inp.name))
+      setCadHint(true)
     })
   }
 
@@ -179,7 +189,17 @@ export default function App() {
               {L.print}
             </button>
           </div>
-          {cadView && <p className="cad-note">{L.cadNote}</p>}
+          {cadHint && (
+            <div className="cad-lock" role="status">
+              <strong>{L.cadLockTitle}</strong>
+              <ol>
+                {L.cadLockSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+          <p className="cad-note">{L.cadNote}</p>
           <CadViewport active={cadView} hint={L.cadHint}>
             <ShopDrawing inp={inp} result={result} lang={lang} />
           </CadViewport>
