@@ -42,7 +42,7 @@ npm run preview
 1. Chọn lệch tâm / đúng tâm, nhập `Xmong`, `Ymong`, cổ cột / cột, cao `HCOM` `HCM` `HDM`.
 2. Khai báo thép cổ cột (`Cx`, `Cy`, đường kính, đai) và thép đế (`FaX`, `FaY`, khoảng `a`).
 3. Bấm **Shop thép - Bê tông - Cốt pha**.
-4. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 nằm (một trang, đủ khung viền). **In** cũng ra khổ A2 nằm một trang — không tách mặt cắt A-A / B-B ra nhiều tờ.
+4. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 nằm (một trang, đủ khung viền). **Xem CAD** để pan/zoom trên nền tối. **Tải file CAD (DXF)** để mở trong AutoCAD / LibreCAD (đơn vị mm). Trình duyệt không ghi được file DWG gốc — AutoCAD mở DXF trực tiếp. **In** ra khổ A2 nằm một trang.
 
 Nút **Nạp mẫu bản vẽ** điền số liệu gần với file shop mẫu (móng M2, 2000×2200).
 
@@ -92,5 +92,5 @@ Blogger chặn script lạ trong bài viết; iframe tới trang đã host là c
 ## Ghi chú kỹ thuật
 
 - Không thay thế phần mềm kết cấu / kiểm tra TCVN. Đây là shop thép và thống kê khối lượng từ số liệu bạn nhập.
-- PDF vẽ lại từ SVG (không phải xuất DWG AutoCAD).
+- PDF vẽ lại từ SVG (không phải xuất DWG AutoCAD). File **DXF** là bản CAD vector (layer bê tông / thép / kích thước / chữ) mở được trong AutoCAD.
 - `Cx` / `Cy` là số thanh trên một mặt cổ cột (kể cả góc). Mặt cắt A-A vẽ đúng `Cx` thanh dọc theo `Xcot`; B-B vẽ `Cy` thanh theo `Ycot`. Lưới đế: A-A hiện FaX bằng nét, FaY bằng chấm (B-B ngược lại). Mặt bằng bố trí thép cột theo chu vi `2*(Cx+Cy-2)`.

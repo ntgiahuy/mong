@@ -364,8 +364,69 @@ p {
 
 .result-toolbar {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.ghost-on {
+  background: #3d5a9c;
+  border-color: #8ab;
+}
+
+.cad-note {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #222;
+}
+
+.cad-mode .cad-note {
+  color: #ddd;
+}
+
+.cad-mode {
+  background: #2a2a2a;
+}
+
+.cad-space {
+  position: relative;
+  height: min(78vh, 940px);
+  overflow: hidden;
+  background: #1c1c1c;
+  border: 1px solid #666;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.cad-space:active {
+  cursor: grabbing;
+}
+
+.cad-space-inner {
+  transform-origin: 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.cad-space .shop-scroll {
+  overflow: visible;
+  max-width: none;
+}
+
+.cad-hud {
+  position: absolute;
+  z-index: 3;
+  left: 10px;
+  bottom: 10px;
+  color: #f2f2f2;
+  font-size: 12px;
+  pointer-events: none;
+  text-shadow: 0 1px 2px #000;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .shop-scroll {
@@ -578,8 +639,21 @@ p {
   .topbar,
   .workspace,
   .result-toolbar,
+  .cad-note,
+  .cad-hud,
   .banner {
     display: none !important;
+  }
+  .cad-space {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    border: 0 !important;
+    position: static !important;
+  }
+  .cad-space-inner {
+    transform: none !important;
+    position: static !important;
   }
   .result-wrap {
     margin: 0 !important;

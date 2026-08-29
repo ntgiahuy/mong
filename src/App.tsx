@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { CadViewport } from './components/CadViewport'
 import { FoundationForm } from './components/FoundationForm'
 import { Schematic } from './components/Schematic'
 import { ShopDrawing } from './components/ShopDrawing'
@@ -15,9 +16,10 @@ import type { Inputs } from './types'
 export default function App() {
   const [lang, setLang] = useState<Lang>('vi')
   const [inp, setInp] = useState<Inputs>(SAMPLE_PDF)
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<'pdf' | 'cad' | null>(null)
   const [showResult, setShowResult] = useState(true)
-  const [pdfError, setPdfError] = useState('')
+  const [cadView, setCadView] = useState(false)
+  const [ioError, setIoError] = useState('')
   const result = useMemo(() => compute(inp), [inp])
   const L = t[lang]
 
@@ -37,7 +39,7 @@ export default function App() {
   }
 
   function showShop() {
-    setPdfError('')
+    setIoError('')
     setShowResult(true)
     if (result.errors.length) return
     requestAnimationFrame(() => {
@@ -45,29 +47,42 @@ export default function App() {
     })
   }
 
-  async function downloadPdf() {
+  async function withSheet(kind: 'pdf' | 'cad', run: (el: HTMLElement) => Promise<void> | void) {
     if (result.errors.length) {
       setShowResult(true)
       return
     }
-    setBusy(true)
-    setPdfError('')
+    setBusy(kind)
+    setIoError('')
     setShowResult(true)
     await new Promise((r) => requestAnimationFrame(() => r(null)))
     await new Promise((r) => setTimeout(r, 80))
     const el = document.getElementById('shop-sheet')
     if (!el) {
-      setBusy(false)
+      setBusy(null)
       return
     }
     try {
+      await run(el)
+    } catch (err) {
+      setIoError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  function downloadPdf() {
+    void withSheet('pdf', async (el) => {
       const { exportShopPdf } = await import('./lib/pdf')
       await exportShopPdf(el, `${inp.name || 'mong'}-shop-thep.pdf`)
-    } catch (err) {
-      setPdfError(err instanceof Error ? err.message : String(err))
-    } finally {
-      setBusy(false)
-    }
+    })
+  }
+
+  function downloadCad() {
+    void withSheet('cad', async (el) => {
+      const { exportShopDxf } = await import('./lib/dxf')
+      exportShopDxf(el, `${inp.name || 'mong'}-shop-thep.dxf`)
+    })
   }
 
   return (
@@ -131,17 +146,27 @@ export default function App() {
           </ul>
         </div>
       )}
-      {pdfError && (
+      {ioError && (
         <div className="banner error" role="alert">
-          PDF: {pdfError}
+          {ioError}
         </div>
       )}
 
       {showResult && result.errors.length === 0 && (
-        <section className="result-wrap">
+        <section className={`result-wrap${cadView ? ' cad-mode' : ''}`}>
           <div className="result-toolbar">
-            <button type="button" className="ghost" onClick={() => void downloadPdf()} disabled={busy}>
-              {busy ? L.exporting : L.download}
+            <button type="button" className="ghost" onClick={downloadPdf} disabled={busy !== null}>
+              {busy === 'pdf' ? L.exporting : L.download}
+            </button>
+            <button type="button" className="ghost" onClick={downloadCad} disabled={busy !== null}>
+              {busy === 'cad' ? L.exportingCad : L.downloadCad}
+            </button>
+            <button
+              type="button"
+              className={cadView ? 'ghost ghost-on' : 'ghost'}
+              onClick={() => setCadView((v) => !v)}
+            >
+              {cadView ? L.cadViewOff : L.cadView}
             </button>
             <button
               type="button"
@@ -154,7 +179,10 @@ export default function App() {
               {L.print}
             </button>
           </div>
-          <ShopDrawing inp={inp} result={result} lang={lang} />
+          {cadView && <p className="cad-note">{L.cadNote}</p>}
+          <CadViewport active={cadView} hint={L.cadHint}>
+            <ShopDrawing inp={inp} result={result} lang={lang} />
+          </CadViewport>
         </section>
       )}
     </div>

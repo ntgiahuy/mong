@@ -314,7 +314,7 @@ function Callouts({
   const H = Math.max(height, lBot, stirY + hoopH + 26)
 
   return (
-    <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
+    <svg className="cad" data-cad-scale={s} viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
       {colBars.map((b, i) => {
         const dy = i * (stem + hook + 22)
         const ya = y1 + dy
@@ -453,7 +453,7 @@ function SectionDrawing({
   const beamRightEnd = ox + bw - 16
 
   return (
-    <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
+    <svg className="cad" data-cad-scale={s} viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
       <line
         x1={cxMid}
         x2={cxMid}
@@ -668,7 +668,7 @@ function PlanDrawing({
   const H = captionY + SECTION_CAPTION_PAD
 
   return (
-    <svg className="cad" viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
+    <svg className="cad" data-cad-scale={s} viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
       <rect
         x={ox - lot}
         y={oy - lot}
