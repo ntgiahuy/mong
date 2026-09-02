@@ -128,18 +128,6 @@ p {
   font-size: 13px;
 }
 
-.axis-typical {
-  margin: 6px 0 8px;
-  border: 1px solid var(--line);
-  background: #1c1c1c;
-}
-
-.axis-legend {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 .axis-name {
   width: 36px;
   height: 24px;

@@ -42,33 +42,3 @@ export function AxisBubble({
     </g>
   )
 }
-
-export function AxisLegend({
-  xName,
-  yName,
-  title,
-  hint,
-  dark = false,
-}: {
-  xName: string
-  yName: string
-  title: string
-  hint: string
-  dark?: boolean
-}) {
-  const stroke = dark ? '#f04b3a' : '#111'
-  const fill = dark ? '#1c1c1c' : '#fff'
-  return (
-    <svg className={`axis-legend${dark ? ' dark' : ''}`} viewBox="0 0 248 72" role="img" aria-label={title}>
-      <rect width="248" height="72" fill={dark ? '#1c1c1c' : '#fff'} />
-      <AxisBubble cx={36} cy={36} r={16} name={xName || '1'} stroke={stroke} fill={fill} strokeWidth={1.8} fontSize={15} />
-      <AxisBubble cx={92} cy={36} r={16} name={yName || 'A'} stroke={stroke} fill={fill} strokeWidth={1.8} fontSize={15} />
-      <text x={122} y={28} fontSize={11} fill={dark ? '#e8e4d8' : '#333'} fontWeight={600}>
-        {title}
-      </text>
-      <text x={122} y={46} fontSize={9.5} fill={dark ? '#9aa0a8' : '#666'}>
-        {hint}
-      </text>
-    </svg>
-  )
-}

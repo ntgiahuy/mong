@@ -3,7 +3,6 @@ import type { FoundationType, Inputs, LayoutType } from '../types'
 import type { Lang } from '../i18n'
 import { t } from '../i18n'
 import { DIAMETERS, liveColumnSteel } from '../lib/calc'
-import { AxisLegend } from './AxisBubble'
 
 type Props = {
   inp: Inputs
@@ -153,15 +152,6 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
         <Row label={L.hDm}>
           <Num value={inp.hDm} onChange={(hDm) => onChange({ hDm })} />
         </Row>
-        <div className="axis-typical">
-          <AxisLegend
-            xName={inp.axisXName}
-            yName={inp.axisYName}
-            title={L.axisTypical}
-            hint={L.axisHint}
-            dark
-          />
-        </div>
         <Row label={L.xCc}>
           <input
             className="axis-name"
