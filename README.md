@@ -44,7 +44,7 @@ npm run preview
 3. Bấm **Shop thép - Bê tông - Cốt pha**.
 4. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 nằm (một trang, đủ khung viền). **Xem CAD** để pan/zoom trên nền tối. **Tải file CAD (DXF)** để mở trong AutoCAD / LibreCAD (đơn vị mm). Trình duyệt không ghi được file DWG gốc — AutoCAD mở DXF trực tiếp. **In** ra khổ A2 nằm một trang.
 
-Nút **Nạp mẫu bản vẽ** điền số liệu gần với file shop mẫu (móng M2, 2000×2200).
+Nút **Nạp mẫu bản vẽ** điền số liệu shop mẫu M2 (2000×2200). Mở trang / **Mặc định** dùng móng M1 đúng tâm 1800×2000, SL 5.
 
 Nút **EN** đổi giao diện sang tiếng Anh.
 

@@ -15,7 +15,7 @@ import type { Inputs } from './types'
 
 export default function App() {
   const [lang, setLang] = useState<Lang>('vi')
-  const [inp, setInp] = useState<Inputs>(SAMPLE_PDF)
+  const [inp, setInp] = useState<Inputs>(DEFAULT_INPUTS)
   const [busy, setBusy] = useState<'pdf' | 'cad' | null>(null)
   const [showResult, setShowResult] = useState(true)
   const [cadView, setCadView] = useState(false)
