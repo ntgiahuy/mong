@@ -42,7 +42,7 @@ export interface Inputs {
   stagger: boolean
   /** Lap multiple for staggered column splices: 30D / 35D / 40D. */
   staggerLap: 30 | 35 | 40
-  /** Manual left/right extras above CDN instead of nD / 2nD. */
+  /** Manual splice: full L-bar lengths (mm), extras above CDN are derived. */
   staggerManual: boolean
   staggerLeft: number
   staggerRight: number

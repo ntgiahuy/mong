@@ -202,7 +202,24 @@ export function normalizeStaggerLap(n: number | undefined): StaggerLap {
   return 30
 }
 
-/** Extra length above CDN. Preset: left nD, right 2nD. Manual: typed mm. */
+export const COL_HOOK_MM = 300
+
+export function colStraightBase(i: Pick<Inputs, 'hCom' | 'hCm' | 'hDm'>): number {
+  return Math.max(0, i.hCom + i.hCm + i.hDm - 100)
+}
+
+/** Full L-bar length from extra projection above CDN. */
+export function barLengthFromExtra(i: Inputs, extraAboveCdn: number): number {
+  return colStraightBase(i) + extraAboveCdn + COL_HOOK_MM
+}
+
+/** Extra above CDN implied by a typed full bar length. */
+export function extraFromBarLength(i: Inputs, barLen: number): number {
+  if (!Number.isFinite(barLen)) return 0
+  return barLen - COL_HOOK_MM - colStraightBase(i)
+}
+
+/** Extra length above CDN. Preset: left nD, right 2nD. Manual: derived from full bar length. */
 export function staggerProjection(i: Inputs): {
   one: number
   two: number
@@ -212,9 +229,12 @@ export function staggerProjection(i: Inputs): {
   const lap = normalizeStaggerLap(i.staggerLap)
   if (!i.stagger) return { one: 0, two: 0, lap, manual: false }
   if (i.staggerManual) {
-    const one = Number.isFinite(i.staggerLeft) ? Math.max(0, i.staggerLeft) : 0
-    const two = Number.isFinite(i.staggerRight) ? Math.max(0, i.staggerRight) : 0
-    return { one, two, lap, manual: true }
+    return {
+      one: Math.max(0, extraFromBarLength(i, i.staggerLeft)),
+      two: Math.max(0, extraFromBarLength(i, i.staggerRight)),
+      lap,
+      manual: true,
+    }
   }
   return { one: lap * i.dMain, two: 2 * lap * i.dMain, lap, manual: false }
 }
@@ -228,17 +248,20 @@ export function staggerManualErrors(i: Inputs): string[] {
   const d30 = staggerMin30D(i.dMain)
   const left = i.staggerLeft
   const right = i.staggerRight
+  const extraL = extraFromBarLength(i, left)
+  const extraR = extraFromBarLength(i, right)
+  const minBar = barLengthFromExtra(i, d30)
   const err: string[] = []
   if (!Number.isFinite(left) || !Number.isFinite(right)) {
-    err.push('Nhập chiều dài nối trái và phải (mm).')
+    err.push('Nhập chiều dài thanh trái và phải (mm).')
     return err
   }
-  if (left === right) err.push('Nối trái và phải không được trùng nhau.')
-  if (left < d30 || right < d30) {
-    err.push(`Thép chủ trái và phải phải ≥ CDN + 30D (${d30} mm).`)
+  if (left === right) err.push('Chiều dài thanh trái và phải không được trùng nhau.')
+  if (extraL < d30 || extraR < d30) {
+    err.push(`Mỗi thanh phải thò ≥ CDN + 30D (chiều dài thanh tối thiểu ${minBar} mm).`)
   }
-  if (Math.abs(left - right) + 0.5 < d30) {
-    err.push(`Nối so le phải chênh lệch ít nhất 30D (${d30} mm).`)
+  if (Math.abs(extraL - extraR) + 0.5 < d30) {
+    err.push(`Nối so le phải chênh lệch ít nhất 30D trên CDN (${d30} mm).`)
   }
   return err
 }
@@ -289,9 +312,9 @@ export function applyGeometry(i: Inputs, edited?: keyof Inputs): Inputs {
   if (edited === 'staggerManual' && next.staggerManual) {
     const d30 = staggerMin30D(next.dMain)
     const fromLap = next.staggerLap * next.dMain
-    const left = fromLap >= d30 ? fromLap : d30
-    next.staggerLeft = left
-    next.staggerRight = left + d30
+    const extraL = fromLap >= d30 ? fromLap : d30
+    next.staggerLeft = barLengthFromExtra(next, extraL)
+    next.staggerRight = barLengthFromExtra(next, extraL + d30)
   }
   if (!Number.isFinite(next.staggerLeft)) next.staggerLeft = 0
   if (!Number.isFinite(next.staggerRight)) next.staggerRight = 0
@@ -343,7 +366,7 @@ export function compute(i: Inputs): CalcResult {
   const stirrupL = 2 * (stirrupA + stirrupB) + 2 * stirrupHook
   const nStirrup = Math.max(2, Math.floor(Math.max(i.hCom - i.coverCol, 0) / i.aStirrup) + 1)
 
-  const colHook = 300
+  const colHook = COL_HOOK_MM
   const colStraightLen = Math.max(0, totalH - 100)
   const proj = staggerProjection(i)
   const straightA = colStraightLen + proj.one
