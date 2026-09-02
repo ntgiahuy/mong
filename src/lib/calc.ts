@@ -266,12 +266,6 @@ export function staggerManualErrors(i: Inputs): string[] {
   return err
 }
 
-export function staggerExtraLabel(mm: number, d: number, manual: boolean): string {
-  if (manual) return `+${Math.round(mm)}`
-  const n = d > 0 ? Math.round(mm / d) : 0
-  return `+${n}D`
-}
-
 function clamp(n: number, lo: number, hi: number): number {
   if (!Number.isFinite(n)) return lo
   return Math.min(hi, Math.max(lo, n))
@@ -418,9 +412,7 @@ export function compute(i: Inputs): CalcResult {
       d: i.dMain,
       length: L0,
       n1: nOne,
-      label: i.stagger
-        ? `${nOne}Ø${i.dMain} ${staggerExtraLabel(proj.one, i.dMain, proj.manual)}`
-        : `${nOne}Ø${i.dMain}`,
+      label: `${nOne}Ø${i.dMain}`,
     })
   }
   if (i.stagger && nTwo > 0) {
@@ -431,7 +423,7 @@ export function compute(i: Inputs): CalcResult {
       d: i.dMain,
       length: L1,
       n1: nTwo,
-      label: `${nTwo}Ø${i.dMain} ${staggerExtraLabel(proj.two, i.dMain, proj.manual)}`,
+      label: `${nTwo}Ø${i.dMain}`,
     })
   }
 
