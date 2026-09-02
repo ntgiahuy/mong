@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { FoundationType, Inputs, LayoutType } from '../types'
 import type { Lang } from '../i18n'
 import { t } from '../i18n'
-import { DIAMETERS, liveColumnSteel } from '../lib/calc'
+import { DIAMETERS, liveColumnSteel, STAGGER_LAPS, staggerManualErrors, type StaggerLap } from '../lib/calc'
 
 type Props = {
   inp: Inputs
@@ -71,6 +71,7 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
   const L = t[lang]
   const live = liveColumnSteel(inp)
   const elev = (key: 'cdn' | 'cdtn' | 'cdg') => Math.abs(inp[key])
+  const staggerErr = staggerManualErrors(inp)
 
   return (
     <>
@@ -282,6 +283,54 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
           />
           {L.stagger}
         </label>
+        {inp.stagger && (
+          <>
+            {!inp.staggerManual && (
+              <div className="stagger-laps" role="radiogroup" aria-label={L.staggerLap}>
+                {STAGGER_LAPS.map((v) => (
+                  <label key={v} className="check">
+                    <input
+                      type="radio"
+                      name="staggerLap"
+                      checked={inp.staggerLap === v}
+                      onChange={() => onChange({ staggerLap: v as StaggerLap })}
+                    />
+                    {v}D
+                  </label>
+                ))}
+              </div>
+            )}
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={inp.staggerManual}
+                onChange={(e) => onChange({ staggerManual: e.target.checked }, 'staggerManual')}
+              />
+              {L.staggerManual}
+            </label>
+            {inp.staggerManual && (
+              <div className="stagger-manual">
+                <Row label={L.staggerLeft}>
+                  <Num
+                    value={inp.staggerLeft}
+                    onChange={(staggerLeft) => onChange({ staggerLeft })}
+                  />
+                </Row>
+                <Row label={L.staggerRight}>
+                  <Num
+                    value={inp.staggerRight}
+                    onChange={(staggerRight) => onChange({ staggerRight })}
+                  />
+                </Row>
+                {staggerErr.map((e) => (
+                  <p key={e} className="stagger-err">
+                    {e}
+                  </p>
+                ))}
+              </div>
+            )}
+          </>
+        )}
         <label className="check">
           <input
             type="checkbox"

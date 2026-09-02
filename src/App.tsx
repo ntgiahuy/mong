@@ -8,7 +8,6 @@ import {
   applyGeometry,
   compute,
   DEFAULT_INPUTS,
-  SAMPLE_PDF,
 } from './lib/calc'
 import { fitShopSheetForPrint, resetShopSheetAfterPrint } from './lib/print-sheet'
 import type { Inputs } from './types'
@@ -118,9 +117,6 @@ export default function App() {
           <p>{L.subtitle}</p>
         </div>
         <div className="top-actions">
-          <button type="button" className="ghost" onClick={() => setInp(SAMPLE_PDF)}>
-            {L.sample}
-          </button>
           <button type="button" className="ghost" onClick={() => setInp(DEFAULT_INPUTS)}>
             {L.reset}
           </button>

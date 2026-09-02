@@ -178,6 +178,23 @@ p {
   grid-template-columns: 1fr;
 }
 
+.stagger-laps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 0 0 4px 22px;
+}
+
+.stagger-manual {
+  padding: 0 0 6px 8px;
+}
+
+.stagger-err {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #ffb4b4;
+}
+
 .radios label,
 .check {
   display: flex;

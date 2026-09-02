@@ -45,7 +45,7 @@ npm run preview
 4. Bấm **Shop thép - Bê tông - Cốt pha**.
 5. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 nằm (một trang, đủ khung viền). **Xem CAD** để pan/zoom trên nền tối. **Tải file CAD (DXF)** để mở trong AutoCAD / LibreCAD (đơn vị mm). Trình duyệt không ghi được file DWG gốc — AutoCAD mở DXF trực tiếp. **In** ra khổ A2 nằm một trang.
 
-Nút **Nạp mẫu bản vẽ** điền số liệu shop mẫu M2 (2000×2200). Mở trang / **Mặc định** dùng móng M1 đúng tâm 1800×2000, SL 5.
+Nút **Mặc định** khôi phục móng M1 đúng tâm 1800×2000, SL 5.
 
 Nút **EN** đổi giao diện sang tiếng Anh.
 
@@ -69,6 +69,7 @@ Ymong*Xmong*Hdm
 Số thanh lưới đế: `floor((cạnh - 2*cover) / a) + 1`.
 Số thanh dọc cổ cột: `2 * (Cx + Cy - 2)` (tối thiểu 2 thanh mỗi phương).
 Thép chủ số 3 (L): đoạn thẳng `HCOM+HCM+HDM − 100 mm`, móc vuông góc `300 mm`.
+Tick **Thép cột nối so le** rồi chọn `30D` / `35D` / `40D`: nửa số cây (trái) thò thêm `n×D` trên CDN, nửa còn lại (phải) thò `2n×D`. Ví dụ 10Ø18 chọn 30D → 5 cây +540 mm, 5 cây +1080 mm. **Nối thủ công**: nhập mm trái/phải (không trùng, mỗi bên ≥ CDN+30D, chênh lệch ≥ 30D).
 Đai: `floor(Hcom / a) + 1`, chu vi `2*(A+B) + 2*móc`.
 
 ## Nhúng vào Blogger

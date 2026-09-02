@@ -73,6 +73,10 @@ export const DEFAULT_INPUTS: Inputs = {
   hasBeam: true,
   hBeam: 450,
   stagger: false,
+  staggerLap: 30,
+  staggerManual: false,
+  staggerLeft: 0,
+  staggerRight: 0,
   doubleLayer: false,
   hooked: false,
   industrial: false,
@@ -190,6 +194,61 @@ export function columnPerimeterPts(
   return pts
 }
 
+export const STAGGER_LAPS = [30, 35, 40] as const
+export type StaggerLap = (typeof STAGGER_LAPS)[number]
+
+export function normalizeStaggerLap(n: number | undefined): StaggerLap {
+  if (n === 35 || n === 40) return n
+  return 30
+}
+
+/** Extra length above CDN. Preset: left nD, right 2nD. Manual: typed mm. */
+export function staggerProjection(i: Inputs): {
+  one: number
+  two: number
+  lap: StaggerLap
+  manual: boolean
+} {
+  const lap = normalizeStaggerLap(i.staggerLap)
+  if (!i.stagger) return { one: 0, two: 0, lap, manual: false }
+  if (i.staggerManual) {
+    const one = Number.isFinite(i.staggerLeft) ? Math.max(0, i.staggerLeft) : 0
+    const two = Number.isFinite(i.staggerRight) ? Math.max(0, i.staggerRight) : 0
+    return { one, two, lap, manual: true }
+  }
+  return { one: lap * i.dMain, two: 2 * lap * i.dMain, lap, manual: false }
+}
+
+export function staggerMin30D(dMain: number): number {
+  return 30 * Math.max(1, dMain)
+}
+
+export function staggerManualErrors(i: Inputs): string[] {
+  if (!i.stagger || !i.staggerManual) return []
+  const d30 = staggerMin30D(i.dMain)
+  const left = i.staggerLeft
+  const right = i.staggerRight
+  const err: string[] = []
+  if (!Number.isFinite(left) || !Number.isFinite(right)) {
+    err.push('Nhập chiều dài nối trái và phải (mm).')
+    return err
+  }
+  if (left === right) err.push('Nối trái và phải không được trùng nhau.')
+  if (left < d30 || right < d30) {
+    err.push(`Thép chủ trái và phải phải ≥ CDN + 30D (${d30} mm).`)
+  }
+  if (Math.abs(left - right) + 0.5 < d30) {
+    err.push(`Nối so le phải chênh lệch ít nhất 30D (${d30} mm).`)
+  }
+  return err
+}
+
+export function staggerExtraLabel(mm: number, d: number, manual: boolean): string {
+  if (manual) return `+${Math.round(mm)}`
+  const n = d > 0 ? Math.round(mm / d) : 0
+  return `+${n}D`
+}
+
 function clamp(n: number, lo: number, hi: number): number {
   if (!Number.isFinite(n)) return lo
   return Math.min(hi, Math.max(lo, n))
@@ -226,6 +285,16 @@ export function applyGeometry(i: Inputs, edited?: keyof Inputs): Inputs {
   next.yCc = Number.isFinite(next.yCc) ? next.yCc : next.yMong / 2
   next.axisXName = (next.axisXName ?? '').slice(0, 4)
   next.axisYName = (next.axisYName ?? '').slice(0, 4)
+  next.staggerLap = normalizeStaggerLap(next.staggerLap)
+  if (edited === 'staggerManual' && next.staggerManual) {
+    const d30 = staggerMin30D(next.dMain)
+    const fromLap = next.staggerLap * next.dMain
+    const left = fromLap >= d30 ? fromLap : d30
+    next.staggerLeft = left
+    next.staggerRight = left + d30
+  }
+  if (!Number.isFinite(next.staggerLeft)) next.staggerLeft = 0
+  if (!Number.isFinite(next.staggerRight)) next.staggerRight = 0
   return next
 }
 
@@ -251,6 +320,7 @@ export function compute(i: Inputs): CalcResult {
   if (i.qty < 1) errors.push('Số lượng cấu kiện phải ≥ 1.')
   if (i.coverBase * 2 >= Math.min(i.xMong, i.yMong)) errors.push('Lớp bảo vệ đế móng quá lớn.')
   if (i.aFaX <= 0 || i.aFaY <= 0 || i.aStirrup <= 0) errors.push('Khoảng cách thép phải lớn hơn 0.')
+  errors.push(...staggerManualErrors(i))
 
   const x2 = i.xMong - i.x1 - i.xCo
   const y2 = i.yMong - i.y1 - i.yCo
@@ -275,8 +345,9 @@ export function compute(i: Inputs): CalcResult {
 
   const colHook = 300
   const colStraightLen = Math.max(0, totalH - 100)
-  const straightA = colStraightLen
-  const straightB = i.stagger ? colStraightLen + 40 * i.dMain : colStraightLen
+  const proj = staggerProjection(i)
+  const straightA = colStraightLen + proj.one
+  const straightB = colStraightLen + proj.two
   const colStraight = i.stagger
     ? [roundTo(straightA, 10), roundTo(straightB, 10)]
     : [roundTo(straightA, 10)]
@@ -314,26 +385,30 @@ export function compute(i: Inputs): CalcResult {
     label: i.bottomLayerX ? `FaY Ø${i.dFaY}a${i.aFaY}` : `FaX Ø${i.dFaX}a${i.aFaX}`,
   })
 
-  const nLong = i.stagger ? Math.ceil(nCol / 2) : nCol
-  const nShort = i.stagger ? nCol - nLong : 0
+  const nOne = i.stagger ? Math.floor(nCol / 2) : nCol
+  const nTwo = i.stagger ? nCol - nOne : 0
   const L0 = colStraight[0] + colHook
-  push({
-    shape: 'L',
-    segs: [colHook, colStraight[0]],
-    d: i.dMain,
-    length: L0,
-    n1: nLong,
-    label: `${nLong}Ø${i.dMain}`,
-  })
-  if (i.stagger && nShort > 0) {
+  if (nOne > 0) {
+    push({
+      shape: 'L',
+      segs: [colHook, colStraight[0]],
+      d: i.dMain,
+      length: L0,
+      n1: nOne,
+      label: i.stagger
+        ? `${nOne}Ø${i.dMain} ${staggerExtraLabel(proj.one, i.dMain, proj.manual)}`
+        : `${nOne}Ø${i.dMain}`,
+    })
+  }
+  if (i.stagger && nTwo > 0) {
     const L1 = colStraight[1] + colHook
     push({
       shape: 'L',
       segs: [colHook, colStraight[1]],
       d: i.dMain,
       length: L1,
-      n1: nShort,
-      label: `${nShort}Ø${i.dMain}`,
+      n1: nTwo,
+      label: `${nTwo}Ø${i.dMain} ${staggerExtraLabel(proj.two, i.dMain, proj.manual)}`,
     })
   }
 

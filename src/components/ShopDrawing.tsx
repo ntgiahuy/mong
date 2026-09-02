@@ -1,6 +1,6 @@
 import type { CalcResult, Inputs, RebarRow } from '../types'
 import { t, type Lang } from '../i18n'
-import { barHookSign, columnPerimeterPts, faceStations, meshStations, pedestalShoulders } from '../lib/calc'
+import { barHookSign, columnPerimeterPts, faceStations, meshStations, pedestalShoulders, staggerProjection } from '../lib/calc'
 import { AxisBubble } from './AxisBubble'
 
 type Props = {
@@ -269,7 +269,8 @@ function sheetScale(inp: Inputs): number {
   const availW = SHEET_W - CALLOUT_W - 36 - (OX + RIGHT) * 2
   const sW = availW / Math.max(inp.xMong + inp.yMong, 1)
   const stackExtra = 330
-  const sH = (1080 - stackExtra) / Math.max(totalH + inp.yMong, 1)
+  const staggerHead = staggerProjection(inp).two
+  const sH = (1080 - stackExtra) / Math.max(totalH + inp.yMong + staggerHead, 1)
   return Math.min(sW, sH, 0.22)
 }
 
@@ -279,7 +280,7 @@ function sectionSize(inp: Inputs, axis: 'x' | 'y', s: number) {
   const sandH = inp.fType === 'sand' ? 18 : 0
   const bw = widthMm * s
   const W = OX + bw + RIGHT
-  const oy = SECTION_OY
+  const oy = SECTION_OY + staggerProjection(inp).two * s
   const y4 = oy + (totalH + inp.lining) * s
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
   const H = captionY + SECTION_CAPTION_PAD
@@ -299,9 +300,7 @@ function Callouts({
 }) {
   const colBars = result.bars.filter((b) => b.shape === 'L')
   const stirrup = result.bars.find((b) => b.shape === 'stirrup')
-  const totalH = inp.hCom + inp.hCm + inp.hDm
   const oy = 22
-  const stem = Math.max(80, (totalH - 100) * s)
   const hook = Math.max(16, Math.min(40, result.colHook * s * 0.5))
   const pairW = 64
   const W = CALLOUT_W
@@ -309,19 +308,24 @@ function Callouts({
   const hoopH = 62
   const x1 = hook + 6
   const x2 = x1 + pairW
-  const y1 = oy
-  const y2 = y1 + stem
+  const stems = colBars.map((b) => Math.max(80, (b.segs[1] ?? inp.hCom + inp.hCm + inp.hDm - 100) * s))
+  let yCursor = oy
+  const laid = colBars.map((b, i) => {
+    const stem = stems[i]
+    const ya = yCursor
+    const yb = ya + stem
+    yCursor = yb + hook + 22
+    return { b, ya, yb, stem }
+  })
+  const lastYb = laid.length ? laid[laid.length - 1].yb : oy
   const stirX = x2 + hook + 10
-  const stirY = y2 - hoopH
-  const lBot = y2 + hook + 20
+  const stirY = lastYb - hoopH
+  const lBot = lastYb + hook + 20
   const H = Math.max(height, lBot, stirY + hoopH + 26)
 
   return (
     <svg className="cad" data-cad-scale={s} viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
-      {colBars.map((b, i) => {
-        const dy = i * (stem + hook + 22)
-        const ya = y1 + dy
-        const yb = y2 + dy
+      {laid.map(({ b, ya, yb }) => {
         const mid = (ya + yb) / 2
         return (
           <g key={b.mark}>
@@ -348,7 +352,7 @@ function Callouts({
               transform={`rotate(-90, ${(x1 + x2) / 2}, ${mid + 10})`}
               textAnchor="middle"
             >
-              {inp.cx}Ø{b.d}-L={b.length}
+              {b.n1}Ø{b.d}-L={b.length}
             </text>
             <text x={x1 - hook / 2} y={yb + 12} textAnchor="middle" fontSize={8}>
               {b.segs[0]}
@@ -363,7 +367,7 @@ function Callouts({
         <g>
           <line
             x1={x2 + hook}
-            y1={y2}
+            y1={lastYb}
             x2={stirX}
             y2={stirY + hoopH / 2}
             stroke="#111"
@@ -406,13 +410,11 @@ function SectionDrawing({
   const meshY = result.bars.find((b) => b.label.includes('FaY'))
   const markLong = (axis === 'x' ? meshX : meshY)?.mark ?? (axis === 'x' ? 1 : 2)
   const markTrans = (axis === 'x' ? meshY : meshX)?.mark ?? (axis === 'x' ? 2 : 1)
-  const colMark = result.bars.find((b) => b.shape === 'L')?.mark ?? 3
   const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
 
   const totalH = inp.hCom + inp.hCm + inp.hDm
   const ox = OX
-  const { W, H } = sectionSize(inp, axis, s)
-  const oy = SECTION_OY
+  const { W, H, oy } = sectionSize(inp, axis, s)
   const bw = widthMm * s
   const cw = colMm * s
   const left = leftMm * s
@@ -437,6 +439,7 @@ function SectionDrawing({
   const lineW = Math.max(1.4, dLine / 10)
   const dotR = Math.max(2.0, dDot / 5)
   const hookPx = Math.min(32, Math.max(14, result.colHook * s))
+  const proj = staggerProjection(inp)
   const axisMm = axis === 'x' ? inp.xCc : inp.yCc
   const axisName = axis === 'x' ? inp.axisXName : inp.axisYName
   const gridX = ox + axisMm * s
@@ -508,10 +511,12 @@ function SectionDrawing({
         const dir = barHookSign(x, colX + cw / 2, ox, ox + bw, hookPx)
         const room = dir < 0 ? x - ox : ox + bw - x
         const hook = Math.max(8, Math.min(hookPx, room - 2))
+        const extra = x < colX + cw / 2 ? proj.one : proj.two
+        const yTop = y0 - extra * s
         return (
           <path
             key={`v${i}`}
-            d={`M ${x} ${y0 + 4} L ${x} ${yHook} L ${x + dir * hook} ${yHook}`}
+            d={`M ${x} ${yTop} L ${x} ${yHook} L ${x + dir * hook} ${yHook}`}
             fill="none"
             stroke="#111"
             strokeWidth={barW}
@@ -520,6 +525,12 @@ function SectionDrawing({
           />
         )
       })}
+      {inp.stagger && proj.one > 0 && (
+        <>
+          <VDim x={colX - 10} y1={y0 - proj.one * s} y2={y0} label={proj.manual ? Math.round(proj.one) : `${proj.lap}D`} left />
+          <VDim x={colX + cw + 10} y1={y0 - proj.two * s} y2={y0} label={proj.manual ? Math.round(proj.two) : `${Math.round(proj.two / Math.max(inp.dMain, 1))}D`} />
+        </>
+      )}
 
       {Array.from({ length: result.nStirrup }).map((_, i) => {
         const y = y0 + (inp.coverCol + i * inp.aStirrup) * s
@@ -570,10 +581,16 @@ function SectionDrawing({
       {inp.doubleLayer &&
         transXs.map((x, i) => <circle key={`d2${i}`} cx={x} cy={yTrans2} r={dotR} fill="#111" />)}
 
-      <Tag n={colMark} x={colX + cw + 14} y={yMainLab} />
-      <text x={colX + cw + 26} y={yMainLab + 4} fontSize={11} fontWeight={700}>
-        {result.nCol}Ø{inp.dMain}
-      </text>
+      {result.bars
+        .filter((b) => b.shape === 'L')
+        .map((b, i) => (
+          <g key={`colmark${b.mark}`}>
+            <Tag n={b.mark} x={colX + cw + 14} y={yMainLab + i * 18} />
+            <text x={colX + cw + 26} y={yMainLab + 4 + i * 18} fontSize={11} fontWeight={700}>
+              {b.label}
+            </text>
+          </g>
+        ))}
       <Tag n={stirMark} x={colX + cw + 14} y={yStirLab} />
       <text x={colX + cw + 26} y={yStirLab + 4} fontSize={10}>
         Ø{inp.dStirrup}a{inp.aStirrup}

@@ -40,6 +40,12 @@ export interface Inputs {
   hasBeam: boolean
   hBeam: number
   stagger: boolean
+  /** Lap multiple for staggered column splices: 30D / 35D / 40D. */
+  staggerLap: 30 | 35 | 40
+  /** Manual left/right extras above CDN instead of nD / 2nD. */
+  staggerManual: boolean
+  staggerLeft: number
+  staggerRight: number
   doubleLayer: boolean
   hooked: boolean
   industrial: boolean

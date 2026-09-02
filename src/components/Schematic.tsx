@@ -1,5 +1,5 @@
 import type { Inputs } from '../types'
-import { barHookSign, faceStations, meshStations, pedestalShoulders } from '../lib/calc'
+import { barHookSign, faceStations, meshStations, pedestalShoulders, staggerProjection } from '../lib/calc'
 import { AxisBubble } from './AxisBubble'
 
 type Props = {
@@ -134,10 +134,11 @@ export function Schematic({ inp }: Props) {
   const MAX_STACK = 560
 
   const totalH = inp.hCom + inp.hCm + inp.hDm
+  const proj = staggerProjection(inp)
   const elevMm = totalH + inp.lining
   const planMm = inp.yMong
   const sW = (COL_W - LEFT - RIGHT) / Math.max(inp.xMong, 1)
-  const sH = (MAX_STACK - TOP - GAP - BOT) / Math.max(elevMm + planMm, 1)
+  const sH = (MAX_STACK - TOP - GAP - BOT) / Math.max(elevMm + planMm + proj.two, 1)
   const s = Math.min(Math.max(Math.min(sW, sH), 0.072), 0.16)
 
   const baseW = inp.xMong * s
@@ -158,7 +159,7 @@ export function Schematic({ inp }: Props) {
   const stirW = Math.max(0.9, Math.min(1.6, inp.dStirrup * s * 0.16))
 
   const x0 = LEFT
-  const yColTop = TOP
+  const yColTop = TOP + proj.two * s
   const colX = x0 + left
   const ySlopeTop = yColTop + hCom
   const yBaseTop = ySlopeTop + hCm
@@ -299,10 +300,11 @@ export function Schematic({ inp }: Props) {
         const dir = barHookSign(x, colX + colW / 2, x0, x0 + baseW, hook)
         const room = dir < 0 ? x - x0 : x0 + baseW - x
         const hLen = Math.max(4, Math.min(hook, room - 2))
+        const extra = x < colX + colW / 2 ? proj.one : proj.two
         return (
           <path
             key={`cy${i}`}
-            d={`M ${x} ${yColTop + 5} L ${x} ${yBaseBot - 8} L ${x + dir * hLen} ${yBaseBot - 8}`}
+            d={`M ${x} ${yColTop - extra * s} L ${x} ${yBaseBot - 8} L ${x + dir * hLen} ${yBaseBot - 8}`}
             fill="none"
             stroke={STEEL}
             strokeWidth={barW}
