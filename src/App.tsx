@@ -106,10 +106,10 @@ export default function App() {
             title="GiaHuy.Net"
           >
             <img
-              src="https://blogger.googleusercontent.com/img/a/AVvXsEiAjFLnRTzRxbo61AZk5rhwAzRue6rDxzwFDj5yJ9cTBoENU1eZXOL6XGqA_kNVI2DRa7de49yYikTmRf8LD8v4E1rxlSPvBNl7lgl-uNozT5GIxRxL5Bh67lIKGGPLV6BLTDXEr8GZ8_Lg2ph1fTscaVaREtZZy5KDhdD-CojQj3JcAOa2MNMoJaf42OQ=w200"
-              alt="GiaHuy.Net"
-              width={200}
-              height={100}
+              src={`${import.meta.env.BASE_URL}giahuy-logo.png`}
+              alt="GiaHuy"
+              width={171}
+              height={47}
             />
           </a>
           <div className="brand-copy">

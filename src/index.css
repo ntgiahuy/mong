@@ -43,15 +43,25 @@ p {
 .topbar {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 12px;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #5c5c5c;
   flex-wrap: wrap;
 }
 
 .topbar h1 {
   font-size: 22px;
   font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+@media (min-width: 720px) {
+  .topbar h1 {
+    font-size: 24px;
+  }
 }
 
 .brand {
@@ -63,6 +73,8 @@ p {
 
 .brand-copy {
   min-width: 0;
+  padding-left: 16px;
+  border-left: 1px solid #7a7a7a;
 }
 
 .brand-logo {
@@ -70,23 +82,22 @@ p {
   align-items: center;
   line-height: 0;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45));
 }
 
 .brand-logo:hover img {
-  transform: scale(1.04);
+  filter: brightness(1.12);
 }
 
 .brand-logo img {
-  height: 72px;
+  height: 44px;
   width: auto;
   display: block;
-  transition: transform 0.15s ease;
+  transition: filter 0.15s ease;
 }
 
 @media (min-width: 720px) {
   .brand-logo img {
-    height: 88px;
+    height: 52px;
   }
 }
 
@@ -94,12 +105,14 @@ p {
   color: var(--muted);
   font-size: 13px;
   margin-top: 4px;
+  line-height: 1.35;
 }
 
 .top-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .workspace {
