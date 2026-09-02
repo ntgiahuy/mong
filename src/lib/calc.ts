@@ -177,12 +177,18 @@ export function applyGeometry(i: Inputs, edited?: keyof Inputs): Inputs {
     centerX()
     centerY()
   } else if (next.layout === 'ecc-x') {
+    if (edited === 'layout') next.x1 = 0
     centerY()
     syncFromX1()
   } else if (next.layout === 'ecc-y') {
+    if (edited === 'layout') next.y1 = 0
     centerX()
     syncFromY1()
   } else {
+    if (edited === 'layout') {
+      next.x1 = 0
+      next.y1 = 0
+    }
     if (edited !== 'xCc') syncFromX1()
     if (edited !== 'yCc') syncFromY1()
   }

@@ -117,7 +117,7 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
                 type="radio"
                 name="layout"
                 checked={inp.layout === v}
-                onChange={() => onChange({ layout: v as LayoutType })}
+                onChange={() => onChange({ layout: v as LayoutType }, 'layout')}
               />
               {label}
             </label>
