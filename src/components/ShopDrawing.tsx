@@ -1,6 +1,6 @@
 import type { CalcResult, Inputs, RebarRow } from '../types'
 import { t, type Lang } from '../i18n'
-import { columnPerimeterPts, faceStations, meshStations } from '../lib/calc'
+import { barHookSign, columnPerimeterPts, faceStations, meshStations, pedestalShoulders } from '../lib/calc'
 
 type Props = {
   inp: Inputs
@@ -12,8 +12,6 @@ const OX = 78
 const RIGHT = 118
 const CALLOUT_W = 220
 const SHEET_W = 1782
-/** Pedestal shoulder under the column, each side (matches Xcot+0.1 / Ycot+0.1). */
-const SHOULDER_MM = 50
 /** Lean-concrete plan overhang each side (matches Xmong+0.2 / Ymong+0.2). */
 const LOT_PLAN_MM = 100
 /** Gap from footing bottom to view title — just below the overall X-dimension numbers. */
@@ -40,6 +38,7 @@ function HDim({
   label: string | number
   below?: boolean
 }) {
+  if (Math.abs(x2 - x1) < 3.5) return null
   const a = Math.min(x1, x2)
   const b = Math.max(x1, x2)
   const mid = (a + b) / 2
@@ -69,6 +68,7 @@ function VDim({
   label: string | number
   left?: boolean
 }) {
+  if (Math.abs(y2 - y1) < 3.5) return null
   const a = Math.min(y1, y2)
   const b = Math.max(y1, y2)
   const mid = (a + b) / 2
@@ -421,9 +421,11 @@ function SectionDrawing({
   const y3 = y2 + hs.dm
   const y4 = y3 + lot
   const colX = ox + left
-  const sh = SHOULDER_MM * s
-  const topL = Math.max(ox, colX - sh)
-  const topR = Math.min(ox + bw, colX + cw + sh)
+  const shSides = pedestalShoulders(inp)
+  const shL = (axis === 'x' ? shSides.left : shSides.top) * s
+  const shR = (axis === 'x' ? shSides.right : shSides.bottom) * s
+  const topL = colX - shL
+  const topR = colX + cw + shR
   const sandH = inp.fType === 'sand' ? 18 : 0
   const cover = inp.coverBase * s
   const colCover = inp.coverCol * s
@@ -497,11 +499,13 @@ function SectionDrawing({
         ))}
 
       {faceXs.map((x, i) => {
-        const dir = x < colX + cw / 2 ? -1 : 1
+        const dir = barHookSign(x, colX + cw / 2, ox, ox + bw, hookPx)
+        const room = dir < 0 ? x - ox : ox + bw - x
+        const hook = Math.max(8, Math.min(hookPx, room - 2))
         return (
           <path
             key={`v${i}`}
-            d={`M ${x} ${y0 + 4} L ${x} ${yHook} L ${x + dir * hookPx} ${yHook}`}
+            d={`M ${x} ${y0 + 4} L ${x} ${yHook} L ${x + dir * hook} ${yHook}`}
             fill="none"
             stroke="#111"
             strokeWidth={barW}
@@ -577,25 +581,37 @@ function SectionDrawing({
         Ø{dDot}a{aDot}
       </text>
 
-      <HDim x1={ox} x2={ox + cover} y={y4 + sandH + 18} label={inp.coverBase} below />
-      <HDim
-        x1={ox + cover}
-        x2={topL}
-        y={y4 + sandH + 18}
-        label={Math.round(leftMm - inp.coverBase - SHOULDER_MM)}
-        below
-      />
-      <HDim x1={topL} x2={colX} y={y4 + sandH + 18} label={SHOULDER_MM} below />
+      {leftMm >= inp.coverBase - 0.5 && (
+        <HDim x1={ox} x2={ox + cover} y={y4 + sandH + 18} label={inp.coverBase} below />
+      )}
+      {leftMm - inp.coverBase - shL / s > 0.5 && (
+        <HDim
+          x1={ox + cover}
+          x2={topL}
+          y={y4 + sandH + 18}
+          label={Math.round(leftMm - inp.coverBase - shL / s)}
+          below
+        />
+      )}
+      {shL / s > 0.5 && (
+        <HDim x1={topL} x2={colX} y={y4 + sandH + 18} label={Math.round(shL / s)} below />
+      )}
       <HDim x1={colX} x2={colX + cw} y={y4 + sandH + 18} label={colMm} below />
-      <HDim x1={colX + cw} x2={topR} y={y4 + sandH + 18} label={SHOULDER_MM} below />
-      <HDim
-        x1={topR}
-        x2={ox + bw - cover}
-        y={y4 + sandH + 18}
-        label={Math.round(widthMm - leftMm - colMm - inp.coverBase - SHOULDER_MM)}
-        below
-      />
-      <HDim x1={ox + bw - cover} x2={ox + bw} y={y4 + sandH + 18} label={inp.coverBase} below />
+      {shR / s > 0.5 && (
+        <HDim x1={colX + cw} x2={topR} y={y4 + sandH + 18} label={Math.round(shR / s)} below />
+      )}
+      {widthMm - leftMm - colMm - inp.coverBase - shR / s > 0.5 && (
+        <HDim
+          x1={topR}
+          x2={ox + bw - cover}
+          y={y4 + sandH + 18}
+          label={Math.round(widthMm - leftMm - colMm - inp.coverBase - shR / s)}
+          below
+        />
+      )}
+      {widthMm - leftMm - colMm >= inp.coverBase - 0.5 && (
+        <HDim x1={ox + bw - cover} x2={ox + bw} y={y4 + sandH + 18} label={inp.coverBase} below />
+      )}
       <HDim x1={ox} x2={ox + bw} y={y4 + sandH + 36} label={widthMm} below />
 
       <VDim x={ox - 22} y1={y3} y2={y4} label={inp.lining} left />
@@ -651,11 +667,11 @@ function PlanDrawing({
   const cy = oy + inp.y1 * s
   const cw = inp.xCo * s
   const ch = inp.yCo * s
-  const sh = SHOULDER_MM * s
-  const sx = cx - sh
-  const sy = cy - sh
-  const sw = cw + sh * 2
-  const shh = ch + sh * 2
+  const sh = pedestalShoulders(inp)
+  const sx = cx - sh.left * s
+  const sy = cy - sh.top * s
+  const sw = cw + (sh.left + sh.right) * s
+  const shh = ch + (sh.top + sh.bottom) * s
   const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
   const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
@@ -783,39 +799,54 @@ function PlanDrawing({
       </text>
 
       <HDim x1={ox - lot} x2={ox} y={dimY} label={LOT_PLAN_MM} below />
-      <HDim x1={ox} x2={ox + cover} y={dimY} label={inp.coverBase} below />
-      <HDim
-        x1={ox + cover}
-        x2={sx}
-        y={dimY}
-        label={Math.round(inp.x1 - inp.coverBase - SHOULDER_MM)}
-        below
-      />
-      <HDim x1={sx} x2={cx} y={dimY} label={SHOULDER_MM} below />
+      {inp.x1 >= inp.coverBase - 0.5 && (
+        <HDim x1={ox} x2={ox + cover} y={dimY} label={inp.coverBase} below />
+      )}
+      {inp.x1 - inp.coverBase - sh.left > 0.5 && (
+        <HDim
+          x1={ox + cover}
+          x2={sx}
+          y={dimY}
+          label={Math.round(inp.x1 - inp.coverBase - sh.left)}
+          below
+        />
+      )}
+      {sh.left > 0.5 && <HDim x1={sx} x2={cx} y={dimY} label={Math.round(sh.left)} below />}
       <HDim x1={cx} x2={cx + cw} y={dimY} label={inp.xCo} below />
-      <HDim x1={cx + cw} x2={sx + sw} y={dimY} label={SHOULDER_MM} below />
-      <HDim
-        x1={sx + sw}
-        x2={ox + w - cover}
-        y={dimY}
-        label={Math.round(result.x2 - inp.coverBase - SHOULDER_MM)}
-        below
-      />
+      {sh.right > 0.5 && <HDim x1={cx + cw} x2={sx + sw} y={dimY} label={Math.round(sh.right)} below />}
+      {result.x2 - inp.coverBase - sh.right > 0.5 && (
+        <HDim
+          x1={sx + sw}
+          x2={ox + w - cover}
+          y={dimY}
+          label={Math.round(result.x2 - inp.coverBase - sh.right)}
+          below
+        />
+      )}
+      {result.x2 >= inp.coverBase - 0.5 && (
+        <HDim x1={ox + w - cover} x2={ox + w} y={dimY} label={inp.coverBase} below />
+      )}
       <HDim x1={ox} x2={ox + w} y={dimY + 16} label={inp.xMong} below />
       <HDim x1={ox + w} x2={ox + w + lot} y={dimY} label={LOT_PLAN_MM} below />
 
       <VDim x={ox - 22} y1={oy - lot} y2={oy} label={LOT_PLAN_MM} left />
-      <VDim x={ox - 22} y1={oy} y2={sy} label={Math.round(inp.y1 - SHOULDER_MM)} left />
-      <VDim x={ox - 22} y1={sy} y2={cy} label={SHOULDER_MM} left />
+      {inp.y1 - sh.top > 0.5 && (
+        <VDim x={ox - 22} y1={oy} y2={sy} label={Math.round(inp.y1 - sh.top)} left />
+      )}
+      {sh.top > 0.5 && <VDim x={ox - 22} y1={sy} y2={cy} label={Math.round(sh.top)} left />}
       <VDim x={ox - 22} y1={cy} y2={cy + ch} label={inp.yCo} left />
-      <VDim x={ox - 22} y1={cy + ch} y2={sy + shh} label={SHOULDER_MM} left />
-      <VDim
-        x={ox - 22}
-        y1={sy + shh}
-        y2={oy + h}
-        label={Math.round(inp.yMong - inp.y1 - inp.yCo - SHOULDER_MM)}
-        left
-      />
+      {sh.bottom > 0.5 && (
+        <VDim x={ox - 22} y1={cy + ch} y2={sy + shh} label={Math.round(sh.bottom)} left />
+      )}
+      {result.y2 - sh.bottom > 0.5 && (
+        <VDim
+          x={ox - 22}
+          y1={sy + shh}
+          y2={oy + h}
+          label={Math.round(result.y2 - sh.bottom)}
+          left
+        />
+      )}
       <VDim x={ox - 44} y1={oy} y2={oy + h} label={inp.yMong} left />
 
       {bar1 && (

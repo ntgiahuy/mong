@@ -1,6 +1,41 @@
 import type { CalcResult, Inputs, RebarRow, SteelByDia } from '../types'
 
 export const DIAMETERS = [6, 8, 10, 12, 14, 16, 18, 20, 22, 25, 28, 32]
+/** Pedestal shoulder under the column, each side, when it still fits on the footing. */
+export const SHOULDER_MM = 50
+
+export function sideShoulder(offsetMm: number, max = SHOULDER_MM): number {
+  if (!Number.isFinite(offsetMm) || offsetMm <= 0.5) return 0
+  return Math.min(max, offsetMm)
+}
+
+export function pedestalShoulders(i: Inputs): {
+  left: number
+  right: number
+  top: number
+  bottom: number
+} {
+  return {
+    left: sideShoulder(i.x1),
+    right: sideShoulder(i.xMong - i.x1 - i.xCo),
+    top: sideShoulder(i.y1),
+    bottom: sideShoulder(i.yMong - i.y1 - i.yCo),
+  }
+}
+
+/** +1 / −1 so an L-hook stays inside [minX, maxX] instead of sticking out of the concrete. */
+export function barHookSign(
+  x: number,
+  mid: number,
+  minX: number,
+  maxX: number,
+  hook: number,
+): 1 | -1 {
+  const outward: 1 | -1 = x < mid ? -1 : 1
+  const tip = x + outward * hook
+  if (tip < minX + 0.5 || tip > maxX - 0.5) return outward === 1 ? -1 : 1
+  return outward
+}
 
 export const DEFAULT_INPUTS: Inputs = {
   layout: 'center',
@@ -349,8 +384,9 @@ export function compute(i: Inputs): CalcResult {
   const formworkFooting = round((ym + xm) * 2 * hdm, 2)
   const formworkNeck = round((yc + xc) * 2 * hcom, 2)
   const concreteNeck = round(yc * xc * hcom, 3)
-  const xcTop = xc + 0.1
-  const ycTop = yc + 0.1
+  const sh = pedestalShoulders(i)
+  const xcTop = xc + (sh.left + sh.right) / 1000
+  const ycTop = yc + (sh.top + sh.bottom) / 1000
   const frustum =
     hcm > 0
       ? (hcm / 3) * (ym * xm + xcTop * ycTop + Math.sqrt(ym * xm * xcTop * ycTop))
@@ -359,11 +395,19 @@ export function compute(i: Inputs): CalcResult {
   const concreteLining = round((xm + 0.2) * (ym + 0.2) * tLot, 3)
 
   const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, ''))
+  const topAdd = (a: number, b: number, axis: 'X' | 'Y') => {
+    const mm = a + b
+    if (mm === 100) return `${axis}cot+0.1`
+    if (mm < 0.5) return `${axis}cot`
+    return `${axis}cot+${fmt(mm / 1000)}`
+  }
+  const xTopTerm = topAdd(sh.left, sh.right, 'X')
+  const yTopTerm = topAdd(sh.top, sh.bottom, 'Y')
 
   const formworkFootingExpr = `=(Ymong+Xmong)*2*Hdm  —  (${fmt(ym)}+${fmt(xm)})*2*${fmt(hdm)}=${formworkFooting} m²`
   const formworkNeckExpr = `=(Ycot+Xcot)*2*Hcom  —  (${fmt(yc)}+${fmt(xc)})*2*${fmt(hcom)}=${formworkNeck} m²`
   const concreteNeckExpr = `=Ycot*Xcot*Hcom  —  ${fmt(yc)}*${fmt(xc)}*${fmt(hcom)}=${concreteNeck} m³`
-  const concreteFootingExpr = `=((Ymong*Xmong*Hdm)+(Hcm/3*(Ymong*Xmong+(Xcot+0.1)*(Ycot+0.1)+SQRT(Ymong*Xmong*(Xcot+0.1)*(Ycot+0.1)))))  —  ((${fmt(ym)}*${fmt(xm)}*${fmt(hdm)})+(${fmt(hcm)}/3*(${fmt(ym)}*${fmt(xm)}+${fmt(xcTop)}*${fmt(ycTop)}+SQRT(${fmt(ym)}*${fmt(xm)}*${fmt(xcTop)}*${fmt(ycTop)}))))=${concreteFooting} m³`
+  const concreteFootingExpr = `=((Ymong*Xmong*Hdm)+(Hcm/3*(Ymong*Xmong+(${xTopTerm})*(${yTopTerm})+SQRT(Ymong*Xmong*(${xTopTerm})*(${yTopTerm})))))  —  ((${fmt(ym)}*${fmt(xm)}*${fmt(hdm)})+(${fmt(hcm)}/3*(${fmt(ym)}*${fmt(xm)}+${fmt(xcTop)}*${fmt(ycTop)}+SQRT(${fmt(ym)}*${fmt(xm)}*${fmt(xcTop)}*${fmt(ycTop)}))))=${concreteFooting} m³`
   const concreteLiningExpr = `=(Xmong+0.2)*(Ymong+0.2)*Hcom  —  (${fmt(xm)}+0.2)*(${fmt(ym)}+0.2)*${fmt(tLot)}=${concreteLining} m³`
 
   const stirrupRows = bars.filter((b) => b.shape === 'stirrup')

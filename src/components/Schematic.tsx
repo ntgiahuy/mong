@@ -1,5 +1,5 @@
 import type { Inputs } from '../types'
-import { faceStations, meshStations } from '../lib/calc'
+import { barHookSign, faceStations, meshStations, pedestalShoulders } from '../lib/calc'
 
 type Props = {
   inp: Inputs
@@ -12,7 +12,6 @@ const OUTLINE = '#e8e8e8'
 const CYAN = '#9fd4ff'
 const COL = '#7ec8ff'
 const RED = '#e25b5b'
-const SHOULDER = 50
 const LOT_PLAN = 100
 
 function DimH({
@@ -144,7 +143,11 @@ export function Schematic({ inp }: Props) {
   const colW = inp.xCo * s
   const left = inp.x1 * s
   const lot = LOT_PLAN * s
-  const sh = SHOULDER * s
+  const sh = pedestalShoulders(inp)
+  const shL = sh.left * s
+  const shR = sh.right * s
+  const shT = sh.top * s
+  const shB = sh.bottom * s
   const hCom = inp.hCom * s
   const hCm = inp.hCm * s
   const hDm = inp.hDm * s
@@ -175,10 +178,10 @@ export function Schematic({ inp }: Props) {
   const pch = inp.yCo * s
   const cx = px + inp.xCc * s
   const cy = py + inp.yCc * s
-  const sx = pcx - sh
-  const sy = pcy - sh
-  const sw = pcw + sh * 2
-  const shh = pch + sh * 2
+  const sx = pcx - shL
+  const sy = pcy - shT
+  const sw = pcw + shL + shR
+  const shh = pch + shT + shB
 
   const W = Math.ceil(LEFT + baseW + RIGHT)
   const H = Math.ceil(py + ph + lot + BOT)
@@ -211,7 +214,7 @@ export function Schematic({ inp }: Props) {
       />
 
       <polygon
-        points={`${x0},${yBaseTop} ${x0 + baseW},${yBaseTop} ${Math.min(x0 + baseW, colX + colW + sh)},${ySlopeTop} ${Math.max(x0, colX - sh)},${ySlopeTop}`}
+        points={`${x0},${yBaseTop} ${x0 + baseW},${yBaseTop} ${colX + colW + shR},${ySlopeTop} ${colX - shL},${ySlopeTop}`}
         fill="#525252"
         stroke={OUTLINE}
       />
@@ -281,11 +284,14 @@ export function Schematic({ inp }: Props) {
 
       {faceStations(Math.max(2, inp.cx), inp.xCo, inp.coverCol).map((mm, i) => {
         const x = colX + mm * s
-        const dir = x < colX + colW / 2 ? -1 : 1
+        const hook = 11
+        const dir = barHookSign(x, colX + colW / 2, x0, x0 + baseW, hook)
+        const room = dir < 0 ? x - x0 : x0 + baseW - x
+        const hLen = Math.max(4, Math.min(hook, room - 2))
         return (
           <path
             key={`cy${i}`}
-            d={`M ${x} ${yColTop + 5} L ${x} ${yBaseBot - 8} L ${x + dir * 11} ${yBaseBot - 8}`}
+            d={`M ${x} ${yColTop + 5} L ${x} ${yBaseBot - 8} L ${x + dir * hLen} ${yBaseBot - 8}`}
             fill="none"
             stroke={STEEL}
             strokeWidth={barW}
@@ -397,9 +403,17 @@ export function Schematic({ inp }: Props) {
       <text x={px - lot + 4} y={py + ph + lot - 5} fill="#e8e8e8" fontSize={10} fontWeight={700}>
         Lót
       </text>
-      <text x={sx + 4} y={sy - 4} fill={YELLOW} fontSize={10} fontWeight={700}>
-        Vai
-      </text>
+      {(shL > 1 || shR > 1 || shT > 1 || shB > 1) && (
+        <text
+          x={shL > 1 || shT > 1 ? sx + 4 : sx + Math.max(8, sw - 28)}
+          y={shT > 1 || shL > 1 ? sy - 4 : sy + shh + 12}
+          fill={YELLOW}
+          fontSize={10}
+          fontWeight={700}
+        >
+          Vai
+        </text>
+      )}
 
       <DimH x1={px - lot} x2={px} y={py + ph + lot + 12} label="Lót" color="#c8c8c8" />
       <DimH x1={px} x2={pcx} y={py + ph + lot + 12} label="X1" color={YELLOW} />

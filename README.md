@@ -56,12 +56,14 @@ Nút **EN** đổi giao diện sang tiếng Anh.
 - Ván khuôn cổ cột: `(Ycot + Xcot) * 2 * Hcom`
 - Bê tông cổ cột: `Ycot * Xcot * Hcom`
 - Bê tông lót: `(Xmong+0.2)*(Ymong+0.2)*` chiều dày lót (nhô 0.1 m mỗi phía)
-- Bê tông móng (đế + chóp cụt cánh móng):
+- Bê tông móng (đế + chóp cụt cánh móng). Vai 50 mm mỗi phía nếu còn nằm trên đế; X1/Y1 = 0 thì bỏ vai phía đó:
 
 ```
 Ymong*Xmong*Hdm
-+ Hcm/3 * (Ymong*Xmong + (Xcot+0.1)*(Ycot+0.1) + sqrt(Ymong*Xmong*(Xcot+0.1)*(Ycot+0.1)))
++ Hcm/3 * (Ymong*Xmong + Xtop*Ytop + sqrt(Ymong*Xmong*Xtop*Ytop))
 ```
+
+`Xtop`/`Ytop` = kích thước mặt trên chóp (cột + vai còn lại), không luôn `Xcot+0.1`.
 
 Số thanh lưới đế: `floor((cạnh - 2*cover) / a) + 1`.
 Số thanh dọc cổ cột: `2 * (Cx + Cy - 2)` (tối thiểu 2 thanh mỗi phương).
