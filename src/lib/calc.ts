@@ -50,6 +50,8 @@ export const DEFAULT_INPUTS: Inputs = {
   hDm: 200,
   xCc: 900,
   yCc: 1000,
+  axisXName: '1',
+  axisYName: 'A',
   x1: 750,
   y1: 800,
   cdn: 0,
@@ -188,45 +190,42 @@ export function columnPerimeterPts(
   return pts
 }
 
+function clamp(n: number, lo: number, hi: number): number {
+  if (!Number.isFinite(n)) return lo
+  return Math.min(hi, Math.max(lo, n))
+}
+
 export function applyGeometry(i: Inputs, edited?: keyof Inputs): Inputs {
   const next = { ...i }
-  const syncFromX1 = () => {
-    next.xCc = next.x1 + next.xCo / 2
-  }
-  const syncFromY1 = () => {
-    next.yCc = next.y1 + next.yCo / 2
-  }
   const centerX = () => {
-    next.x1 = (next.xMong - next.xCo) / 2
-    next.xCc = next.xMong / 2
+    next.x1 = Math.max(0, (next.xMong - next.xCo) / 2)
   }
   const centerY = () => {
-    next.y1 = (next.yMong - next.yCo) / 2
-    next.yCc = next.yMong / 2
+    next.y1 = Math.max(0, (next.yMong - next.yCo) / 2)
   }
 
-  if (edited === 'xCc') next.x1 = next.xCc - next.xCo / 2
-  if (edited === 'yCc') next.y1 = next.yCc - next.yCo / 2
-
-  if (next.layout === 'center') {
-    centerX()
-    centerY()
-  } else if (next.layout === 'ecc-x') {
-    if (edited === 'layout') next.x1 = 0
-    centerY()
-    syncFromX1()
-  } else if (next.layout === 'ecc-y') {
-    if (edited === 'layout') next.y1 = 0
-    centerX()
-    syncFromY1()
-  } else {
-    if (edited === 'layout') {
+  if (edited === 'layout') {
+    if (next.layout === 'center') {
+      centerX()
+      centerY()
+    } else if (next.layout === 'ecc-x') {
+      next.x1 = 0
+      centerY()
+    } else if (next.layout === 'ecc-y') {
+      next.y1 = 0
+      centerX()
+    } else {
       next.x1 = 0
       next.y1 = 0
     }
-    if (edited !== 'xCc') syncFromX1()
-    if (edited !== 'yCc') syncFromY1()
   }
+
+  next.x1 = clamp(next.x1, 0, Math.max(0, next.xMong - next.xCo))
+  next.y1 = clamp(next.y1, 0, Math.max(0, next.yMong - next.yCo))
+  next.xCc = Number.isFinite(next.xCc) ? next.xCc : next.xMong / 2
+  next.yCc = Number.isFinite(next.yCc) ? next.yCc : next.yMong / 2
+  next.axisXName = (next.axisXName ?? '').slice(0, 4)
+  next.axisYName = (next.axisYName ?? '').slice(0, 4)
   return next
 }
 

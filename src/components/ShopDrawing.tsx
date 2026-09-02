@@ -1,6 +1,7 @@
 import type { CalcResult, Inputs, RebarRow } from '../types'
 import { t, type Lang } from '../i18n'
 import { barHookSign, columnPerimeterPts, faceStations, meshStations, pedestalShoulders } from '../lib/calc'
+import { AxisBubble } from './AxisBubble'
 
 type Props = {
   inp: Inputs
@@ -17,6 +18,8 @@ const LOT_PLAN_MM = 100
 /** Gap from footing bottom to view title — just below the overall X-dimension numbers. */
 const SECTION_CAPTION_GAP = 68
 const SECTION_CAPTION_PAD = 18
+const SECTION_OY = 40
+const AXIS_BUBBLE_R = 11
 
 function fmtLevel(mm: number): string {
   const m = mm / 1000
@@ -276,7 +279,7 @@ function sectionSize(inp: Inputs, axis: 'x' | 'y', s: number) {
   const sandH = inp.fType === 'sand' ? 18 : 0
   const bw = widthMm * s
   const W = OX + bw + RIGHT
-  const oy = 22
+  const oy = SECTION_OY
   const y4 = oy + (totalH + inp.lining) * s
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
   const H = captionY + SECTION_CAPTION_PAD
@@ -409,7 +412,7 @@ function SectionDrawing({
   const totalH = inp.hCom + inp.hCm + inp.hDm
   const ox = OX
   const { W, H } = sectionSize(inp, axis, s)
-  const oy = 22
+  const oy = SECTION_OY
   const bw = widthMm * s
   const cw = colMm * s
   const left = leftMm * s
@@ -434,7 +437,9 @@ function SectionDrawing({
   const lineW = Math.max(1.4, dLine / 10)
   const dotR = Math.max(2.0, dDot / 5)
   const hookPx = Math.min(32, Math.max(14, result.colHook * s))
-  const cxMid = colX + cw / 2
+  const axisMm = axis === 'x' ? inp.xCc : inp.yCc
+  const axisName = axis === 'x' ? inp.axisXName : inp.axisYName
+  const gridX = ox + axisMm * s
 
   const faceXs = faceStations(nFace, colMm, inp.coverCol).map((mm) => colX + mm * s)
   const transXs = meshStations(widthMm, inp.coverBase, aDot).map((mm) => ox + mm * s)
@@ -457,14 +462,15 @@ function SectionDrawing({
   return (
     <svg className="cad" data-cad-scale={s} viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
       <line
-        x1={cxMid}
-        x2={cxMid}
-        y1={y0 - 8}
+        x1={gridX}
+        x2={gridX}
+        y1={y0 - 2}
         y2={y4 + sandH + 8}
         stroke="#111"
         strokeWidth={0.8}
         strokeDasharray="10 4 2 4"
       />
+      <AxisBubble cx={gridX} cy={AXIS_BUBBLE_R + 4} r={AXIS_BUBBLE_R} name={axisName || (axis === 'x' ? '1' : 'A')} />
       <polygon
         points={`${ox},${y2} ${ox + bw},${y2} ${topR},${y1} ${colX + cw},${y1} ${colX},${y1} ${topL},${y1}`}
         fill="#dedede"
@@ -660,13 +666,16 @@ function PlanDrawing({
   const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
   const ox = OX
   const lot = LOT_PLAN_MM * s
-  const oy = 12 + lot
+  const axisHead = AXIS_BUBBLE_R * 2 + 14
+  const oy = axisHead + 12 + lot
   const w = inp.xMong * s
   const h = inp.yMong * s
   const cx = ox + inp.x1 * s
   const cy = oy + inp.y1 * s
   const cw = inp.xCo * s
   const ch = inp.yCo * s
+  const gridX = ox + inp.xCc * s
+  const gridY = oy + inp.yCc * s
   const sh = pedestalShoulders(inp)
   const sx = cx - sh.left * s
   const sy = cy - sh.top * s
@@ -780,6 +789,32 @@ function PlanDrawing({
       <text x={cx + cw / 2 + 4} y={oy + h + 18} fontSize={11} fontWeight={700}>
         B
       </text>
+
+      <line
+        x1={gridX}
+        y1={axisHead}
+        x2={gridX}
+        y2={oy + h + lot + 6}
+        stroke="#111"
+        strokeWidth={0.85}
+        strokeDasharray="10 4 2 4"
+      />
+      <AxisBubble cx={gridX} cy={AXIS_BUBBLE_R + 5} r={AXIS_BUBBLE_R} name={inp.axisXName || '1'} />
+      <line
+        x1={Math.max(AXIS_BUBBLE_R * 2 + 8, ox - lot - 8)}
+        y1={gridY}
+        x2={ox + w + lot + 6}
+        y2={gridY}
+        stroke="#111"
+        strokeWidth={0.85}
+        strokeDasharray="10 4 2 4"
+      />
+      <AxisBubble
+        cx={Math.max(AXIS_BUBBLE_R + 8, ox - lot - 20)}
+        cy={gridY}
+        r={AXIS_BUBBLE_R}
+        name={inp.axisYName || 'A'}
+      />
 
       <Tag n={bar1?.mark ?? 1} x={ox + 18} y={oy + 16} />
       <text x={ox + 30} y={oy + 20} fontSize={10} fontWeight={700}>

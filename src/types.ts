@@ -12,8 +12,13 @@ export interface Inputs {
   hCom: number
   hCm: number
   hDm: number
+  /** Grid-axis Xcc from footing origin — independent of column center. */
   xCc: number
+  /** Grid-axis Ycc from footing origin — independent of column center. */
   yCc: number
+  /** Typical CAD bubble labels (e.g. 1 and A). */
+  axisXName: string
+  axisYName: string
   x1: number
   y1: number
   cdn: number

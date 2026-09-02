@@ -1,5 +1,6 @@
 import type { Inputs } from '../types'
 import { barHookSign, faceStations, meshStations, pedestalShoulders } from '../lib/calc'
+import { AxisBubble } from './AxisBubble'
 
 type Props = {
   inp: Inputs
@@ -124,10 +125,10 @@ function Tag({ n, x, y }: { n: number; x: number; y: number }) {
 }
 
 export function Schematic({ inp }: Props) {
-  const LEFT = 52
+  const LEFT = 62
   const RIGHT = 96
-  const TOP = 20
-  const GAP = 44
+  const TOP = 36
+  const GAP = 68
   const BOT = 78
   const COL_W = 320
   const MAX_STACK = 560
@@ -204,13 +205,23 @@ export function Schematic({ inp }: Props) {
       <rect width={W} height={H} fill="#2f2f2f" />
 
       <line
-        x1={colX + colW / 2}
-        x2={colX + colW / 2}
-        y1={yColTop - 6}
+        x1={x0 + inp.xCc * s}
+        x2={x0 + inp.xCc * s}
+        y1={yColTop - 4}
         y2={yLotBot + 6}
-        stroke="#aaa"
-        strokeWidth={0.8}
+        stroke={RED}
+        strokeWidth={0.85}
         strokeDasharray="6 3 2 3"
+      />
+      <AxisBubble
+        cx={x0 + inp.xCc * s}
+        cy={12}
+        r={10}
+        name={inp.axisXName || '1'}
+        stroke={RED}
+        fill="#1c1c1c"
+        strokeWidth={1.2}
+        fontSize={10}
       />
 
       <polygon
@@ -390,6 +401,26 @@ export function Schematic({ inp }: Props) {
         stroke={COL}
         strokeWidth={0.7}
         strokeDasharray="5 3 1 3"
+      />
+      <AxisBubble
+        cx={cx}
+        cy={py - lot - 16}
+        r={9}
+        name={inp.axisXName || '1'}
+        stroke={RED}
+        fill="#1c1c1c"
+        strokeWidth={1.15}
+        fontSize={9}
+      />
+      <AxisBubble
+        cx={px - lot - 16}
+        cy={cy}
+        r={9}
+        name={inp.axisYName || 'A'}
+        stroke={RED}
+        fill="#1c1c1c"
+        strokeWidth={1.15}
+        fontSize={9}
       />
       {[
         [pcx + 4, pcy + 4],

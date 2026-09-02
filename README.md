@@ -40,9 +40,10 @@ npm run preview
 ## Cách dùng
 
 1. Chọn lệch tâm / đúng tâm, nhập `Xmong`, `Ymong`, cổ cột / cột, cao `HCOM` `HCM` `HDM`.
-2. Khai báo thép cổ cột (`Cx`, `Cy`, đường kính, đai) và thép đế (`FaX`, `FaY`, khoảng `a`).
-3. Bấm **Shop thép - Bê tông - Cốt pha**.
-4. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 nằm (một trang, đủ khung viền). **Xem CAD** để pan/zoom trên nền tối. **Tải file CAD (DXF)** để mở trong AutoCAD / LibreCAD (đơn vị mm). Trình duyệt không ghi được file DWG gốc — AutoCAD mở DXF trực tiếp. **In** ra khổ A2 nằm một trang.
+2. **Vị trí trục Xcc / Ycc** nhập độc lập (mm từ mép móng) — tim trục không bị khóa theo tâm cột. Ô tên cạnh số liệu (mặc định `1` / `A`) vẽ bong bóng trục điển hình trên bản vẽ.
+3. Khai báo thép cổ cột (`Cx`, `Cy`, đường kính, đai) và thép đế (`FaX`, `FaY`, khoảng `a`).
+4. Bấm **Shop thép - Bê tông - Cốt pha**.
+5. Bản vẽ hiện ngay dưới form. Bấm **Tải file PDF** nếu cần file A2 nằm (một trang, đủ khung viền). **Xem CAD** để pan/zoom trên nền tối. **Tải file CAD (DXF)** để mở trong AutoCAD / LibreCAD (đơn vị mm). Trình duyệt không ghi được file DWG gốc — AutoCAD mở DXF trực tiếp. **In** ra khổ A2 nằm một trang.
 
 Nút **Nạp mẫu bản vẽ** điền số liệu shop mẫu M2 (2000×2200). Mở trang / **Mặc định** dùng móng M1 đúng tâm 1800×2000, SL 5.
 

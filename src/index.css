@@ -128,8 +128,28 @@ p {
   font-size: 13px;
 }
 
-.num-wide {
-  width: 88px;
+.axis-typical {
+  margin: 6px 0 8px;
+  border: 1px solid var(--line);
+  background: #1c1c1c;
+}
+
+.axis-legend {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.axis-name {
+  width: 36px;
+  height: 24px;
+  border: 0;
+  padding: 0 2px;
+  background: #fff;
+  color: #111;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .unit,
