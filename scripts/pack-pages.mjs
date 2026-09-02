@@ -1,10 +1,12 @@
-import { cpSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs'
+import { cpSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 import { join } from 'node:path'
 
 const root = process.cwd()
 const dist = join(root, 'dist')
 const docs = join(root, 'docs')
+const cnamePath = join(docs, 'CNAME')
+const cname = existsSync(cnamePath) ? readFileSync(cnamePath, 'utf8') : null
 
 if (!existsSync(dist)) {
   throw new Error('Chưa có thư mục dist. Chạy npm run build trước.')
@@ -13,6 +15,7 @@ if (!existsSync(dist)) {
 rmSync(docs, { recursive: true, force: true })
 mkdirSync(docs, { recursive: true })
 cpSync(dist, docs, { recursive: true })
+if (cname != null) writeFileSync(cnamePath, cname)
 for (const extra of ['404.html']) {
   const src = join(root, 'public', extra)
   if (existsSync(src)) cpSync(src, join(docs, extra))

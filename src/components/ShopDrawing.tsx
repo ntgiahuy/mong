@@ -190,18 +190,14 @@ function StirrupHoop({
   h: number
   strokeWidth?: number
 }) {
-  const r = Math.min(6, w * 0.14, h * 0.14)
-  const hook = Math.min(16, Math.max(9, Math.min(w, h) * 0.28))
-  const hx = x + w - r * 0.15
-  const hy = y + r * 0.15
-  const dx = -hook * 0.7
-  const dy = hook * 0.7
-  const gap = Math.max(2.4, strokeWidth * 1.15)
+  const r = Math.min(4, w * 0.1, h * 0.1)
+  const hook = Math.min(12, Math.max(8, Math.min(w, h) * 0.24))
+  const hx = x + w - r * 0.2
+  const hy = y + r * 0.2
   return (
-    <g fill="none" stroke="#111" strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round">
+    <g fill="none" stroke="#111" strokeWidth={strokeWidth} strokeLinejoin="miter" strokeLinecap="square">
       <rect x={x} y={y} width={w} height={h} rx={r} ry={r} />
-      <line x1={hx} y1={hy} x2={hx + dx} y2={hy + dy} />
-      <line x1={hx - gap} y1={hy + gap * 0.35} x2={hx - gap + dx} y2={hy + gap * 0.35 + dy} />
+      <line x1={hx} y1={hy} x2={hx - hook * 0.72} y2={hy + hook * 0.72} />
     </g>
   )
 }
@@ -300,82 +296,75 @@ function Callouts({
 }) {
   const colBars = result.bars.filter((b) => b.shape === 'L')
   const stirrup = result.bars.find((b) => b.shape === 'stirrup')
-  const oy = 22
-  const hook = Math.max(16, Math.min(40, result.colHook * s * 0.5))
-  const pairW = 64
   const W = CALLOUT_W
-  const hoopW = 40
-  const hoopH = 62
-  const x1 = hook + 6
-  const x2 = x1 + pairW
-  const stems = colBars.map((b) => Math.max(80, (b.segs[1] ?? inp.hCom + inp.hCm + inp.hDm - 100) * s))
-  let yCursor = oy
+  const hoopW = 30
+  const hoopH = 44
+  const n = colBars.length
+  const y0 = SECTION_OY + staggerProjection(inp).two * s
+  const yHook = y0 + (inp.hCom + inp.hCm + inp.hDm - 100) * s
+  const hook = Math.min(32, Math.max(16, result.colHook * s * 0.5))
   const laid = colBars.map((b, i) => {
-    const stem = stems[i]
-    const ya = yCursor
-    const yb = ya + stem
-    yCursor = yb + hook + 22
-    return { b, ya, yb, stem }
+    const stem = Math.max(8, (b.segs[1] ?? inp.hCom + inp.hCm + inp.hDm - 100) * s)
+    const x = n === 1 ? 70 : i === 0 ? 48 : 122
+    const hookLeft = i === 0
+    return { b, stem, x, hookLeft }
   })
-  const lastYb = laid.length ? laid[laid.length - 1].yb : oy
-  const stirX = x2 + hook + 10
-  const stirY = lastYb - hoopH
-  const lBot = lastYb + hook + 20
-  const H = Math.max(height, lBot, stirY + hoopH + 26)
+  const last = laid[laid.length - 1]
+  const stirX = last ? Math.min(last.x + (last.hookLeft ? 22 : hook + 6), W - hoopW - 8) : 96
+  const stirY = yHook - hoopH - 4
+  const specTagX = Math.min(stirX + 6, W - 118)
+  const labelY = yHook + 30
+  const H = Math.max(height, labelY + 16)
 
   return (
     <svg className="cad" data-cad-scale={s} viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
-      {laid.map(({ b, ya, yb }) => {
+      {laid.map(({ b, stem, x, hookLeft }) => {
+        const ya = yHook - stem
+        const yb = yHook
         const mid = (ya + yb) / 2
+        const hookX = hookLeft ? x - hook : x + hook
+        const specX = hookLeft ? x + 14 : x - 14
+        const tagX = hookLeft ? x - 16 : x + 16
+        const tagY = ya + 12
         return (
           <g key={b.mark}>
             <path
-              d={`M ${x1} ${ya} V ${yb} H ${x1 - hook}`}
+              d={`M ${x} ${ya} V ${yb} H ${hookX}`}
               fill="none"
               stroke="#111"
-              strokeWidth={2.2}
+              strokeWidth={2}
               strokeLinecap="square"
             />
-            <path
-              d={`M ${x2} ${ya} V ${yb} H ${x2 + hook}`}
-              fill="none"
-              stroke="#111"
-              strokeWidth={2.2}
-              strokeLinecap="square"
-            />
-            <Tag n={b.mark} x={(x1 + x2) / 2} y={ya + 14} />
+            <Tag n={b.mark} x={tagX} y={tagY} />
             <text
-              x={(x1 + x2) / 2}
-              y={mid + 10}
+              x={specX}
+              y={mid}
               fontSize={11}
               fontWeight={700}
-              transform={`rotate(-90, ${(x1 + x2) / 2}, ${mid + 10})`}
+              transform={`rotate(-90, ${specX}, ${mid})`}
               textAnchor="middle"
             >
               {b.n1}Ø{b.d}-L={b.length}
             </text>
-            <text x={x1 - hook / 2} y={yb + 12} textAnchor="middle" fontSize={8}>
-              {b.segs[0]}
-            </text>
-            <text x={x2 + hook / 2} y={yb + 12} textAnchor="middle" fontSize={8}>
+            <text x={(x + hookX) / 2} y={yb + 12} textAnchor="middle" fontSize={9}>
               {b.segs[0]}
             </text>
           </g>
         )
       })}
-      {stirrup && (
+      {stirrup && last && (
         <g>
           <line
-            x1={x2 + hook}
-            y1={lastYb}
+            x1={last.hookLeft ? last.x : last.x + hook}
+            y1={yHook}
             x2={stirX}
-            y2={stirY + hoopH / 2}
+            y2={stirY + hoopH * 0.62}
             stroke="#111"
-            strokeWidth={0.9}
+            strokeWidth={0.85}
           />
-          <StirrupHoop x={stirX} y={stirY} w={hoopW} h={hoopH} strokeWidth={2} />
-          <Tag n={stirrup.mark} x={stirX + 8} y={stirY + hoopH + 14} />
-          <text x={stirX + 20} y={stirY + hoopH + 18} fontSize={10} fontWeight={700}>
+          <StirrupHoop x={stirX} y={stirY} w={hoopW} h={hoopH} strokeWidth={1.8} />
+          <Tag n={stirrup.mark} x={specTagX} y={yHook + 26} />
+          <text x={specTagX + 12} y={yHook + 30} fontSize={10} fontWeight={700}>
             {stirrup.n1}Ø{stirrup.d}-L={stirrup.length}
           </text>
         </g>
