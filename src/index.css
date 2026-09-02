@@ -54,6 +54,26 @@ p {
   font-weight: 700;
 }
 
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.brand-logo img {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
 .topbar p {
   color: var(--muted);
   font-size: 13px;
