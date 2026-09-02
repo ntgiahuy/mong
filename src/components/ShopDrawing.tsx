@@ -215,7 +215,7 @@ function BarShape({ row }: { row: RebarRow }) {
     )
   }
   if (row.shape === 'u') {
-    const [leg, mid] = row.segs
+    const [legL, mid, legR = legL] = row.segs
     return (
       <svg width={132} height={42} viewBox="0 0 132 42">
         <path d="M16 8 V32 H116 V8" fill="none" stroke="#111" strokeWidth={1.7} />
@@ -223,7 +223,10 @@ function BarShape({ row }: { row: RebarRow }) {
           {mid}
         </text>
         <text x={2} y={24} fontSize={9}>
-          {leg}
+          {legL}
+        </text>
+        <text x={118} y={24} fontSize={9}>
+          {legR}
         </text>
       </svg>
     )
@@ -540,18 +543,22 @@ function SectionDrawing({
       <line x1={ox + cover} y1={yLong} x2={ox + bw - cover} y2={yLong} stroke="#111" strokeWidth={lineW} />
       {inp.hooked && (
         <>
-          <path
-            d={`M ${ox + cover} ${yLong} L ${ox + cover} ${yLong - hs.dm * 0.45}`}
-            fill="none"
-            stroke="#111"
-            strokeWidth={lineW}
-          />
-          <path
-            d={`M ${ox + bw - cover} ${yLong} L ${ox + bw - cover} ${yLong - hs.dm * 0.45}`}
-            fill="none"
-            stroke="#111"
-            strokeWidth={lineW}
-          />
+          {inp.hookLeft > 0 && (
+            <path
+              d={`M ${ox + cover} ${yLong} L ${ox + cover} ${yLong - Math.max(4, inp.hookLeft * s)}`}
+              fill="none"
+              stroke="#111"
+              strokeWidth={lineW}
+            />
+          )}
+          {inp.hookRight > 0 && (
+            <path
+              d={`M ${ox + bw - cover} ${yLong} L ${ox + bw - cover} ${yLong - Math.max(4, inp.hookRight * s)}`}
+              fill="none"
+              stroke="#111"
+              strokeWidth={lineW}
+            />
+          )}
         </>
       )}
       {inp.doubleLayer && (
@@ -895,8 +902,22 @@ function PlanDrawing({
           <line x1={ox} y1={bar1Y} x2={ox + w} y2={bar1Y} stroke="#111" strokeWidth={2.2} />
           {inp.hooked && (
             <>
-              <path d={`M ${ox} ${bar1Y} V ${bar1Y - 12}`} fill="none" stroke="#111" strokeWidth={2.2} />
-              <path d={`M ${ox + w} ${bar1Y} V ${bar1Y - 12}`} fill="none" stroke="#111" strokeWidth={2.2} />
+              {inp.hookLeft > 0 && (
+                <path
+                  d={`M ${ox} ${bar1Y} V ${bar1Y - Math.max(6, Math.min(36, inp.hookLeft * s))}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={2.2}
+                />
+              )}
+              {inp.hookRight > 0 && (
+                <path
+                  d={`M ${ox + w} ${bar1Y} V ${bar1Y - Math.max(6, Math.min(36, inp.hookRight * s))}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={2.2}
+                />
+              )}
             </>
           )}
           <Tag n={bar1.mark} x={ox - 16} y={bar1Y} />
@@ -918,18 +939,22 @@ function PlanDrawing({
           />
           {inp.hooked && (
             <>
-              <path
-                d={`M ${ox + w + 56} ${oy} H ${ox + w + 42}`}
-                fill="none"
-                stroke="#111"
-                strokeWidth={2.2}
-              />
-              <path
-                d={`M ${ox + w + 56} ${oy + h} H ${ox + w + 42}`}
-                fill="none"
-                stroke="#111"
-                strokeWidth={2.2}
-              />
+              {inp.hookLeft > 0 && (
+                <path
+                  d={`M ${ox + w + 56} ${oy} H ${ox + w + 56 - Math.max(6, Math.min(36, inp.hookLeft * s))}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={2.2}
+                />
+              )}
+              {inp.hookRight > 0 && (
+                <path
+                  d={`M ${ox + w + 56} ${oy + h} H ${ox + w + 56 - Math.max(6, Math.min(36, inp.hookRight * s))}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={2.2}
+                />
+              )}
             </>
           )}
           <Tag n={bar2.mark} x={ox + w + 56} y={oy - 12} />

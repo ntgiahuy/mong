@@ -54,11 +54,15 @@ p {
   font-weight: 700;
 }
 
-.brand-title {
+.brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 16px;
+  min-width: 0;
+}
+
+.brand-copy {
+  min-width: 0;
 }
 
 .brand-logo {
@@ -66,12 +70,24 @@ p {
   align-items: center;
   line-height: 0;
   flex-shrink: 0;
+  filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.45));
+}
+
+.brand-logo:hover img {
+  transform: scale(1.04);
 }
 
 .brand-logo img {
-  height: 32px;
+  height: 72px;
   width: auto;
   display: block;
+  transition: transform 0.15s ease;
+}
+
+@media (min-width: 720px) {
+  .brand-logo img {
+    height: 88px;
+  }
 }
 
 .topbar p {

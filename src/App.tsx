@@ -97,24 +97,25 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div>
-          <h1 className="brand-title">
-            <span>{L.title}</span>
-            <a
-              className="brand-logo"
-              href="https://www.giahuy.net/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src="https://blogger.googleusercontent.com/img/a/AVvXsEiAjFLnRTzRxbo61AZk5rhwAzRue6rDxzwFDj5yJ9cTBoENU1eZXOL6XGqA_kNVI2DRa7de49yYikTmRf8LD8v4E1rxlSPvBNl7lgl-uNozT5GIxRxL5Bh67lIKGGPLV6BLTDXEr8GZ8_Lg2ph1fTscaVaREtZZy5KDhdD-CojQj3JcAOa2MNMoJaf42OQ=w200"
-                alt="GiaHuy.Net"
-                width={200}
-                height={100}
-              />
-            </a>
-          </h1>
-          <p>{L.subtitle}</p>
+        <div className="brand">
+          <a
+            className="brand-logo"
+            href="https://www.giahuy.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="GiaHuy.Net"
+          >
+            <img
+              src="https://blogger.googleusercontent.com/img/a/AVvXsEiAjFLnRTzRxbo61AZk5rhwAzRue6rDxzwFDj5yJ9cTBoENU1eZXOL6XGqA_kNVI2DRa7de49yYikTmRf8LD8v4E1rxlSPvBNl7lgl-uNozT5GIxRxL5Bh67lIKGGPLV6BLTDXEr8GZ8_Lg2ph1fTscaVaREtZZy5KDhdD-CojQj3JcAOa2MNMoJaf42OQ=w200"
+              alt="GiaHuy.Net"
+              width={200}
+              height={100}
+            />
+          </a>
+          <div className="brand-copy">
+            <h1>{L.title}</h1>
+            <p>{L.subtitle}</p>
+          </div>
         </div>
         <div className="top-actions">
           <button type="button" className="ghost" onClick={() => setInp(DEFAULT_INPUTS)}>

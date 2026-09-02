@@ -343,10 +343,20 @@ export function FoundationForm({ inp, lang, onChange }: Props) {
           <input
             type="checkbox"
             checked={inp.hooked}
-            onChange={(e) => onChange({ hooked: e.target.checked })}
+            onChange={(e) => onChange({ hooked: e.target.checked }, 'hooked')}
           />
           {L.hook}
         </label>
+        {inp.hooked && (
+          <div className="stagger-manual">
+            <Row label={L.hookLeft}>
+              <Num value={inp.hookLeft} onChange={(hookLeft) => onChange({ hookLeft })} />
+            </Row>
+            <Row label={L.hookRight}>
+              <Num value={inp.hookRight} onChange={(hookRight) => onChange({ hookRight })} />
+            </Row>
+          </div>
+        )}
         <label className="check">
           <input
             type="checkbox"

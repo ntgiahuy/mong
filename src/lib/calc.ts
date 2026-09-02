@@ -79,6 +79,8 @@ export const DEFAULT_INPUTS: Inputs = {
   staggerRight: 0,
   doubleLayer: false,
   hooked: false,
+  hookLeft: 100,
+  hookRight: 100,
   industrial: false,
   lining: 100,
   coverBase: 50,
@@ -312,6 +314,14 @@ export function applyGeometry(i: Inputs, edited?: keyof Inputs): Inputs {
   }
   if (!Number.isFinite(next.staggerLeft)) next.staggerLeft = 0
   if (!Number.isFinite(next.staggerRight)) next.staggerRight = 0
+  if (edited === 'hooked' && next.hooked) {
+    if (!(next.hookLeft > 0)) next.hookLeft = 100
+    if (!(next.hookRight > 0)) next.hookRight = 100
+  }
+  if (!Number.isFinite(next.hookLeft)) next.hookLeft = 100
+  if (!Number.isFinite(next.hookRight)) next.hookRight = 100
+  next.hookLeft = clamp(next.hookLeft, 0, 5000)
+  next.hookRight = clamp(next.hookRight, 0, 5000)
   return next
 }
 
@@ -350,9 +360,12 @@ export function compute(i: Inputs): CalcResult {
   const nMeshX = meshCount(i.yMong, i.coverBase, i.aFaX) * (i.doubleLayer ? 2 : 1)
   const nMeshY = meshCount(i.xMong, i.coverBase, i.aFaY) * (i.doubleLayer ? 2 : 1)
 
-  const hookBase = i.hooked ? Math.max(i.hDm - 2 * i.coverBase, 5 * Math.max(i.dFaX, i.dFaY)) : 0
-  const lenMeshX = i.xMong - 2 * i.coverBase + 2 * hookBase
-  const lenMeshY = i.yMong - 2 * i.coverBase + 2 * hookBase
+  const hookL = i.hooked ? Math.max(0, i.hookLeft) : 0
+  const hookR = i.hooked ? Math.max(0, i.hookRight) : 0
+  const spanX = i.xMong - 2 * i.coverBase
+  const spanY = i.yMong - 2 * i.coverBase
+  const lenMeshX = spanX + hookL + hookR
+  const lenMeshY = spanY + hookL + hookR
 
   const stirrupA = Math.max(40, roundTo(i.xCo - 2 * i.coverCol, 10))
   const stirrupB = Math.max(40, roundTo(i.yCo - 2 * i.coverCol, 10))
@@ -382,8 +395,12 @@ export function compute(i: Inputs): CalcResult {
   }
 
   const meshShape = i.hooked ? 'u' : 'straight'
-  const meshSegsX = i.hooked ? [roundTo(hookBase, 10), roundTo(lenMeshX - 2 * hookBase, 10), roundTo(hookBase, 10)] : [roundTo(lenMeshX, 10)]
-  const meshSegsY = i.hooked ? [roundTo(hookBase, 10), roundTo(lenMeshY - 2 * hookBase, 10), roundTo(hookBase, 10)] : [roundTo(lenMeshY, 10)]
+  const meshSegsX = i.hooked
+    ? [roundTo(hookL, 10), roundTo(spanX, 10), roundTo(hookR, 10)]
+    : [roundTo(lenMeshX, 10)]
+  const meshSegsY = i.hooked
+    ? [roundTo(hookL, 10), roundTo(spanY, 10), roundTo(hookR, 10)]
+    : [roundTo(lenMeshY, 10)]
 
   push({
     shape: meshShape,

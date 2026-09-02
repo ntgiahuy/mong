@@ -48,6 +48,10 @@ export interface Inputs {
   staggerRight: number
   doubleLayer: boolean
   hooked: boolean
+  /** Vertical hook at the start end of base mesh U-bars (mm). */
+  hookLeft: number
+  /** Vertical hook at the far end of base mesh U-bars (mm). */
+  hookRight: number
   industrial: boolean
   lining: number
   coverBase: number
