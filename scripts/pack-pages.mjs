@@ -33,7 +33,7 @@ Bộ file này đã build xong. Không cần npm / Node.
 2. Upload TOÀN BỘ nội dung thư mục này lên gốc repo:
      .nojekyll
      index.html
-     favicon.svg
+     favicon.ico
      assets/
 3. Vào repo: Settings → Pages
      Source: Deploy from a branch

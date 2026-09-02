@@ -13,7 +13,7 @@ Không cần cài Node. Dùng thư mục `docs/` hoặc file zip `shop-thep-mong
 2. Tạo repository trống trên GitHub (bỏ tick README).
 3. Bấm **Add file → Upload files**, kéo hết:
    - `index.html`
-   - `favicon.svg`
+   - `favicon.ico`
    - `.nojekyll`
    - thư mục `assets/`
 4. **Commit changes**.
