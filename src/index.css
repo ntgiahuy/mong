@@ -342,21 +342,6 @@ p {
   min-width: 44px;
 }
 
-.credit {
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 10px;
-  color: var(--green);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.credit:hover {
-  text-decoration: underline;
-}
-
 .banner {
   margin-top: 14px;
   padding: 10px 12px;

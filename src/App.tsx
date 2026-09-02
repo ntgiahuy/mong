@@ -110,7 +110,7 @@ export default function App() {
             {L.reset}
           </button>
           <a
-            className="credit"
+            className="ghost"
             href="https://www.giahuy.net/"
             target="_blank"
             rel="noopener noreferrer"
