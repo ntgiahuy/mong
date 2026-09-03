@@ -12,14 +12,28 @@ import {
 import { fitShopSheetForPrint, resetShopSheetAfterPrint } from './lib/print-sheet'
 import type { Inputs } from './types'
 
+const STORAGE_KEY = 'giahuy-shop-thep-mong'
+
+function loadSaved(): Inputs | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<Inputs>
+    return applyGeometry({ ...DEFAULT_INPUTS, ...parsed })
+  } catch {
+    return null
+  }
+}
+
 export default function App() {
   const [lang, setLang] = useState<Lang>('vi')
-  const [inp, setInp] = useState<Inputs>(DEFAULT_INPUTS)
+  const [inp, setInp] = useState<Inputs>(() => loadSaved() ?? DEFAULT_INPUTS)
   const [busy, setBusy] = useState<'pdf' | 'cad' | null>(null)
   const [showResult, setShowResult] = useState(true)
   const [cadView, setCadView] = useState(false)
   const [cadHint, setCadHint] = useState(false)
   const [ioError, setIoError] = useState('')
+  const [savedFlash, setSavedFlash] = useState(false)
   const result = useMemo(() => compute(inp), [inp])
   const L = t[lang]
 
@@ -94,6 +108,16 @@ export default function App() {
     })
   }
 
+  function saveFile() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(inp))
+      setSavedFlash(true)
+      window.setTimeout(() => setSavedFlash(false), 1600)
+    } catch {
+      setIoError('Không lưu được trên trình duyệt này.')
+    }
+  }
+
   return (
     <div className="app">
       <header className="topbar">
@@ -118,10 +142,54 @@ export default function App() {
           </div>
         </div>
         <div className="top-actions">
-          <button type="button" className="ghost" onClick={() => setInp(DEFAULT_INPUTS)}>
-            {L.reset}
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              setInp(DEFAULT_INPUTS)
+              setIoError('')
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M8 4.5h6.2L19 9.2V19.5H8z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path d="M14.2 4.5V9.2H19" fill="none" stroke="currentColor" strokeWidth="1.7" />
+              <path d="M12 11.5v6M9 14.5h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+            </svg>
+            {L.newFile}
           </button>
-          <button type="button" className="en-btn" onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}>
+          <button type="button" className="btn-save" onClick={saveFile}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M6 4.5h10.2L19.5 8v11.5H6z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path d="M8.2 4.5v4.4h8.2V4.5M8.2 19.5v-6.2h7.6v6.2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+            </svg>
+            {savedFlash ? L.saved : L.save}
+          </button>
+          <button type="button" className="btn-blue" onClick={downloadPdf} disabled={busy !== null}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M12 4.5v10M8.5 11.5 12 15l3.5-3.5M6 19.5h12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {busy === 'pdf' ? L.exporting : L.exportPdf}
+          </button>
+          <button type="button" className="btn-ghost btn-lang" onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}>
             {lang === 'vi' ? 'EN' : 'VI'}
           </button>
         </div>
@@ -169,22 +237,22 @@ export default function App() {
       {showResult && result.errors.length === 0 && (
         <section className={`result-wrap${cadView ? ' cad-mode' : ''}`}>
           <div className="result-toolbar">
-            <button type="button" className="ghost" onClick={downloadPdf} disabled={busy !== null}>
-              {busy === 'pdf' ? L.exporting : L.download}
+            <button type="button" className="btn-blue" onClick={downloadPdf} disabled={busy !== null}>
+              {busy === 'pdf' ? L.exporting : L.exportPdf}
             </button>
-            <button type="button" className="ghost" onClick={downloadCad} disabled={busy !== null}>
+            <button type="button" className="btn-ghost" onClick={downloadCad} disabled={busy !== null}>
               {busy === 'cad' ? L.exportingCad : L.downloadCad}
             </button>
             <button
               type="button"
-              className={cadView ? 'ghost ghost-on' : 'ghost'}
+              className={cadView ? 'btn-ghost btn-on' : 'btn-ghost'}
               onClick={() => setCadView((v) => !v)}
             >
               {cadView ? L.cadViewOff : L.cadView}
             </button>
             <button
               type="button"
-              className="ghost"
+              className="btn-ghost"
               onClick={() => {
                 fitShopSheetForPrint()
                 window.print()

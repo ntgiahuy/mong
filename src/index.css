@@ -1,12 +1,18 @@
 @import 'tailwindcss';
 
 :root {
-  --bg: #3a3a3a;
-  --panel: #4a4a4a;
-  --line: #8a8a8a;
-  --text: #f4f4f4;
-  --muted: #d8d8d8;
-  --green: #39ff14;
+  --bg: #121214;
+  --panel: #1c1c1e;
+  --line: #30363d;
+  --text: #f2f4f8;
+  --muted: #9aa3ad;
+  --accent: #79b8ff;
+  --green: #2f9e57;
+  --green-hover: #36b062;
+  --green-save: #2d6a4f;
+  --green-save-hover: #357a5c;
+  --blue: #3182ce;
+  --blue-hover: #3d92e0;
   color-scheme: dark;
 }
 
@@ -47,7 +53,7 @@ p {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #5c5c5c;
+  border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
 
@@ -56,6 +62,7 @@ p {
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: 0.01em;
+  color: var(--accent);
 }
 
 @media (min-width: 720px) {
@@ -74,7 +81,7 @@ p {
 .brand-copy {
   min-width: 0;
   padding-left: 16px;
-  border-left: 1px solid #7a7a7a;
+  border-left: 1px solid var(--line);
 }
 
 .brand-logo {
@@ -139,12 +146,14 @@ p {
   background: var(--panel);
   padding: 8px 10px 10px;
   margin: 0;
+  border-radius: 8px;
 }
 
 .panel legend {
   font-size: 13px;
   font-weight: 700;
   padding: 0 6px;
+  color: var(--accent);
 }
 
 .field {
@@ -170,7 +179,8 @@ p {
 .num {
   width: 72px;
   height: 24px;
-  border: 0;
+  border: 1px solid #c5c5c5;
+  border-radius: 6px;
   padding: 0 6px;
   background: #fff;
   color: #111;
@@ -180,7 +190,8 @@ p {
 .axis-name {
   width: 36px;
   height: 24px;
-  border: 0;
+  border: 1px solid #c5c5c5;
+  border-radius: 6px;
   padding: 0 2px;
   background: #fff;
   color: #111;
@@ -243,7 +254,8 @@ p {
   height: 24px;
   background: #fff;
   color: #111;
-  border: 0;
+  border: 1px solid #c5c5c5;
+  border-radius: 6px;
 }
 
 .phi {
@@ -252,7 +264,7 @@ p {
 
 .live {
   font-size: 12px;
-  color: #f0f0a8;
+  color: var(--accent);
   margin-top: 4px;
 }
 
@@ -268,7 +280,9 @@ p {
   align-items: stretch;
   min-width: 0;
   background: #2f2f2f;
-  border: 1px solid #8a8a8a;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .footing-id-k {
@@ -316,14 +330,15 @@ p {
   overflow: auto;
   max-height: min(72vh, 640px);
   border: 1px solid var(--line);
-  background: #2f2f2f;
+  border-radius: 8px;
+  background: #151518;
 }
 
 .schematic {
   display: block;
   width: 100%;
   height: auto;
-  background: #2f2f2f;
+  background: #151518;
   vertical-align: top;
 }
 
@@ -333,19 +348,18 @@ p {
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  min-height: 56px;
-  padding: 5px 5px 5px 22px;
+  min-height: 48px;
+  padding: 5px 5px 5px 18px;
   border: 0;
-  border-radius: 999px;
-  background: #5d83f1;
+  border-radius: 8px;
+  background: var(--green);
   color: #fff;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1.2;
   cursor: pointer;
-  box-shadow: 0 10px 22px rgba(93, 131, 241, 0.28);
-  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  transition: background 0.15s ease;
 }
 
 .go-label {
@@ -372,8 +386,7 @@ p {
 }
 
 .go:hover {
-  background: #4e74ee;
-  box-shadow: 0 12px 26px rgba(78, 116, 238, 0.38);
+  background: var(--green-hover);
 }
 
 .go:hover .go-icon svg {
@@ -391,33 +404,89 @@ p {
 }
 
 .ghost,
-.en-btn {
-  background: #222;
-  color: #fff;
-  border: 1px solid #777;
-  height: 32px;
-  padding: 0 10px;
-  cursor: pointer;
-  font-weight: 700;
-  text-decoration: none;
+.en-btn,
+.btn-ghost,
+.btn-save,
+.btn-blue {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  text-decoration: none;
 }
 
-.en-btn {
+.ghost,
+.en-btn,
+.btn-ghost {
+  background: #2a2d31;
+  border: 1px solid #3d4248;
+}
+
+.ghost:hover,
+.en-btn:hover,
+.btn-ghost:hover {
+  background: #34383d;
+}
+
+.en-btn,
+.btn-lang {
   min-width: 44px;
+  padding: 0 10px;
+}
+
+.btn-save {
+  background: var(--green-save);
+}
+
+.btn-save:hover {
+  background: var(--green-save-hover);
+}
+
+.btn-blue {
+  background: var(--blue);
+}
+
+.btn-blue:hover {
+  background: var(--blue-hover);
+}
+
+.btn-on,
+.ghost-on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-green:disabled,
+.btn-blue:disabled,
+.btn-save:disabled,
+.btn-ghost:disabled,
+.ghost:disabled,
+.go:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .banner {
   margin-top: 14px;
   padding: 10px 12px;
   border: 1px solid #c66;
+  border-radius: 8px;
   background: #5a3030;
 }
 
 .result-wrap {
   margin-top: 18px;
-  background: #cfcfcf;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
   padding: 12px;
 }
 
@@ -429,22 +498,23 @@ p {
 }
 
 .ghost-on {
-  background: #3d5a9c;
-  border-color: #8ab;
+  background: #2a2d31;
+  border-color: var(--accent);
 }
 
 .cad-note {
   margin: 0 0 8px;
   font-size: 12px;
-  color: #222;
+  color: var(--muted);
 }
 
 .cad-lock {
   margin: 0 0 10px;
   padding: 10px 12px;
-  background: #fff6d6;
+  background: #3a3418;
   border: 1px solid #c9a227;
-  color: #1a1a1a;
+  border-radius: 8px;
+  color: #f4e9c0;
   font-size: 13px;
   line-height: 1.45;
 }
