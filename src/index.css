@@ -43,7 +43,7 @@ p {
 .app {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 12px 12px 48px;
+  padding: 0 16px 48px;
 }
 
 .topbar {
@@ -51,37 +51,36 @@ p {
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
+  margin: 0 -16px 16px;
+  padding: 16px 20px;
+  background: #121212;
+  border-top: 1px solid #2a2a2a;
+  border-bottom: 1px solid #2a2a2a;
   flex-wrap: wrap;
 }
 
 .topbar h1 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   letter-spacing: 0.01em;
-  color: var(--accent);
-}
-
-@media (min-width: 720px) {
-  .topbar h1 {
-    font-size: 24px;
-  }
+  color: #8eb1ff;
 }
 
 .brand {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: stretch;
+  gap: 14px;
   min-width: 0;
 }
 
 .brand-copy {
   min-width: 0;
-  padding-left: 16px;
-  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 18px;
+  border-left: 1px solid #5c5c5c;
 }
 
 .brand-logo {
@@ -102,16 +101,11 @@ p {
   transition: filter 0.15s ease;
 }
 
-@media (min-width: 720px) {
-  .brand-logo img {
-    height: 52px;
-  }
-}
-
 .topbar p {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 4px;
+  color: #999;
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 3px;
   line-height: 1.35;
 }
 
@@ -120,6 +114,47 @@ p {
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.topbar .btn-ghost,
+.topbar .btn-save,
+.topbar .btn-blue {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 7px;
+}
+
+.topbar .btn-ghost {
+  background: #2c2c2c;
+  border: 1px solid #444;
+}
+
+.topbar .btn-ghost:hover {
+  background: #363636;
+}
+
+.topbar .btn-save {
+  background: #2d5a3f;
+}
+
+.topbar .btn-save:hover {
+  background: #356a4b;
+}
+
+.topbar .btn-blue {
+  background: #4a78c2;
+}
+
+.topbar .btn-blue:hover {
+  background: #5a88d0;
+}
+
+.topbar .btn-lang {
+  min-width: 40px;
+  padding: 0 10px;
 }
 
 .workspace {
