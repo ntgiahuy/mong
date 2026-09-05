@@ -47,7 +47,7 @@ npm run preview
 
 Nút **Mặc định** khôi phục móng M1 đúng tâm 1800×2000, SL 5.
 
-**Open** / **Save As** đọc và ghi file `monh-shopdrawing.json` trên máy — sửa offline rồi tải lên lại. **Lưu** chỉ ghi trên trình duyệt.
+**Open** / **Save As** đọc và ghi file `[Giahuy.net]-shop_mong.json` trên máy — sửa offline rồi tải lên lại. **Lưu** chỉ ghi trên trình duyệt. File cũ `monh-shopdrawing.json` vẫn mở được.
 
 ## Công thức khối lượng
 

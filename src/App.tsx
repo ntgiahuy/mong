@@ -9,7 +9,7 @@ import {
   compute,
   DEFAULT_INPUTS,
 } from './lib/calc'
-import { downloadProject, parseProject } from './lib/project-file'
+import { downloadProject, parseProject, PROJECT_FILENAME } from './lib/project-file'
 import { fitShopSheetForPrint, resetShopSheetAfterPrint } from './lib/print-sheet'
 import type { Inputs } from './types'
 
@@ -120,9 +120,9 @@ export default function App() {
     }
   }
 
-  function saveAsFile() {
+  async function saveAsFile() {
     try {
-      downloadProject(inp)
+      await downloadProject(inp, PROJECT_FILENAME)
       setIoError('')
     } catch {
       setIoError('Không tải được file JSON.')
