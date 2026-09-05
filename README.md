@@ -47,7 +47,7 @@ npm run preview
 
 Nút **Mặc định** khôi phục móng M1 đúng tâm 1800×2000, SL 5.
 
-Nút **EN** đổi giao diện sang tiếng Anh.
+**Open** / **Save As** đọc và ghi file `monh-shopdrawing.json` trên máy — sửa offline rồi tải lên lại. **Lưu** chỉ ghi trên trình duyệt.
 
 ## Công thức khối lượng
 

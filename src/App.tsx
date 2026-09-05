@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CadViewport } from './components/CadViewport'
 import { FoundationForm } from './components/FoundationForm'
 import { Schematic } from './components/Schematic'
@@ -9,6 +9,7 @@ import {
   compute,
   DEFAULT_INPUTS,
 } from './lib/calc'
+import { downloadProject, parseProject } from './lib/project-file'
 import { fitShopSheetForPrint, resetShopSheetAfterPrint } from './lib/print-sheet'
 import type { Inputs } from './types'
 
@@ -26,7 +27,8 @@ function loadSaved(): Inputs | null {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>('vi')
+  const lang: Lang = 'vi'
+  const fileRef = useRef<HTMLInputElement>(null)
   const [inp, setInp] = useState<Inputs>(() => loadSaved() ?? DEFAULT_INPUTS)
   const [busy, setBusy] = useState<'pdf' | 'cad' | null>(null)
   const [showResult, setShowResult] = useState(true)
@@ -118,6 +120,35 @@ export default function App() {
     }
   }
 
+  function saveAsFile() {
+    try {
+      downloadProject(inp)
+      setIoError('')
+    } catch {
+      setIoError('Không tải được file JSON.')
+    }
+  }
+
+  function openProjectFile(file: File) {
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const parsed: unknown = JSON.parse(String(reader.result))
+        const next = parseProject(parsed)
+        if (!next) {
+          setIoError(L.openBadProject)
+          return
+        }
+        setInp(next)
+        setIoError('')
+      } catch {
+        setIoError(L.openBadJson)
+      }
+    }
+    reader.onerror = () => setIoError(L.openBadJson)
+    reader.readAsText(file)
+  }
+
   return (
     <div className="app">
       <header className="topbar">
@@ -163,6 +194,59 @@ export default function App() {
             </svg>
             {L.newFile}
           </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (file) openProjectFile(file)
+            }}
+          />
+          <button
+            type="button"
+            className="btn-ghost"
+            title={L.openTitle}
+            onClick={() => fileRef.current?.click()}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M4 8h5.2l1.5 1.8H20V18.5H4z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M4 10.2V7.2h6.1L11.6 9"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {L.openFile}
+          </button>
+          <button type="button" className="btn-ghost" title={L.saveAsTitle} onClick={saveAsFile}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M6 4.5h10.2L19.5 8v11.5H6z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M8.2 4.5v4.4h8.2V4.5M8.2 19.5v-6.2h7.6v6.2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+              />
+            </svg>
+            {L.saveAs}
+          </button>
           <button type="button" className="btn-save" onClick={saveFile}>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path
@@ -188,9 +272,6 @@ export default function App() {
               />
             </svg>
             {busy === 'pdf' ? L.exporting : L.exportPdf}
-          </button>
-          <button type="button" className="btn-ghost btn-lang" onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}>
-            {lang === 'vi' ? 'EN' : 'VI'}
           </button>
         </div>
       </header>
