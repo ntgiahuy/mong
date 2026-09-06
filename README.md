@@ -17,7 +17,7 @@ Cách làm trên GitHub, không cần Vercel/Netlify:
 1. Đưa repo lên GitHub (Create repo / push).
 2. **Settings → Pages → Deploy from a branch → main → /docs**  
    (hoặc Source: GitHub Actions).
-3. Mở URL dạng `https://<user>.github.io/<ten-repo>/`.
+3. Mở URL dạng `https://<user>.github.io/<ten-repo>/`. Site đang chạy tại **https://ntgiahuy.github.io/mong/**.
 
 GitHub Pages **chính là hosting miễn phí** của GitHub. Nút **Publish** (Vercel) cũng được, nhanh hơn nếu chưa muốn cấu hình Pages.
 
