@@ -222,7 +222,6 @@ function LeaderTag({
   const dir = Math.sign(toX - tx) || 1
   const startX = tx + dir * r
   const lastVert = placed.kind === 'L'
-  const lineMidX = (startX + toX) / 2
   return (
     <g>
       {placed.kind === 'h' ? (
@@ -246,14 +245,14 @@ function LeaderTag({
       <Tag n={n} x={tx} y={ty} />
       {label ? (
         <text
-          x={lineMidX}
-          y={ty - 11}
-          textAnchor="middle"
+          x={tx + dir * (r + 3)}
+          y={ty - 3.2}
+          textAnchor={dir >= 0 ? 'start' : 'end'}
           fontSize={10}
           fontWeight={700}
           fill="#111"
           stroke="#f3f3f3"
-          strokeWidth={3.2}
+          strokeWidth={2.4}
           paintOrder="stroke"
           strokeLinejoin="round"
         >
@@ -394,15 +393,15 @@ function BarShape({ row }: { row: RebarRow }) {
   const [a, b, hook] = row.segs
   return (
     <svg width={148} height={50} viewBox="0 0 148 50">
-      <path d="M34 16 H106 V42 H34 Z" fill="none" stroke="#111" strokeWidth={1.7} />
-      <path d="M106 16 H132" fill="none" stroke="#111" strokeWidth={1.7} />
-      <text x={70} y={13} textAnchor="middle" fontSize={9}>
+      <path d="M30 12 H110 V42 H30 Z" fill="none" stroke="#111" strokeWidth={1.7} />
+      <path d="M110 12 L101 21" fill="none" stroke="#111" strokeWidth={1.7} strokeLinecap="square" />
+      <text x={70} y={31} textAnchor="middle" fontSize={9}>
         {a}
       </text>
-      <text x={4} y={32} fontSize={9}>
+      <text x={26} y={31} textAnchor="end" fontSize={9}>
         {b}
       </text>
-      <text x={119} y={13} textAnchor="middle" fontSize={9}>
+      <text x={114} y={16} fontSize={9}>
         {hook}
       </text>
     </svg>
