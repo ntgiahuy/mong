@@ -168,19 +168,25 @@ function placeLeader(
   toY: number,
   obstacles: Seg[],
   label?: string,
+  avoidYs: number[] = [],
 ): { x: number; y: number; kind: 'h' | 'L' } {
-  const MIN_H = Math.max(22, labelWidth(label) + 10)
+  const MIN_H = Math.max(56, labelWidth(label) + 28)
   const land = { x: toX, y: toY }
   let tagX = preferredX
   if (Math.abs(toX - tagX) < MIN_H) {
     tagX = preferredX <= toX ? toX - MIN_H : toX + MIN_H
   }
+  const onBase = avoidYs.some((ay) => Math.abs(toY - ay) < 10)
   const hTry = hSeg(tagX, toX, toY)
-  if (!leaderHits(hTry, obstacles, land)) {
+  if (!onBase && !leaderHits(hTry, obstacles, land)) {
     return { x: tagX, y: toY, kind: 'h' }
   }
   let tagY = preferredY
-  if (Math.abs(tagY - toY) < 10) tagY = toY - 16
+  for (const ay of avoidYs) {
+    if (Math.abs(tagY - ay) < 12) tagY = ay - 16
+  }
+  if (onBase) tagY = Math.min(tagY, toY - 20)
+  if (Math.abs(tagY - toY) < 14) tagY = toY - 22
   return { x: tagX, y: tagY, kind: 'L' }
 }
 
@@ -196,6 +202,7 @@ function LeaderTag({
   toY,
   label,
   obstacles = [],
+  avoidYs = [],
 }: {
   n: number
   x: number
@@ -205,8 +212,9 @@ function LeaderTag({
   label?: string
   labelAlign?: 'left' | 'right'
   obstacles?: Seg[]
+  avoidYs?: number[]
 }) {
-  const placed = placeLeader(x, y, toX, toY, obstacles, label)
+  const placed = placeLeader(x, y, toX, toY, obstacles, label, avoidYs)
   const tx = placed.x
   const ty = placed.y
   const r = 7.5
@@ -239,11 +247,15 @@ function LeaderTag({
       {label ? (
         <text
           x={lineMidX}
-          y={ty - 4}
+          y={ty - 11}
           textAnchor="middle"
           fontSize={10}
           fontWeight={700}
           fill="#111"
+          stroke="#f3f3f3"
+          strokeWidth={3.2}
+          paintOrder="stroke"
+          strokeLinejoin="round"
         >
           {label}
         </text>
@@ -592,8 +604,14 @@ function SectionDrawing({
   )
   const stirYLand = stirYs[0] ?? yStirLab
   const mainLandX = faceXs[faceXs.length - 1] ?? colX + cw - colCover
-  const longLandX = ox + bw * 0.28
-  const transLandX = transXs[Math.floor(transXs.length * 0.62)] ?? ox + bw * 0.62
+  const longLandX = Math.min(colX - 8, ox + cover + Math.max(18, bw * 0.18))
+  const transLandX =
+    transXs.find((x) => x > colX + cw + 6) ??
+    transXs[Math.floor(transXs.length * 0.72)] ??
+    ox + bw * 0.78
+  const meshArmY = y2 - 16
+  const tagRight = Math.min(ox + bw + 62, Math.max(colX + cw + 78, ox + bw * 0.72 + 40))
+  const avoidBaseYs = [y1, y2, y3]
   const sectionObstacles: Seg[] = [
     hSeg(ox, ox + bw, y2),
     hSeg(ox, ox + bw, y3),
@@ -736,40 +754,44 @@ function SectionDrawing({
           <LeaderTag
             key={`colmark${b.mark}`}
             n={b.mark}
-            x={colX + cw + 36}
-            y={yMainLab + i * 18}
+            x={tagRight}
+            y={yMainLab + i * 20}
             toX={i === 0 ? mainLandX : (faceXs[0] ?? colX + colCover)}
-            toY={yMainLab + i * 18}
+            toY={yMainLab + i * 20}
             label={b.label}
             obstacles={sectionObstacles}
+            avoidYs={avoidBaseYs}
           />
         ))}
       <LeaderTag
         n={stirMark}
-        x={colX + cw + 36}
-        y={yStirLab}
+        x={tagRight}
+        y={Math.min(yStirLab, y1 - 18)}
         toX={colX + cw - colCover}
         toY={stirYLand}
         label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
         obstacles={sectionObstacles}
+        avoidYs={avoidBaseYs}
       />
       <LeaderTag
         n={markLong}
-        x={longLandX - 8}
-        y={yLong - 18}
+        x={ox + 32}
+        y={meshArmY}
         toX={longLandX}
         toY={yLong}
         label={`Ø${dLine}a${aLine}`}
         obstacles={sectionObstacles}
+        avoidYs={avoidBaseYs}
       />
       <LeaderTag
         n={markTrans}
-        x={transLandX - 8}
-        y={yTrans - 18}
+        x={ox + bw - 32}
+        y={meshArmY}
         toX={transLandX}
         toY={yTrans}
         label={`Ø${dDot}a${aDot}`}
         obstacles={sectionObstacles}
+        avoidYs={avoidBaseYs}
       />
 
       {leftMm >= inp.coverBase - 0.5 && (
@@ -1049,28 +1071,31 @@ function PlanDrawing({
         const pts = i === 0 ? leftDots : rightDots
         const pt = pts[Math.floor(pts.length / 2)] ?? colDots[i] ?? colDots[0]
         const land = pt ? { x: cx + pt.x * s, y: cy + pt.y * s } : { x: cx + cw / 2, y: cy + ch / 2 }
+        const aaY = cy + ch / 2
+        const tagY = i === 0 ? cy + Math.min(22, ch * 0.22) : cy + ch - Math.min(18, ch * 0.2)
         return (
           <LeaderTag
             key={`col-lead-${b.mark}`}
             n={b.mark}
-            x={i === 0 ? cx - 20 : cx + cw + 22}
-            y={cy + (i === 0 ? ch * 0.28 : ch * 0.22)}
+            x={i === 0 ? cx - 58 : cx + cw + 58}
+            y={Math.abs(tagY - aaY) < 10 ? tagY - 14 : tagY}
             toX={land.x}
             toY={land.y}
             label={b.label}
-            labelAlign={i === 0 ? 'left' : 'right'}
             obstacles={planObstacles}
+            avoidYs={[cy, cy + ch, aaY, gridY, oy, oy + h]}
           />
         )
       })}
       <LeaderTag
         n={stirMark}
-        x={Math.min(cx + cw + 24, ox + w - 10)}
-        y={Math.min(cy + ch + 16, oy + h - 8)}
+        x={Math.min(cx + cw + 62, ox + w + 8)}
+        y={Math.min(cy + ch + 24, oy + h - 6)}
         toX={hoopR}
         toY={hoopB}
         label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
         obstacles={planObstacles}
+        avoidYs={[cy, cy + ch, oy, oy + h, gridY]}
       />
 
       <HDim x1={ox - lot} x2={ox} y={dimY} label={LOT_PLAN_MM} below />
