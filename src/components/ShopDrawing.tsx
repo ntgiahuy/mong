@@ -322,26 +322,51 @@ function BeamStub({
   )
 }
 
+function roundedRectPath(x: number, y: number, w: number, h: number, r: number): string {
+  const rr = Math.min(r, w / 2, h / 2)
+  const k = 0.5522847498 * rr
+  const x1 = x + rr
+  const x2 = x + w - rr
+  const y1 = y + rr
+  const y2 = y + h - rr
+  const xr = x + w
+  const yb = y + h
+  return [
+    `M ${x1} ${y}`,
+    `H ${x2}`,
+    `C ${x2 + k} ${y} ${xr} ${y1 - k} ${xr} ${y1}`,
+    `V ${y2}`,
+    `C ${xr} ${y2 + k} ${x2 + k} ${yb} ${x2} ${yb}`,
+    `H ${x1}`,
+    `C ${x1 - k} ${yb} ${x} ${y2 + k} ${x} ${y2}`,
+    `V ${y1}`,
+    `C ${x} ${y1 - k} ${x1 - k} ${y} ${x1} ${y}`,
+    'Z',
+  ].join(' ')
+}
+
 function StirrupHoop({
   x,
   y,
   w,
   h,
   strokeWidth = 1.8,
+  radius,
 }: {
   x: number
   y: number
   w: number
   h: number
   strokeWidth?: number
+  radius?: number
 }) {
-  const r = Math.min(4, w * 0.1, h * 0.1)
+  const r = Math.min(radius ?? Math.min(4, w * 0.1, h * 0.1), w / 2, h / 2)
   const hook = Math.min(12, Math.max(8, Math.min(w, h) * 0.24))
   const hx = x + w - r * 0.2
   const hy = y + r * 0.2
   return (
-    <g fill="none" stroke="#111" strokeWidth={strokeWidth} strokeLinejoin="miter" strokeLinecap="square">
-      <rect x={x} y={y} width={w} height={h} rx={r} ry={r} />
+    <g fill="none" stroke="#111" strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="square">
+      <path d={roundedRectPath(x, y, w, h, r)} />
       <line x1={hx} y1={hy} x2={hx - hook * 0.72} y2={hy + hook * 0.72} />
     </g>
   )
@@ -393,8 +418,7 @@ function BarShape({ row }: { row: RebarRow }) {
   const [a, b, hook] = row.segs
   return (
     <svg width={148} height={50} viewBox="0 0 148 50">
-      <path d="M30 12 H110 V42 H30 Z" fill="none" stroke="#111" strokeWidth={1.7} />
-      <path d="M110 12 L101 21" fill="none" stroke="#111" strokeWidth={1.7} strokeLinecap="square" />
+      <StirrupHoop x={30} y={12} w={80} h={30} strokeWidth={1.7} radius={8} />
       <text x={70} y={31} textAnchor="middle" fontSize={9}>
         {a}
       </text>
