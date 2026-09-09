@@ -213,26 +213,37 @@ p {
 
 .num {
   width: 72px;
-  height: 24px;
-  border: 1px solid #c5c5c5;
-  border-radius: 6px;
-  padding: 0 6px;
-  background: #fff;
-  color: #111;
+  height: 26px;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  padding: 0 8px;
+  background: #000;
+  color: #fff;
   font-size: 13px;
+  font-weight: 700;
+  color-scheme: dark;
 }
 
 .axis-name {
   width: 36px;
-  height: 24px;
-  border: 1px solid #c5c5c5;
-  border-radius: 6px;
+  height: 26px;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
   padding: 0 2px;
-  background: #fff;
-  color: #111;
+  background: #000;
+  color: #fff;
   font-size: 13px;
   font-weight: 700;
   text-align: center;
+  color-scheme: dark;
+}
+
+.num:focus,
+.axis-name:focus,
+.dia select:focus,
+.footing-id-input:focus {
+  outline: none;
+  border-color: #8eb1ff;
 }
 
 .unit,
@@ -286,11 +297,13 @@ p {
 }
 
 .dia select {
-  height: 24px;
-  background: #fff;
-  color: #111;
-  border: 1px solid #c5c5c5;
-  border-radius: 6px;
+  height: 26px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  font-weight: 700;
+  color-scheme: dark;
 }
 
 .phi {
@@ -314,9 +327,9 @@ p {
   display: flex;
   align-items: stretch;
   min-width: 0;
-  background: #2f2f2f;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  background: #000;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -339,11 +352,12 @@ p {
   height: 34px;
   border: 0;
   padding: 0 10px;
-  background: #fff;
-  color: #111;
+  background: #000;
+  color: #fff;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.04em;
+  color-scheme: dark;
 }
 
 .footing-id-qty-input {
