@@ -118,7 +118,70 @@ function Tag({ n, x, y }: { n: number; x: number; y: number }) {
   )
 }
 
-/** Thin leader from a mark bubble to the bar it names (plan / PDF). */
+type Seg = { x1: number; y1: number; x2: number; y2: number }
+
+function hSeg(x1: number, x2: number, y: number): Seg {
+  return { x1, y1: y, x2, y2: y }
+}
+
+function vSeg(x: number, y1: number, y2: number): Seg {
+  return { x1: x, y1, x2: x, y2 }
+}
+
+function rectSegs(x: number, y: number, w: number, h: number): Seg[] {
+  return [hSeg(x, x + w, y), hSeg(x, x + w, y + h), vSeg(x, y, y + h), vSeg(x + w, y, y + h)]
+}
+
+function pointSegDist(px: number, py: number, s: Seg): number {
+  const dx = s.x2 - s.x1
+  const dy = s.y2 - s.y1
+  const l2 = dx * dx + dy * dy
+  if (l2 < 1e-8) return Math.hypot(px - s.x1, py - s.y1)
+  const t = Math.max(0, Math.min(1, ((px - s.x1) * dx + (py - s.y1) * dy) / l2))
+  return Math.hypot(px - (s.x1 + t * dx), py - (s.y1 + t * dy))
+}
+
+/** True if the thin leader runs along / across another stroke, away from the landing. */
+function leaderHits(seg: Seg, obstacles: Seg[], land: { x: number; y: number }, ignoreR = 12): boolean {
+  const samples = 14
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples
+    const px = seg.x1 + (seg.x2 - seg.x1) * t
+    const py = seg.y1 + (seg.y2 - seg.y1) * t
+    if (Math.hypot(px - land.x, py - land.y) <= ignoreR) continue
+    for (const o of obstacles) {
+      if (pointSegDist(px, py, o) < 1.2) return true
+    }
+  }
+  return false
+}
+
+function placeLeader(
+  preferredX: number,
+  preferredY: number,
+  toX: number,
+  toY: number,
+  obstacles: Seg[],
+): { x: number; y: number; kind: 'h' | 'L' } {
+  const MIN_H = 18
+  const land = { x: toX, y: toY }
+  let tagX = preferredX
+  if (Math.abs(toX - tagX) < MIN_H) {
+    tagX = preferredX <= toX ? toX - MIN_H : toX + MIN_H
+  }
+  const hTry = hSeg(tagX, toX, toY)
+  if (!leaderHits(hTry, obstacles, land)) {
+    return { x: tagX, y: toY, kind: 'h' }
+  }
+  let tagY = preferredY
+  if (Math.abs(tagY - toY) < 10) tagY = toY - 16
+  return { x: tagX, y: tagY, kind: 'L' }
+}
+
+/**
+ * Horizontal leader when the run is clear; lying-L (H then V) when a thin
+ * stroke would overlap other drawing lines.
+ */
 function LeaderTag({
   n,
   x,
@@ -127,6 +190,7 @@ function LeaderTag({
   toY,
   label,
   labelAlign = 'right',
+  obstacles = [],
 }: {
   n: number
   x: number
@@ -135,36 +199,41 @@ function LeaderTag({
   toY: number
   label?: string
   labelAlign?: 'left' | 'right'
+  obstacles?: Seg[]
 }) {
+  const placed = placeLeader(x, y, toX, toY, obstacles)
+  const tx = placed.x
+  const ty = placed.y
   const r = 7.5
-  const dx = toX - x
-  const dy = toY - y
-  const dist = Math.hypot(dx, dy)
-  const ux = dist > 0.5 ? dx / dist : 0
-  const uy = dist > 0.5 ? dy / dist : 1
-  const x1 = x + ux * r
-  const y1 = y + uy * r
-  const tick = 3.8
+  const tick = 5.6
+  const dir = Math.sign(toX - tx) || 1
+  const startX = tx + dir * r
+  const lastVert = placed.kind === 'L'
   return (
     <g>
-      {dist > 0.5 && (
-        <>
-          <line x1={x1} y1={y1} x2={toX} y2={toY} stroke="#111" strokeWidth={0.65} />
-          <line
-            x1={toX - uy * tick}
-            y1={toY + ux * tick}
-            x2={toX + uy * tick}
-            y2={toY - ux * tick}
-            stroke="#111"
-            strokeWidth={0.8}
-          />
-        </>
+      {placed.kind === 'h' ? (
+        <line x1={startX} y1={ty} x2={toX} y2={toY} stroke="#111" strokeWidth={0.65} />
+      ) : (
+        <path
+          d={`M ${startX} ${ty} H ${toX} V ${toY}`}
+          fill="none"
+          stroke="#111"
+          strokeWidth={0.65}
+        />
       )}
-      <Tag n={n} x={x} y={y} />
+      <line
+        x1={lastVert ? toX - tick : toX}
+        y1={lastVert ? toY : toY - tick}
+        x2={lastVert ? toX + tick : toX}
+        y2={lastVert ? toY : toY + tick}
+        stroke="#111"
+        strokeWidth={1.15}
+      />
+      <Tag n={n} x={tx} y={ty} />
       {label ? (
         <text
-          x={labelAlign === 'right' ? x + 11 : x - 11}
-          y={y + 3.6}
+          x={labelAlign === 'right' ? tx + 11 : tx - 11}
+          y={ty + 3.6}
           textAnchor={labelAlign === 'right' ? 'start' : 'end'}
           fontSize={10}
           fontWeight={700}
@@ -512,6 +581,25 @@ function SectionDrawing({
   const lx = ox + bw + 10
   const beamLeftEnd = ox + 16
   const beamRightEnd = ox + bw - 16
+  const stirYs = Array.from({ length: result.nStirrup }, (_, i) => y0 + (inp.coverCol + i * inp.aStirrup) * s).filter(
+    (y) => y <= y1 - 3,
+  )
+  const stirYLand = stirYs[0] ?? yStirLab
+  const mainLandX = faceXs[faceXs.length - 1] ?? colX + cw - colCover
+  const longLandX = ox + bw * 0.28
+  const transLandX = transXs[Math.floor(transXs.length * 0.62)] ?? ox + bw * 0.62
+  const sectionObstacles: Seg[] = [
+    hSeg(ox, ox + bw, y2),
+    hSeg(ox, ox + bw, y3),
+    hSeg(ox + cover, ox + bw - cover, yLong),
+    vSeg(colX, y0, y1),
+    vSeg(colX + cw, y0, y1),
+    hSeg(colX, colX + cw, y0),
+    vSeg(gridX, y0 - 2, y4 + sandH + 8),
+    ...faceXs.map((x) => vSeg(x, y0 - proj.two * s, yHook)),
+    ...stirYs.map((y) => hSeg(colX + colCover, colX + cw - colCover, y)),
+    hSeg(ox + cover, ox + bw - cover, yTrans),
+  ]
 
   return (
     <svg className="cad" data-cad-scale={s} viewBox={`0 0 ${W} ${H}`} width={W} height={H} preserveAspectRatio="xMinYMin meet">
@@ -639,25 +727,44 @@ function SectionDrawing({
       {result.bars
         .filter((b) => b.shape === 'L')
         .map((b, i) => (
-          <g key={`colmark${b.mark}`}>
-            <Tag n={b.mark} x={colX + cw + 14} y={yMainLab + i * 18} />
-            <text x={colX + cw + 26} y={yMainLab + 4 + i * 18} fontSize={11} fontWeight={700}>
-              {b.label}
-            </text>
-          </g>
+          <LeaderTag
+            key={`colmark${b.mark}`}
+            n={b.mark}
+            x={colX + cw + 36}
+            y={yMainLab + i * 18}
+            toX={i === 0 ? mainLandX : (faceXs[0] ?? colX + colCover)}
+            toY={yMainLab + i * 18}
+            label={b.label}
+            obstacles={sectionObstacles}
+          />
         ))}
-      <Tag n={stirMark} x={colX + cw + 14} y={yStirLab} />
-      <text x={colX + cw + 26} y={yStirLab + 4} fontSize={10}>
-        Ø{inp.dStirrup}a{inp.aStirrup}
-      </text>
-      <Tag n={markLong} x={ox + bw * 0.22} y={yLong - 16} />
-      <text x={ox + bw * 0.22 + 12} y={yLong - 12} fontSize={10}>
-        Ø{dLine}a{aLine}
-      </text>
-      <Tag n={markTrans} x={ox + bw * 0.62} y={yTrans - 16} />
-      <text x={ox + bw * 0.62 + 12} y={yTrans - 12} fontSize={10}>
-        Ø{dDot}a{aDot}
-      </text>
+      <LeaderTag
+        n={stirMark}
+        x={colX + cw + 36}
+        y={yStirLab}
+        toX={colX + cw - colCover}
+        toY={stirYLand}
+        label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
+        obstacles={sectionObstacles}
+      />
+      <LeaderTag
+        n={markLong}
+        x={longLandX - 8}
+        y={yLong - 18}
+        toX={longLandX}
+        toY={yLong}
+        label={`Ø${dLine}a${aLine}`}
+        obstacles={sectionObstacles}
+      />
+      <LeaderTag
+        n={markTrans}
+        x={transLandX - 8}
+        y={yTrans - 18}
+        toX={transLandX}
+        toY={yTrans}
+        label={`Ø${dDot}a${aDot}`}
+        obstacles={sectionObstacles}
+      />
 
       {leftMm >= inp.coverBase - 0.5 && (
         <HDim x1={ox} x2={ox + cover} y={y4 + sandH + 18} label={inp.coverBase} below />
@@ -770,8 +877,22 @@ function PlanDrawing({
   const mesh2To = mark1IsFaX ? { x: xFaYRight, y: oy + h * 0.18 } : { x: ox + w * 0.78, y: yFaX }
   const leftDots = colDots.filter((p) => p.x <= inp.xCo / 2)
   const rightDots = colDots.filter((p) => p.x > inp.xCo / 2)
+  const hoopL = cx + inp.coverCol * s
+  const hoopT = cy + inp.coverCol * s
   const hoopR = cx + cw - inp.coverCol * s
   const hoopB = cy + ch - inp.coverCol * s
+  const planObstacles: Seg[] = [
+    ...rectSegs(ox, oy, w, h),
+    ...rectSegs(cx, cy, cw, ch),
+    ...rectSegs(sx, sy, sw, shh),
+    ...rectSegs(hoopL, hoopT, hoopR - hoopL, hoopB - hoopT),
+    hSeg(ox - 10, ox + w + 10, cy + ch / 2),
+    vSeg(cx + cw / 2, oy - 8, oy + h + 10),
+    vSeg(gridX, axisHead, oy + h + lot + 6),
+    hSeg(Math.max(AXIS_BUBBLE_R * 2 + 8, ox - lot - 8), ox + w + lot + 6, gridY),
+    ...nx.map((mm) => vSeg(ox + mm * s, oy + cover, oy + h - cover)),
+    ...ny.map((mm) => hSeg(ox + cover, ox + w - cover, oy + mm * s)),
+  ]
   const W = ox + w + lot + RIGHT + extraRight
   const H = captionY + SECTION_CAPTION_PAD
 
@@ -906,6 +1027,7 @@ function PlanDrawing({
         toX={mesh1To.x}
         toY={mesh1To.y}
         label={`Ø${bar1?.d ?? (mark1IsFaX ? inp.dFaX : inp.dFaY)}a${mark1IsFaX ? inp.aFaX : inp.aFaY}`}
+        obstacles={planObstacles}
       />
       <LeaderTag
         n={bar2?.mark ?? 2}
@@ -915,6 +1037,7 @@ function PlanDrawing({
         toY={mesh2To.y}
         label={`Ø${bar2?.d ?? (mark1IsFaX ? inp.dFaY : inp.dFaX)}a${mark1IsFaX ? inp.aFaY : inp.aFaX}`}
         labelAlign="left"
+        obstacles={planObstacles}
       />
       {colBars.map((b, i) => {
         const pts = i === 0 ? leftDots : rightDots
@@ -930,6 +1053,7 @@ function PlanDrawing({
             toY={land.y}
             label={b.label}
             labelAlign={i === 0 ? 'left' : 'right'}
+            obstacles={planObstacles}
           />
         )
       })}
@@ -940,6 +1064,7 @@ function PlanDrawing({
         toX={hoopR}
         toY={hoopB}
         label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
+        obstacles={planObstacles}
       />
 
       <HDim x1={ox - lot} x2={ox} y={dimY} label={LOT_PLAN_MM} below />
