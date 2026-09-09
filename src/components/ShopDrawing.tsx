@@ -156,14 +156,20 @@ function leaderHits(seg: Seg, obstacles: Seg[], land: { x: number; y: number }, 
   return false
 }
 
+function labelWidth(label: string | undefined): number {
+  if (!label) return 0
+  return Math.max(32, label.length * 5.7)
+}
+
 function placeLeader(
   preferredX: number,
   preferredY: number,
   toX: number,
   toY: number,
   obstacles: Seg[],
+  label?: string,
 ): { x: number; y: number; kind: 'h' | 'L' } {
-  const MIN_H = 18
+  const MIN_H = Math.max(22, labelWidth(label) + 10)
   const land = { x: toX, y: toY }
   let tagX = preferredX
   if (Math.abs(toX - tagX) < MIN_H) {
@@ -189,7 +195,6 @@ function LeaderTag({
   toX,
   toY,
   label,
-  labelAlign = 'right',
   obstacles = [],
 }: {
   n: number
@@ -201,7 +206,7 @@ function LeaderTag({
   labelAlign?: 'left' | 'right'
   obstacles?: Seg[]
 }) {
-  const placed = placeLeader(x, y, toX, toY, obstacles)
+  const placed = placeLeader(x, y, toX, toY, obstacles, label)
   const tx = placed.x
   const ty = placed.y
   const r = 7.5
@@ -209,6 +214,7 @@ function LeaderTag({
   const dir = Math.sign(toX - tx) || 1
   const startX = tx + dir * r
   const lastVert = placed.kind === 'L'
+  const lineMidX = (startX + toX) / 2
   return (
     <g>
       {placed.kind === 'h' ? (
@@ -232,9 +238,9 @@ function LeaderTag({
       <Tag n={n} x={tx} y={ty} />
       {label ? (
         <text
-          x={labelAlign === 'right' ? tx + 11 : tx - 11}
-          y={ty + 3.6}
-          textAnchor={labelAlign === 'right' ? 'start' : 'end'}
+          x={lineMidX}
+          y={ty - 4}
+          textAnchor="middle"
           fontSize={10}
           fontWeight={700}
           fill="#111"
