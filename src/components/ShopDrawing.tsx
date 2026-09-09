@@ -361,16 +361,19 @@ function StirrupHoop({
   radius?: number
 }) {
   const r = Math.min(radius ?? Math.min(4, w * 0.1, h * 0.1), w / 2, h / 2)
-  const hook = Math.min(14, Math.max(7, Math.min(w, h) * 0.28))
-  const dx = hook * 0.74
-  const dy = hook * 0.74
-  const topX = x + w - r
-  const rightY = y + r
+  const hook = Math.min(12, Math.max(6, Math.min(w, h) * 0.3))
+  const dx = hook * 0.72
+  const dy = hook * 0.72
+  const sep = Math.max(2.6, Math.min(4.4, hook * 0.36))
+  const x0 = x + r * 0.4
+  const y0 = y + r * 0.4
+  const px = sep * 0.5
+  const py = sep * 0.5
   return (
     <g fill="none" stroke="#111" strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round">
       <path d={roundedRectPath(x, y, w, h, r)} />
-      <line x1={topX} y1={y} x2={topX - dx} y2={y + dy} />
-      <line x1={x + w} y1={rightY} x2={x + w - dx} y2={rightY + dy} />
+      <line x1={x0 - px} y1={y0 + py} x2={x0 - px + dx} y2={y0 + py + dy} />
+      <line x1={x0 + px} y1={y0 - py} x2={x0 + px + dx} y2={y0 - py + dy} />
     </g>
   )
 }
@@ -421,14 +424,14 @@ function BarShape({ row }: { row: RebarRow }) {
   const [a, b, hook] = row.segs
   return (
     <svg width={148} height={54} viewBox="0 0 148 54">
-      <StirrupHoop x={34} y={8} w={62} h={36} strokeWidth={1.8} radius={10} />
-      <text x={65} y={30} textAnchor="middle" fontSize={9}>
+      <StirrupHoop x={38} y={10} w={86} h={32} strokeWidth={2.15} radius={11} />
+      <text x={81} y={31} textAnchor="middle" fontSize={9}>
         {a}
       </text>
-      <text x={30} y={30} textAnchor="end" fontSize={9}>
+      <text x={34} y={31} textAnchor="end" fontSize={9}>
         {b}
       </text>
-      <text x={100} y={16} fontSize={9}>
+      <text x={34} y={16} textAnchor="end" fontSize={9}>
         {hook}
       </text>
     </svg>
