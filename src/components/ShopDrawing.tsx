@@ -118,6 +118,65 @@ function Tag({ n, x, y }: { n: number; x: number; y: number }) {
   )
 }
 
+/** Thin leader from a mark bubble to the bar it names (plan / PDF). */
+function LeaderTag({
+  n,
+  x,
+  y,
+  toX,
+  toY,
+  label,
+  labelAlign = 'right',
+}: {
+  n: number
+  x: number
+  y: number
+  toX: number
+  toY: number
+  label?: string
+  labelAlign?: 'left' | 'right'
+}) {
+  const r = 7.5
+  const dx = toX - x
+  const dy = toY - y
+  const dist = Math.hypot(dx, dy)
+  const ux = dist > 0.5 ? dx / dist : 0
+  const uy = dist > 0.5 ? dy / dist : 1
+  const x1 = x + ux * r
+  const y1 = y + uy * r
+  const tick = 3.8
+  return (
+    <g>
+      {dist > 0.5 && (
+        <>
+          <line x1={x1} y1={y1} x2={toX} y2={toY} stroke="#111" strokeWidth={0.65} />
+          <line
+            x1={toX - uy * tick}
+            y1={toY + ux * tick}
+            x2={toX + uy * tick}
+            y2={toY - ux * tick}
+            stroke="#111"
+            strokeWidth={0.8}
+          />
+        </>
+      )}
+      <Tag n={n} x={x} y={y} />
+      {label ? (
+        <text
+          x={labelAlign === 'right' ? x + 11 : x - 11}
+          y={y + 3.6}
+          textAnchor={labelAlign === 'right' ? 'start' : 'end'}
+          fontSize={10}
+          fontWeight={700}
+          fill="#111"
+        >
+          {label}
+        </text>
+      ) : null}
+    </g>
+  )
+}
+
 function Level({ x, y, text }: { x: number; y: number; text: string }) {
   const mid = x + 14
   return (
@@ -675,8 +734,9 @@ function PlanDrawing({
 }) {
   const bar1 = result.bars.find((b) => b.mark === 1)
   const bar2 = result.bars.find((b) => b.mark === 2)
-  const colMark = result.bars.find((b) => b.shape === 'L')?.mark ?? 3
-  const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
+  const colBars = result.bars.filter((b) => b.shape === 'L')
+  const stirBar = result.bars.find((b) => b.shape === 'stirrup')
+  const stirMark = stirBar?.mark ?? 4
   const ox = OX
   const lot = LOT_PLAN_MM * s
   const axisHead = AXIS_BUBBLE_R * 2 + 14
@@ -701,7 +761,17 @@ function PlanDrawing({
   const dimY = oy + h + lot + 22
   const bar1Y = dimY + 50
   const captionY = bar1Y + 40
-  const extraRight = 78
+  const extraRight = 110
+  const xFaY = ox + (nx[0] ?? inp.coverBase) * s
+  const xFaYRight = ox + (nx[nx.length - 1] ?? inp.xMong - inp.coverBase) * s
+  const yFaX = oy + (ny[0] ?? inp.coverBase) * s
+  const mark1IsFaX = inp.bottomLayerX
+  const mesh1To = mark1IsFaX ? { x: ox + w * 0.22, y: yFaX } : { x: xFaY, y: oy + h * 0.2 }
+  const mesh2To = mark1IsFaX ? { x: xFaYRight, y: oy + h * 0.18 } : { x: ox + w * 0.78, y: yFaX }
+  const leftDots = colDots.filter((p) => p.x <= inp.xCo / 2)
+  const rightDots = colDots.filter((p) => p.x > inp.xCo / 2)
+  const hoopR = cx + cw - inp.coverCol * s
+  const hoopB = cy + ch - inp.coverCol * s
   const W = ox + w + lot + RIGHT + extraRight
   const H = captionY + SECTION_CAPTION_PAD
 
@@ -829,22 +899,48 @@ function PlanDrawing({
         name={inp.axisYName || 'A'}
       />
 
-      <Tag n={bar1?.mark ?? 1} x={ox + 18} y={oy + 16} />
-      <text x={ox + 30} y={oy + 20} fontSize={10} fontWeight={700}>
-        Ø{bar1?.d ?? inp.dFaX}a{inp.bottomLayerX ? inp.aFaX : inp.aFaY}
-      </text>
-      <Tag n={bar2?.mark ?? 2} x={ox + w - 20} y={oy + 18} />
-      <text x={ox + w - 32} y={oy + 22} textAnchor="end" fontSize={10} fontWeight={700}>
-        Ø{bar2?.d ?? inp.dFaY}a{inp.bottomLayerX ? inp.aFaY : inp.aFaX}
-      </text>
-      <Tag n={colMark} x={cx + cw / 2} y={cy + 14} />
-      <text x={cx + cw / 2 + 12} y={cy + 18} fontSize={10} fontWeight={700}>
-        {result.nCol}Ø{inp.dMain}
-      </text>
-      <Tag n={stirMark} x={cx + cw - 8} y={cy + ch - 10} />
-      <text x={cx + cw + 4} y={cy + ch - 6} fontSize={10}>
-        Ø{inp.dStirrup}a{inp.aStirrup}
-      </text>
+      <LeaderTag
+        n={bar1?.mark ?? 1}
+        x={ox + 22}
+        y={oy - 6}
+        toX={mesh1To.x}
+        toY={mesh1To.y}
+        label={`Ø${bar1?.d ?? (mark1IsFaX ? inp.dFaX : inp.dFaY)}a${mark1IsFaX ? inp.aFaX : inp.aFaY}`}
+      />
+      <LeaderTag
+        n={bar2?.mark ?? 2}
+        x={ox + w - 22}
+        y={oy - 6}
+        toX={mesh2To.x}
+        toY={mesh2To.y}
+        label={`Ø${bar2?.d ?? (mark1IsFaX ? inp.dFaY : inp.dFaX)}a${mark1IsFaX ? inp.aFaY : inp.aFaX}`}
+        labelAlign="left"
+      />
+      {colBars.map((b, i) => {
+        const pts = i === 0 ? leftDots : rightDots
+        const pt = pts[Math.floor(pts.length / 2)] ?? colDots[i] ?? colDots[0]
+        const land = pt ? { x: cx + pt.x * s, y: cy + pt.y * s } : { x: cx + cw / 2, y: cy + ch / 2 }
+        return (
+          <LeaderTag
+            key={`col-lead-${b.mark}`}
+            n={b.mark}
+            x={i === 0 ? cx - 20 : cx + cw + 22}
+            y={cy + (i === 0 ? ch * 0.28 : ch * 0.22)}
+            toX={land.x}
+            toY={land.y}
+            label={b.label}
+            labelAlign={i === 0 ? 'left' : 'right'}
+          />
+        )
+      })}
+      <LeaderTag
+        n={stirMark}
+        x={Math.min(cx + cw + 24, ox + w - 10)}
+        y={Math.min(cy + ch + 16, oy + h - 8)}
+        toX={hoopR}
+        toY={hoopB}
+        label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
+      />
 
       <HDim x1={ox - lot} x2={ox} y={dimY} label={LOT_PLAN_MM} below />
       {inp.x1 >= inp.coverBase - 0.5 && (
