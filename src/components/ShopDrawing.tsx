@@ -280,16 +280,17 @@ function LeaderTag({
 }
 
 function Level({ x, y, text }: { x: number; y: number; text: string }) {
-  const tw = 6.4
-  const th = 11
-  const flag = 34
+  const tw = 7.2
+  const th = 12
+  const stem = 8
+  const flag = 36
+  const top = y - th - stem
   const left = `${x - tw},${y - th}`
   const right = `${x + tw},${y - th}`
   const apex = `${x},${y}`
   const midTop = `${x},${y - th}`
   return (
     <g>
-      <line x1={x - 10} y1={y} x2={x + flag} y2={y} stroke="#111" strokeWidth={1.05} />
       <polygon points={`${apex} ${left} ${midTop}`} fill="#111" />
       <polygon points={`${apex} ${midTop} ${right}`} fill="#fff" stroke="#111" strokeWidth={1.05} strokeLinejoin="miter" />
       <polygon
@@ -299,8 +300,9 @@ function Level({ x, y, text }: { x: number; y: number; text: string }) {
         strokeWidth={1.05}
         strokeLinejoin="miter"
       />
-      <line x1={x} y1={y} x2={x} y2={y - th} stroke="#111" strokeWidth={1.05} />
-      <text x={x + 5} y={y - th - 3} fontSize={11} fontWeight={700} fill="#111">
+      <line x1={x} y1={y} x2={x} y2={top} stroke="#111" strokeWidth={1.05} />
+      <line x1={x} y1={top} x2={x + flag} y2={top} stroke="#111" strokeWidth={1.05} />
+      <text x={x + 4} y={top - 3} fontSize={11} fontWeight={700} fill="#111">
         {text}
       </text>
     </g>
@@ -684,11 +686,14 @@ function SectionDrawing({
   const yStirLab = y0 + Math.max(12, hs.com * 0.14)
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
   const yAtElev = (elevMm: number) => y0 - (elevMm - inp.cdn) * s
-  const yBeam = yAtElev(inp.cdg)
+  const yColTop = y0
+  const yBeam = yColTop
+  const yBeamLevel = yAtElev(inp.cdg)
   const yGround = yAtElev(inp.cdtn)
   const beamH = Math.max(8, inp.hBeam * s)
   const showBeam = inp.hasBeam && inp.hBeam > 0
   const lx = ox + bw + 10
+  const lxBeam = lx + 28
   const beamLeftEnd = ox + 16
   const beamRightEnd = ox + bw - 16
   const stirYs = Array.from({ length: result.nStirrup }, (_, i) => y0 + (inp.coverCol + i * inp.aStirrup) * s).filter(
@@ -932,9 +937,9 @@ function SectionDrawing({
         </>
       )}
 
-      <Level x={lx} y={y0} text={fmtLevel(inp.cdn)} />
+      <Level x={lx} y={yColTop} text={fmtLevel(inp.cdn)} />
       {showBeam && Math.abs(inp.cdg - inp.cdn) > 5 && (
-        <Level x={lx} y={yBeam} text={fmtLevel(inp.cdg)} />
+        <Level x={lxBeam} y={yBeamLevel} text={fmtLevel(inp.cdg)} />
       )}
       <Level x={lx} y={yGround} text={fmtLevel(inp.cdtn)} />
       <text

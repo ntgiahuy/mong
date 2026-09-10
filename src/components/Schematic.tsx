@@ -170,7 +170,7 @@ export function Schematic({ inp }: Props) {
   const yMeshTop = yBaseTop + coverS
   const yColHook = yMeshBot - 8
   const yAtElev = (e: number) => yColTop - (e - inp.cdn) * s
-  const yBeam = yAtElev(inp.cdg)
+  const yBeam = yColTop
   const yGround = yAtElev(inp.cdtn)
   const lx = x0 + baseW + 10
 
@@ -385,7 +385,7 @@ export function Schematic({ inp }: Props) {
       <DimV x={x0 - 16} y1={yBaseTop} y2={yBaseBot} label="Hdm" color={YELLOW} />
 
       <ElevMark x={lx} y={yColTop} label="CDN" color={CYAN} />
-      {inp.hasBeam && <ElevMark x={lx} y={yBeam} label="CDG" color={CYAN} />}
+      {inp.hasBeam && <ElevMark x={lx + 18} y={yAtElev(inp.cdg)} label="CDG" color={CYAN} />}
       <ElevMark x={lx} y={yGround} label="CDTN" color={RED} />
       <ElevMark x={lx} y={yBaseBot} label="CDM" color={CYAN} />
 
