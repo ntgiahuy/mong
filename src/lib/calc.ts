@@ -66,7 +66,7 @@ export const DEFAULT_INPUTS: Inputs = {
   aFaX: 150,
   dFaY: 12,
   aFaY: 150,
-  bottomLayerX: false,
+  bottomLayerX: true,
   name: 'M1',
   qty: 5,
   fType: 'normal',

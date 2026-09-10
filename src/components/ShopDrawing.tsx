@@ -636,10 +636,17 @@ function SectionDrawing({
   const sandH = inp.fType === 'sand' ? 18 : 0
   const cover = inp.coverBase * s
   const colCover = inp.coverCol * s
-  const yHook = y3 - 100 * s
   const barW = Math.max(1.8, inp.dMain / 8)
   const lineW = Math.max(1.4, dLine / 10)
   const dotR = Math.max(2.0, dDot / 5)
+  const stackGap = lineW / 2 + dotR
+  const yMeshLow = y3 - cover
+  const yMeshHigh = yMeshLow - stackGap
+  const yLong = lineIsBottom ? yMeshLow : yMeshHigh
+  const yTrans = lineIsBottom ? yMeshHigh : yMeshLow
+  const yTrans2 = yTrans + (lineIsBottom ? -(dotR * 2) : dotR * 2)
+  const yFaX = axis === 'x' ? yLong : yTrans
+  const yHook = yFaX
   const hookPx = Math.min(32, Math.max(14, result.colHook * s))
   const proj = staggerProjection(inp)
   const axisMm = axis === 'x' ? inp.xCc : inp.yCc
@@ -649,9 +656,6 @@ function SectionDrawing({
   const faceXs = faceStations(nFace, colMm, inp.coverCol).map((mm) => colX + mm * s)
   const transXs = meshStations(widthMm, inp.coverBase, aDot).map((mm) => ox + mm * s)
 
-  const yLong = lineIsBottom ? y3 - cover : y3 - cover - dotR * 2 - 4
-  const yTrans = lineIsBottom ? y3 - cover - lineW - dotR - 3 : y3 - cover
-  const yTrans2 = yTrans + (lineIsBottom ? -(dotR * 2 + 3) : dotR * 2 + 3)
   const yMainLab = y0 + Math.max(28, hs.com * 0.38)
   const yStirLab = y0 + Math.max(12, hs.com * 0.14)
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
@@ -799,9 +803,9 @@ function SectionDrawing({
       {inp.doubleLayer && (
         <line
           x1={ox + cover}
-          y1={yLong - lineW - 3}
+          y1={yLong - lineW}
           x2={ox + bw - cover}
-          y2={yLong - lineW - 3}
+          y2={yLong - lineW}
           stroke="#111"
           strokeWidth={lineW}
         />
@@ -973,8 +977,6 @@ function PlanDrawing({
   const mark1IsFaX = inp.bottomLayerX
   const mesh1To = mark1IsFaX ? { x: ox + w * 0.22, y: yFaX } : { x: xFaY, y: oy + h * 0.2 }
   const mesh2To = mark1IsFaX ? { x: xFaYRight, y: oy + h * 0.18 } : { x: ox + w * 0.78, y: yFaX }
-  const leftDots = colDots.filter((p) => p.x <= inp.xCo / 2)
-  const rightDots = colDots.filter((p) => p.x > inp.xCo / 2)
   const hoopCover = stirrupPlanCover(inp)
   const hoopL = cx + hoopCover * s
   const hoopT = cy + hoopCover * s
@@ -985,6 +987,32 @@ function PlanDrawing({
   const lotT = oy - lot
   const lotB = oy + h + lot
   const aaY = cy + ch / 2
+  const leftFaceX = Math.min(...colDots.map((p) => p.x))
+  const rightFaceX = Math.max(...colDots.map((p) => p.x))
+  const leftFace = colDots.filter((p) => Math.abs(p.x - leftFaceX) < 0.6).sort((a, b) => a.y - b.y)
+  const rightFace = colDots.filter((p) => Math.abs(p.x - rightFaceX) < 0.6).sort((a, b) => a.y - b.y)
+  const pickFaceBar = (face: { x: number; y: number }[]) => {
+    if (!face.length) return colDots[0]
+    const away = face.filter((p) => Math.abs(cy + p.y * s - aaY) > 8)
+    const pool = away.length ? away : face
+    return pool[Math.min(1, pool.length - 1)] ?? pool[0]
+  }
+  const hoopMidBetween = (face: { x: number; y: number }[]) => {
+    if (face.length < 2) {
+      return { x: hoopR, y: (hoopT + hoopB) / 2 }
+    }
+    const gaps = face.slice(0, -1).map((p, i) => ({
+      y: cy + ((p.y + face[i + 1].y) / 2) * s,
+      dist: Math.abs(cy + ((p.y + face[i + 1].y) / 2) * s - aaY),
+    }))
+    const gap = [...gaps].sort((a, b) => b.dist - a.dist)[0]
+    return { x: hoopR, y: gap?.y ?? (hoopT + hoopB) / 2 }
+  }
+  const mark3Pt = pickFaceBar(leftFace)
+  const mark3Land = mark3Pt
+    ? { x: cx + mark3Pt.x * s, y: cy + mark3Pt.y * s }
+    : { x: cx + cw / 2, y: cy + ch / 2 }
+  const mark4Land = hoopMidBetween(rightFace)
   const bbX = cx + cw / 2
   const yInnerX = ox - 22
   const yOuterX = ox - 44
@@ -1173,22 +1201,20 @@ function PlanDrawing({
         obstacles={planObstacles}
       />
       {colBars.map((b, i) => {
-        const pts = i === 0 ? leftDots : rightDots
-        const pt = pts[Math.floor(pts.length / 2)] ?? colDots[i] ?? colDots[0]
-        const land = pt ? { x: cx + pt.x * s, y: cy + pt.y * s } : { x: cx + cw / 2, y: cy + ch / 2 }
-        const aaY = cy + ch / 2
-        const tagY = i === 0 ? cy + Math.min(22, ch * 0.22) : cy + ch - Math.min(18, ch * 0.2)
+        const face = i === 0 ? leftFace : rightFace
+        const pt = i === 0 ? mark3Pt : pickFaceBar(face)
+        const land = pt ? { x: cx + pt.x * s, y: cy + pt.y * s } : mark3Land
         return (
           <LeaderTag
             key={`col-lead-${b.mark}`}
             n={b.mark}
             x={i === 0 ? cx - 58 : cx + cw + 58}
-            y={Math.abs(tagY - aaY) < 10 ? tagY - 14 : tagY}
+            y={land.y}
             toX={land.x}
             toY={land.y}
             label={b.label}
-            obstacles={planObstacles}
-            avoidYs={[cy, cy + ch, aaY, gridY, oy, oy + h]}
+            obstacles={[]}
+            avoidYs={[]}
             showTick={false}
           />
         )
@@ -1196,12 +1222,12 @@ function PlanDrawing({
       <LeaderTag
         n={stirMark}
         x={Math.min(cx + cw + 62, ox + w + 8)}
-        y={Math.min(cy + ch + 24, oy + h - 6)}
-        toX={hoopR}
-        toY={hoopB}
+        y={mark4Land.y}
+        toX={mark4Land.x}
+        toY={mark4Land.y}
         label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
-        obstacles={planObstacles}
-        avoidYs={[cy, cy + ch, oy, oy + h, gridY]}
+        obstacles={[]}
+        avoidYs={[]}
         showTick={false}
       />
 
