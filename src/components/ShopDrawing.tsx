@@ -587,14 +587,6 @@ function Callouts({
       })}
       {stirrup && last && (
         <g>
-          <line
-            x1={last.hookLeft ? last.x : last.x + hook}
-            y1={yHook}
-            x2={stirX}
-            y2={stirY + hoopH * 0.62}
-            stroke="#111"
-            strokeWidth={0.85}
-          />
           <StirrupHoop x={stirX} y={stirY} w={hoopW} h={hoopH} strokeWidth={1.8} />
           <Tag n={stirrup.mark} x={specTagX} y={yHook + 26} />
           <text x={specTagX + 12} y={yHook + 30} fontSize={10} fontWeight={700}>
