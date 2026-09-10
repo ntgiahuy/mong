@@ -291,6 +291,7 @@ function Level({ x, y, text }: { x: number; y: number; text: string }) {
   const midTop = `${x},${y - th}`
   return (
     <g>
+      <line x1={x - 8} y1={y} x2={x + 8} y2={y} stroke="#111" strokeWidth={1.05} />
       <polygon points={`${apex} ${left} ${midTop}`} fill="#111" />
       <polygon points={`${apex} ${midTop} ${right}`} fill="#fff" stroke="#111" strokeWidth={1.05} strokeLinejoin="miter" />
       <polygon
@@ -686,14 +687,12 @@ function SectionDrawing({
   const yStirLab = y0 + Math.max(12, hs.com * 0.14)
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
   const yAtElev = (elevMm: number) => y0 - (elevMm - inp.cdn) * s
-  const yColTop = y0
-  const yBeam = yColTop
-  const yBeamLevel = yAtElev(inp.cdg)
+  const yBeam = yAtElev(inp.cdg)
   const yGround = yAtElev(inp.cdtn)
   const beamH = Math.max(8, inp.hBeam * s)
   const showBeam = inp.hasBeam && inp.hBeam > 0
   const lx = ox + bw + 10
-  const lxBeam = lx + 28
+  const lxBeam = showBeam && Math.abs(yBeam - y0) < 28 ? lx + 28 : lx
   const beamLeftEnd = ox + 16
   const beamRightEnd = ox + bw - 16
   const stirYs = Array.from({ length: result.nStirrup }, (_, i) => y0 + (inp.coverCol + i * inp.aStirrup) * s).filter(
@@ -937,9 +936,20 @@ function SectionDrawing({
         </>
       )}
 
-      <Level x={lx} y={yColTop} text={fmtLevel(inp.cdn)} />
+      <line x1={colX + cw} y1={y0} x2={lx} y2={y0} stroke="#111" strokeWidth={0.85} />
       {showBeam && Math.abs(inp.cdg - inp.cdn) > 5 && (
-        <Level x={lxBeam} y={yBeamLevel} text={fmtLevel(inp.cdg)} />
+        <line
+          x1={colX + cw}
+          y1={yBeam}
+          x2={lxBeam}
+          y2={yBeam}
+          stroke="#111"
+          strokeWidth={0.85}
+        />
+      )}
+      <Level x={lx} y={y0} text={fmtLevel(inp.cdn)} />
+      {showBeam && Math.abs(inp.cdg - inp.cdn) > 5 && (
+        <Level x={lxBeam} y={yBeam} text={fmtLevel(inp.cdg)} />
       )}
       <Level x={lx} y={yGround} text={fmtLevel(inp.cdtn)} />
       <text
