@@ -174,6 +174,12 @@ export function faceStations(count: number, size: number, cover: number): number
   return Array.from({ length: n }, (_, i) => cover + (i * inner) / (n - 1))
 }
 
+/** Cover from column face to stirrup centerline so the hoop wraps outside the main bars. */
+export function stirrupPlanCover(i: Pick<Inputs, 'coverCol' | 'dMain' | 'dStirrup'>): number {
+  const out = (i.dMain + i.dStirrup) / 2
+  return Math.max(4, i.coverCol - out)
+}
+
 /** Perimeter column bars in local coordinates (origin at column corner). */
 export function columnPerimeterPts(
   cx: number,

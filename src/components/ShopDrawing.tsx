@@ -1,6 +1,6 @@
 import type { CalcResult, Inputs, RebarRow } from '../types'
 import { t, type Lang } from '../i18n'
-import { barHookSign, columnPerimeterPts, faceStations, meshStations, pedestalShoulders, staggerProjection } from '../lib/calc'
+import { barHookSign, columnPerimeterPts, faceStations, meshStations, pedestalShoulders, staggerProjection, stirrupPlanCover } from '../lib/calc'
 import { AxisBubble } from './AxisBubble'
 
 type Props = {
@@ -76,12 +76,22 @@ function VDim({
   const b = Math.max(y1, y2)
   const mid = (a + b) / 2
   const tick = 4
+  const tx = left ? x - 11 : x + 11
+  const ty = mid
   return (
     <g className="dim">
       <line x1={x} y1={a} x2={x} y2={b} stroke="#111" />
       <line x1={x - tick} y1={a} x2={x + tick} y2={a} stroke="#111" />
       <line x1={x - tick} y1={b} x2={x + tick} y2={b} stroke="#111" />
-      <text x={left ? x - 6 : x + 6} y={mid + 3} fontSize={10} fill="#111" textAnchor={left ? 'end' : 'start'}>
+      <text
+        x={tx}
+        y={ty}
+        fontSize={10}
+        fill="#111"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        transform={`rotate(-90, ${tx}, ${ty})`}
+      >
         {label}
       </text>
     </g>
@@ -955,17 +965,28 @@ function PlanDrawing({
   const mesh2To = mark1IsFaX ? { x: xFaYRight, y: oy + h * 0.18 } : { x: ox + w * 0.78, y: yFaX }
   const leftDots = colDots.filter((p) => p.x <= inp.xCo / 2)
   const rightDots = colDots.filter((p) => p.x > inp.xCo / 2)
-  const hoopL = cx + inp.coverCol * s
-  const hoopT = cy + inp.coverCol * s
-  const hoopR = cx + cw - inp.coverCol * s
-  const hoopB = cy + ch - inp.coverCol * s
+  const hoopCover = stirrupPlanCover(inp)
+  const hoopL = cx + hoopCover * s
+  const hoopT = cy + hoopCover * s
+  const hoopR = cx + cw - hoopCover * s
+  const hoopB = cy + ch - hoopCover * s
+  const lotL = ox - lot
+  const lotR = ox + w + lot
+  const lotT = oy - lot
+  const lotB = oy + h + lot
+  const aaY = cy + ch / 2
+  const bbX = cx + cw / 2
+  const axisYCx = Math.max(AXIS_BUBBLE_R + 8, ox - lot - 20)
+  const aLeftX =
+    Math.abs(aaY - gridY) < AXIS_BUBBLE_R + 6 ? axisYCx - AXIS_BUBBLE_R - 8 : lotL - 10
+  const bTopX = Math.abs(bbX - gridX) < AXIS_BUBBLE_R + 6 ? bbX + AXIS_BUBBLE_R + 8 : bbX + 6
   const planObstacles: Seg[] = [
     ...rectSegs(ox, oy, w, h),
     ...rectSegs(cx, cy, cw, ch),
     ...rectSegs(sx, sy, sw, shh),
     ...rectSegs(hoopL, hoopT, hoopR - hoopL, hoopB - hoopT),
-    hSeg(ox - 10, ox + w + 10, cy + ch / 2),
-    vSeg(cx + cw / 2, oy - 8, oy + h + 10),
+    hSeg(lotL - 18, lotR + 18, cy + ch / 2),
+    vSeg(cx + cw / 2, lotT - 16, lotB + 16),
     vSeg(gridX, axisHead, oy + h + lot + 6),
     hSeg(Math.max(AXIS_BUBBLE_R * 2 + 8, ox - lot - 8), ox + w + lot + 6, gridY),
     ...nx.map((mm) => vSeg(ox + mm * s, oy + cover, oy + h - cover)),
@@ -1027,10 +1048,10 @@ function PlanDrawing({
       })}
 
       <StirrupHoop
-        x={cx + inp.coverCol * s}
-        y={cy + inp.coverCol * s}
-        w={cw - 2 * inp.coverCol * s}
-        h={ch - 2 * inp.coverCol * s}
+        x={hoopL}
+        y={hoopT}
+        w={hoopR - hoopL}
+        h={hoopB - hoopT}
         strokeWidth={Math.max(1.4, inp.dStirrup / 5)}
       />
       {colDots.map((p, i) => (
@@ -1044,31 +1065,31 @@ function PlanDrawing({
       ))}
 
       <line
-        x1={ox - 10}
-        y1={cy + ch / 2}
-        x2={ox + w + 10}
-        y2={cy + ch / 2}
+        x1={lotL - 18}
+        y1={aaY}
+        x2={lotR + 18}
+        y2={aaY}
         stroke="#111"
         strokeDasharray="8 4"
       />
-      <text x={ox - 20} y={cy + ch / 2 - 4} fontSize={11} fontWeight={700}>
+      <text x={aLeftX} y={aaY - 4} textAnchor="end" fontSize={11} fontWeight={700}>
         A
       </text>
-      <text x={ox + w + 14} y={cy + ch / 2 - 4} fontSize={11} fontWeight={700}>
+      <text x={lotR + 10} y={aaY - 4} fontSize={11} fontWeight={700}>
         A
       </text>
       <line
-        x1={cx + cw / 2}
-        y1={oy - 8}
-        x2={cx + cw / 2}
-        y2={oy + h + 10}
+        x1={bbX}
+        y1={lotT - 16}
+        x2={bbX}
+        y2={lotB + 16}
         stroke="#111"
         strokeDasharray="8 4"
       />
-      <text x={cx + cw / 2 + 4} y={oy - 10} fontSize={11} fontWeight={700}>
+      <text x={bTopX} y={lotT - 5} fontSize={11} fontWeight={700}>
         B
       </text>
-      <text x={cx + cw / 2 + 4} y={oy + h + 18} fontSize={11} fontWeight={700}>
+      <text x={bbX + 6} y={lotB + 14} fontSize={11} fontWeight={700}>
         B
       </text>
 
