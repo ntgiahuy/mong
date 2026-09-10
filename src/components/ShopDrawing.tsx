@@ -932,7 +932,7 @@ function PlanDrawing({
   const colBars = result.bars.filter((b) => b.shape === 'L')
   const stirBar = result.bars.find((b) => b.shape === 'stirrup')
   const stirMark = stirBar?.mark ?? 4
-  const ox = OX
+  const ox = OX + 36
   const lot = LOT_PLAN_MM * s
   const axisHead = AXIS_BUBBLE_R * 2 + 14
   const oy = axisHead + 12 + lot
@@ -951,7 +951,13 @@ function PlanDrawing({
   const shh = ch + (sh.top + sh.bottom) * s
   const nx = meshStations(inp.xMong, inp.coverBase, inp.aFaY)
   const ny = meshStations(inp.yMong, inp.coverBase, inp.aFaX)
-  const colDots = columnPerimeterPts(inp.cx, inp.cy, inp.xCo, inp.yCo, inp.coverCol)
+  const colDots = columnPerimeterPts(
+    inp.cx,
+    inp.cy,
+    inp.xCo,
+    inp.yCo,
+    inp.coverCol + (inp.dMain + inp.dStirrup) / 2,
+  )
   const cover = inp.coverBase * s
   const dimY = oy + h + lot + 22
   const bar1Y = dimY + 50
@@ -976,19 +982,24 @@ function PlanDrawing({
   const lotB = oy + h + lot
   const aaY = cy + ch / 2
   const bbX = cx + cw / 2
-  const axisYCx = Math.max(AXIS_BUBBLE_R + 8, ox - lot - 20)
-  const aLeftX =
-    Math.abs(aaY - gridY) < AXIS_BUBBLE_R + 6 ? axisYCx - AXIS_BUBBLE_R - 8 : lotL - 10
-  const bTopX = Math.abs(bbX - gridX) < AXIS_BUBBLE_R + 6 ? bbX + AXIS_BUBBLE_R + 8 : bbX + 6
+  const yInnerX = ox - 22
+  const yOuterX = ox - 44
+  const axisYCx = yOuterX - 11 - AXIS_BUBBLE_R - 14
+  const aLeftX = ox - lot / 2
+  const aRightX = ox + w + lot / 2
+  const bCutX = Math.abs(bbX - gridX) < AXIS_BUBBLE_R + 10 ? gridX : bbX
+  const bMarkX = bCutX + 6
+  const bTopY = oy - lot / 2 + 4
+  const bBotY = oy + h + lot / 2 + 4
   const planObstacles: Seg[] = [
     ...rectSegs(ox, oy, w, h),
     ...rectSegs(cx, cy, cw, ch),
     ...rectSegs(sx, sy, sw, shh),
     ...rectSegs(hoopL, hoopT, hoopR - hoopL, hoopB - hoopT),
-    hSeg(lotL - 18, lotR + 18, cy + ch / 2),
-    vSeg(cx + cw / 2, lotT - 16, lotB + 16),
+    hSeg(lotL, lotR, cy + ch / 2),
+    vSeg(cx + cw / 2, lotT, lotB),
     vSeg(gridX, axisHead, oy + h + lot + 6),
-    hSeg(Math.max(AXIS_BUBBLE_R * 2 + 8, ox - lot - 8), ox + w + lot + 6, gridY),
+    hSeg(axisYCx - AXIS_BUBBLE_R, lotR + 6, gridY),
     ...nx.map((mm) => vSeg(ox + mm * s, oy + cover, oy + h - cover)),
     ...ny.map((mm) => hSeg(ox + cover, ox + w - cover, oy + mm * s)),
   ]
@@ -1065,31 +1076,31 @@ function PlanDrawing({
       ))}
 
       <line
-        x1={lotL - 18}
+        x1={lotL}
         y1={aaY}
-        x2={lotR + 18}
+        x2={lotR}
         y2={aaY}
         stroke="#111"
         strokeDasharray="8 4"
       />
-      <text x={aLeftX} y={aaY - 4} textAnchor="end" fontSize={11} fontWeight={700}>
+      <text x={aLeftX} y={aaY - 4} textAnchor="middle" fontSize={11} fontWeight={700}>
         A
       </text>
-      <text x={lotR + 10} y={aaY - 4} fontSize={11} fontWeight={700}>
+      <text x={aRightX} y={aaY - 4} textAnchor="middle" fontSize={11} fontWeight={700}>
         A
       </text>
       <line
         x1={bbX}
-        y1={lotT - 16}
+        y1={lotT}
         x2={bbX}
-        y2={lotB + 16}
+        y2={lotB}
         stroke="#111"
         strokeDasharray="8 4"
       />
-      <text x={bTopX} y={lotT - 5} fontSize={11} fontWeight={700}>
+      <text x={bMarkX} y={bTopY} fontSize={11} fontWeight={700}>
         B
       </text>
-      <text x={bbX + 6} y={lotB + 14} fontSize={11} fontWeight={700}>
+      <text x={bMarkX} y={bBotY} fontSize={11} fontWeight={700}>
         B
       </text>
 
@@ -1104,20 +1115,15 @@ function PlanDrawing({
       />
       <AxisBubble cx={gridX} cy={AXIS_BUBBLE_R + 5} r={AXIS_BUBBLE_R} name={inp.axisXName || '1'} />
       <line
-        x1={Math.max(AXIS_BUBBLE_R * 2 + 8, ox - lot - 8)}
+        x1={axisYCx}
         y1={gridY}
-        x2={ox + w + lot + 6}
+        x2={lotR + 6}
         y2={gridY}
         stroke="#111"
         strokeWidth={0.85}
         strokeDasharray="10 4 2 4"
       />
-      <AxisBubble
-        cx={Math.max(AXIS_BUBBLE_R + 8, ox - lot - 20)}
-        cy={gridY}
-        r={AXIS_BUBBLE_R}
-        name={inp.axisYName || 'A'}
-      />
+      <AxisBubble cx={axisYCx} cy={gridY} r={AXIS_BUBBLE_R} name={inp.axisYName || 'A'} />
 
       <LeaderTag
         n={bar1?.mark ?? 1}
@@ -1200,25 +1206,25 @@ function PlanDrawing({
       <HDim x1={ox} x2={ox + w} y={dimY + 16} label={inp.xMong} below />
       <HDim x1={ox + w} x2={ox + w + lot} y={dimY} label={LOT_PLAN_MM} below />
 
-      <VDim x={ox - 22} y1={oy - lot} y2={oy} label={LOT_PLAN_MM} left />
+      <VDim x={yInnerX} y1={oy - lot} y2={oy} label={LOT_PLAN_MM} left />
       {inp.y1 - sh.top > 0.5 && (
-        <VDim x={ox - 22} y1={oy} y2={sy} label={Math.round(inp.y1 - sh.top)} left />
+        <VDim x={yInnerX} y1={oy} y2={sy} label={Math.round(inp.y1 - sh.top)} left />
       )}
-      {sh.top > 0.5 && <VDim x={ox - 22} y1={sy} y2={cy} label={Math.round(sh.top)} left />}
-      <VDim x={ox - 22} y1={cy} y2={cy + ch} label={inp.yCo} left />
+      {sh.top > 0.5 && <VDim x={yInnerX} y1={sy} y2={cy} label={Math.round(sh.top)} left />}
+      <VDim x={yInnerX} y1={cy} y2={cy + ch} label={inp.yCo} left />
       {sh.bottom > 0.5 && (
-        <VDim x={ox - 22} y1={cy + ch} y2={sy + shh} label={Math.round(sh.bottom)} left />
+        <VDim x={yInnerX} y1={cy + ch} y2={sy + shh} label={Math.round(sh.bottom)} left />
       )}
       {result.y2 - sh.bottom > 0.5 && (
         <VDim
-          x={ox - 22}
+          x={yInnerX}
           y1={sy + shh}
           y2={oy + h}
           label={Math.round(result.y2 - sh.bottom)}
           left
         />
       )}
-      <VDim x={ox - 44} y1={oy} y2={oy + h} label={inp.yMong} left />
+      <VDim x={yOuterX} y1={oy} y2={oy + h} label={inp.yMong} left />
 
       {bar1 && (
         <g>
