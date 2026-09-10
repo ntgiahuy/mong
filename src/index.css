@@ -680,9 +680,17 @@ p {
   justify-content: start;
 }
 
-.shop-aa {
+.shop-aa,
+.shop-plan {
   grid-column: 1;
+}
+
+.shop-aa {
   grid-row: 1;
+}
+
+.shop-plan {
+  grid-row: 2;
 }
 
 .shop-callouts {
@@ -697,11 +705,6 @@ p {
   grid-column: 3;
   grid-row: 1;
   margin-left: -72px;
-}
-
-.shop-plan {
-  grid-column: 1;
-  grid-row: 2;
 }
 
 .shop-sched {

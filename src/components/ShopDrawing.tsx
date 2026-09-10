@@ -10,6 +10,8 @@ type Props = {
 }
 
 const OX = 78
+/** Shared left edge of the footing in A-A and plan so axis 1 is one vertical. */
+const FOOTING_OX = OX + 36
 const RIGHT = 118
 const CALLOUT_W = 220
 const SHEET_W = 1782
@@ -278,17 +280,16 @@ function LeaderTag({
 }
 
 function Level({ x, y, text }: { x: number; y: number; text: string }) {
-  const tw = 7.2
-  const th = 12
-  const stem = 8
-  const flag = 36
-  const top = y - th - stem
+  const tw = 6.4
+  const th = 11
+  const flag = 34
   const left = `${x - tw},${y - th}`
   const right = `${x + tw},${y - th}`
   const apex = `${x},${y}`
   const midTop = `${x},${y - th}`
   return (
     <g>
+      <line x1={x - 10} y1={y} x2={x + flag} y2={y} stroke="#111" strokeWidth={1.05} />
       <polygon points={`${apex} ${left} ${midTop}`} fill="#111" />
       <polygon points={`${apex} ${midTop} ${right}`} fill="#fff" stroke="#111" strokeWidth={1.05} strokeLinejoin="miter" />
       <polygon
@@ -298,9 +299,8 @@ function Level({ x, y, text }: { x: number; y: number; text: string }) {
         strokeWidth={1.05}
         strokeLinejoin="miter"
       />
-      <line x1={x} y1={y} x2={x} y2={top} stroke="#111" strokeWidth={1.05} />
-      <line x1={x} y1={top} x2={x + flag} y2={top} stroke="#111" strokeWidth={1.05} />
-      <text x={x + 4} y={top - 3} fontSize={11} fontWeight={700} fill="#111">
+      <line x1={x} y1={y} x2={x} y2={y - th} stroke="#111" strokeWidth={1.05} />
+      <text x={x + 5} y={y - th - 3} fontSize={11} fontWeight={700} fill="#111">
         {text}
       </text>
     </g>
@@ -505,7 +505,7 @@ function sectionSize(inp: Inputs, axis: 'x' | 'y', s: number) {
   const totalH = inp.hCom + inp.hCm + inp.hDm
   const sandH = inp.fType === 'sand' ? 18 : 0
   const bw = widthMm * s
-  const W = OX + bw + RIGHT
+  const W = FOOTING_OX + bw + RIGHT
   const oy = SECTION_OY + staggerProjection(inp).two * s
   const y4 = oy + (totalH + inp.lining) * s
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
@@ -632,7 +632,7 @@ function SectionDrawing({
   const stirMark = result.bars.find((b) => b.shape === 'stirrup')?.mark ?? 4
 
   const totalH = inp.hCom + inp.hCm + inp.hDm
-  const ox = OX
+  const ox = FOOTING_OX
   const { W, H, oy } = sectionSize(inp, axis, s)
   const bw = widthMm * s
   const cw = colMm * s
@@ -972,7 +972,7 @@ function PlanDrawing({
   const colBars = result.bars.filter((b) => b.shape === 'L')
   const stirBar = result.bars.find((b) => b.shape === 'stirrup')
   const stirMark = stirBar?.mark ?? 4
-  const ox = OX + 36
+  const ox = FOOTING_OX
   const lot = LOT_PLAN_MM * s
   const axisHead = AXIS_BUBBLE_R * 2 + 14
   const oy = axisHead + 12 + lot
