@@ -412,13 +412,19 @@ function StirrupHoop({
   )
 }
 
+/** Shared schedule-shape frame so marks 1–4 sit in one column at equal bar length. */
+const SHAPE_W = 168
+const BAR_X0 = 38
+const BAR_X1 = 162
+
 function BarShape({ row }: { row: RebarRow }) {
   if (row.shape === 'straight') {
     const L = row.segs[0] ?? row.length
+    const y = 20
     return (
-      <svg width={132} height={40} viewBox="0 0 132 40">
-        <line x1={10} y1={24} x2={122} y2={24} stroke="#111" strokeWidth={1.7} />
-        <text x={66} y={16} textAnchor="middle" fontSize={9}>
+      <svg width={SHAPE_W} height={34} viewBox={`0 0 ${SHAPE_W} 34`}>
+        <line x1={BAR_X0} y1={y} x2={BAR_X1} y2={y} stroke="#111" strokeWidth={1.7} />
+        <text x={(BAR_X0 + BAR_X1) / 2} y={y - 6} textAnchor="middle" fontSize={9}>
           {L}
         </text>
       </svg>
@@ -426,16 +432,23 @@ function BarShape({ row }: { row: RebarRow }) {
   }
   if (row.shape === 'u') {
     const [legL, mid, legR = legL] = row.segs
+    const yTop = 8
+    const yBot = 24
     return (
-      <svg width={132} height={42} viewBox="0 0 132 42">
-        <path d="M16 8 V32 H116 V8" fill="none" stroke="#111" strokeWidth={1.7} />
-        <text x={66} y={41} textAnchor="middle" fontSize={9}>
+      <svg width={SHAPE_W} height={34} viewBox={`0 0 ${SHAPE_W} 34`}>
+        <path
+          d={`M${BAR_X0} ${yTop} V${yBot} H${BAR_X1} V${yTop}`}
+          fill="none"
+          stroke="#111"
+          strokeWidth={1.7}
+        />
+        <text x={(BAR_X0 + BAR_X1) / 2} y={33} textAnchor="middle" fontSize={9}>
           {mid}
         </text>
-        <text x={2} y={24} fontSize={9}>
+        <text x={BAR_X0 - 4} y={(yTop + yBot) / 2 + 3} textAnchor="end" fontSize={9}>
           {legL}
         </text>
-        <text x={118} y={24} fontSize={9}>
+        <text x={BAR_X1 + 4} y={(yTop + yBot) / 2 + 3} fontSize={9}>
           {legR}
         </text>
       </svg>
@@ -443,27 +456,35 @@ function BarShape({ row }: { row: RebarRow }) {
   }
   if (row.shape === 'L') {
     const [hook, straight] = row.segs
+    const yBar = 10
+    const hookH = 13
     return (
-      <svg width={148} height={46} viewBox="0 0 148 46">
-        <path d="M22 10 V38 M22 10 H140" fill="none" stroke="#111" strokeWidth={1.8} strokeLinecap="square" />
-        <text x={2} y={30} fontSize={9}>
+      <svg width={SHAPE_W} height={34} viewBox={`0 0 ${SHAPE_W} 34`}>
+        <path
+          d={`M ${BAR_X0} ${yBar} V ${yBar + hookH} M ${BAR_X0} ${yBar} H ${BAR_X1}`}
+          fill="none"
+          stroke="#111"
+          strokeWidth={1.8}
+          strokeLinecap="square"
+        />
+        <text x={BAR_X0 - 4} y={yBar + hookH / 2 + 3.5} textAnchor="end" fontSize={9}>
           {hook}
         </text>
-        <text x={82} y={8} textAnchor="middle" fontSize={9}>
+        <text x={(BAR_X0 + BAR_X1) / 2} y={yBar - 2} textAnchor="middle" fontSize={9}>
           {straight}
         </text>
       </svg>
     )
   }
   const [a, b, hook] = row.segs
-  const x = 36
-  const y = 12
-  const w = 76
-  const h = 28
+  const x = BAR_X0 + 8
+  const y = 6
+  const w = BAR_X1 - BAR_X0 - 16
+  const h = 22
   const r = 2.2
-  const tick = 9
+  const tick = 7
   return (
-    <svg width={148} height={50} viewBox="0 0 148 50">
+    <svg width={SHAPE_W} height={34} viewBox={`0 0 ${SHAPE_W} 34`}>
       <path
         d={roundedRectPath(x, y, w, h, r)}
         fill="none"
@@ -486,7 +507,7 @@ function BarShape({ row }: { row: RebarRow }) {
       <text x={x - 5} y={y + h / 2 + 3.2} textAnchor="end" fontSize={9}>
         {b}
       </text>
-      <text x={x + w + 6} y={y + 10} fontSize={9}>
+      <text x={x + w + 5} y={y + 9} fontSize={9}>
         {hook}
       </text>
     </svg>
@@ -1468,7 +1489,9 @@ export function ShopDrawing({ inp, result, lang }: Props) {
                   <tr key={b.mark}>
                     <td>{b.mark}</td>
                     <td className="shape-cell">
-                      <BarShape row={b} />
+                      <div className="shape-align">
+                        <BarShape row={b} />
+                      </div>
                     </td>
                     <td>{b.d}</td>
                     <td>{b.length}</td>

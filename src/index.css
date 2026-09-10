@@ -782,14 +782,26 @@ p {
 }
 
 .schedule .shape-cell {
-  padding: 2px 0;
+  padding: 2px 8px 2px 6px;
+  text-align: left;
 }
 
-.schedule .shape-cell svg {
-  display: block;
-  margin: 2px auto;
-  overflow: hidden;
+.schedule .shape-align {
+  display: flex;
+  justify-content: flex-start;
+  width: 168px;
   max-width: 100%;
+  margin: 0;
+}
+
+.schedule .shape-align svg {
+  display: block;
+  margin: 0;
+  overflow: visible;
+  width: 168px;
+  max-width: 100%;
+  height: auto;
+  flex: none;
 }
 
 .sum-table {
