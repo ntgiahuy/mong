@@ -165,6 +165,9 @@ export function Schematic({ inp }: Props) {
   const yBaseTop = ySlopeTop + hCm
   const yBaseBot = yBaseTop + hDm
   const yLotBot = yBaseBot + hLot
+  const coverS = inp.coverBase * s
+  const yMeshBot = yBaseBot - coverS
+  const yMeshTop = yBaseTop + coverS
   const yAtElev = (e: number) => yColTop - (e - inp.cdn) * s
   const yBeam = yAtElev(inp.cdg)
   const yGround = yAtElev(inp.cdtn)
@@ -304,7 +307,7 @@ export function Schematic({ inp }: Props) {
         return (
           <path
             key={`cy${i}`}
-            d={`M ${x} ${yColTop - extra * s} L ${x} ${yBaseBot - 6} L ${x + dir * hLen} ${yBaseBot - 6}`}
+            d={`M ${x} ${yColTop - extra * s} L ${x} ${yMeshBot} L ${x + dir * hLen} ${yMeshBot}`}
             fill="none"
             stroke={STEEL}
             strokeWidth={barW}
@@ -325,14 +328,29 @@ export function Schematic({ inp }: Props) {
       <line
         x1={x0 + 8}
         x2={x0 + baseW - 8}
-        y1={yBaseBot - 5}
-        y2={yBaseBot - 5}
+        y1={yMeshBot}
+        y2={yMeshBot}
         stroke={STEEL}
         strokeWidth={2}
       />
       {dots.map((mm, i) => (
-        <circle key={`fa${i}`} cx={x0 + mm * s} cy={yBaseBot - 8.1} r={2.1} fill={STEEL} />
+        <circle key={`fa${i}`} cx={x0 + mm * s} cy={yMeshBot - 3} r={2.1} fill={STEEL} />
       ))}
+      {inp.doubleLayer && (
+        <>
+          <line
+            x1={x0 + 8}
+            x2={x0 + baseW - 8}
+            y1={yMeshTop}
+            y2={yMeshTop}
+            stroke={STEEL}
+            strokeWidth={2}
+          />
+          {dots.map((mm, i) => (
+            <circle key={`faT${i}`} cx={x0 + mm * s} cy={yMeshTop + 3} r={2.1} fill={STEEL} />
+          ))}
+        </>
+      )}
       <Tag n={1} x={x0 + baseW * 0.28} y={yBaseBot - 24} />
       <text x={x0 + baseW * 0.28 + 10} y={yBaseBot - 21} fill={YELLOW} fontSize={10} fontWeight={700}>
         FaX

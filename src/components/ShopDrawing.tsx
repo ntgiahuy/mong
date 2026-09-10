@@ -23,9 +23,9 @@ const AXIS_BUBBLE_R = 11
 
 function fmtLevel(mm: number): string {
   const m = mm / 1000
-  if (Math.abs(m) < 0.0005) return '± 0.00'
+  if (Math.abs(m) < 0.0005) return '±0.000'
   const sign = m > 0 ? '+' : '−'
-  return `${sign} ${Math.abs(m).toFixed(2)}`
+  return `${sign}${Math.abs(m).toFixed(3)}`
 }
 
 function HDim({
@@ -278,12 +278,29 @@ function LeaderTag({
 }
 
 function Level({ x, y, text }: { x: number; y: number; text: string }) {
-  const mid = x + 14
+  const tw = 7.2
+  const th = 12
+  const stem = 8
+  const flag = 36
+  const top = y - th - stem
+  const left = `${x - tw},${y - th}`
+  const right = `${x + tw},${y - th}`
+  const apex = `${x},${y}`
+  const midTop = `${x},${y - th}`
   return (
     <g>
-      <line x1={x} y1={y} x2={x + 38} y2={y} stroke="#111" strokeWidth={1.05} />
-      <polygon points={`${mid},${y} ${mid - 6.2},${y - 11} ${mid + 6.2},${y - 11}`} fill="#111" />
-      <text x={x + 42} y={y - 3} fontSize={11} fontWeight={700} fill="#111">
+      <polygon points={`${apex} ${left} ${midTop}`} fill="#111" />
+      <polygon points={`${apex} ${midTop} ${right}`} fill="#fff" stroke="#111" strokeWidth={1.05} strokeLinejoin="miter" />
+      <polygon
+        points={`${apex} ${left} ${right}`}
+        fill="none"
+        stroke="#111"
+        strokeWidth={1.05}
+        strokeLinejoin="miter"
+      />
+      <line x1={x} y1={y} x2={x} y2={top} stroke="#111" strokeWidth={1.05} />
+      <line x1={x} y1={top} x2={x + flag} y2={top} stroke="#111" strokeWidth={1.05} />
+      <text x={x + 4} y={top - 3} fontSize={11} fontWeight={700} fill="#111">
         {text}
       </text>
     </g>
@@ -640,13 +657,19 @@ function SectionDrawing({
   const lineW = Math.max(1.4, dLine / 10)
   const dotR = Math.max(2.0, dDot / 5)
   const stackGap = lineW / 2 + dotR
-  const yMeshLow = y3 - cover
-  const yMeshHigh = yMeshLow - stackGap
-  const yLong = lineIsBottom ? yMeshLow : yMeshHigh
-  const yTrans = lineIsBottom ? yMeshHigh : yMeshLow
-  const yTrans2 = yTrans + (lineIsBottom ? -(dotR * 2) : dotR * 2)
+  /** Outermost bar centerline: coverBase from the soffit (and from the top of the đế when 2 lớp). */
+  const yBotFace = y3 - cover
+  const yTopFace = y2 + cover
+  const yLong = lineIsBottom ? yBotFace : yBotFace - stackGap
+  const yTrans = lineIsBottom ? yBotFace - stackGap : yBotFace
+  const yLongTop = lineIsBottom ? yTopFace : yTopFace + stackGap
+  const yTransTop = lineIsBottom ? yTopFace + stackGap : yTopFace
   const yFaX = axis === 'x' ? yLong : yTrans
   const yHook = yFaX
+  const meshLayers = [
+    { yLong, yTrans, hookDir: -1 as const },
+    ...(inp.doubleLayer ? [{ yLong: yLongTop, yTrans: yTransTop, hookDir: 1 as const }] : []),
+  ]
   const hookPx = Math.min(32, Math.max(14, result.colHook * s))
   const proj = staggerProjection(inp)
   const axisMm = axis === 'x' ? inp.xCc : inp.yCc
@@ -691,6 +714,9 @@ function SectionDrawing({
     ...faceXs.map((x) => vSeg(x, y0 - proj.two * s, yHook)),
     ...stirYs.map((y) => hSeg(colX + colCover, colX + cw - colCover, y)),
     hSeg(ox + cover, ox + bw - cover, yTrans),
+    ...(inp.doubleLayer
+      ? [hSeg(ox + cover, ox + bw - cover, yLongTop), hSeg(ox + cover, ox + bw - cover, yTransTop)]
+      : []),
   ]
 
   return (
@@ -779,42 +805,41 @@ function SectionDrawing({
         )
       })}
 
-      <line x1={ox + cover} y1={yLong} x2={ox + bw - cover} y2={yLong} stroke="#111" strokeWidth={lineW} />
-      {inp.hooked && (
-        <>
-          {inp.hookLeft > 0 && (
-            <path
-              d={`M ${ox + cover} ${yLong} L ${ox + cover} ${yLong - Math.max(4, inp.hookLeft * s)}`}
-              fill="none"
-              stroke="#111"
-              strokeWidth={lineW}
-            />
+      {meshLayers.map((layer, li) => (
+        <g key={`mesh-${li}`}>
+          <line
+            x1={ox + cover}
+            y1={layer.yLong}
+            x2={ox + bw - cover}
+            y2={layer.yLong}
+            stroke="#111"
+            strokeWidth={lineW}
+          />
+          {inp.hooked && (
+            <>
+              {inp.hookLeft > 0 && (
+                <path
+                  d={`M ${ox + cover} ${layer.yLong} L ${ox + cover} ${layer.yLong + layer.hookDir * Math.max(4, inp.hookLeft * s)}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={lineW}
+                />
+              )}
+              {inp.hookRight > 0 && (
+                <path
+                  d={`M ${ox + bw - cover} ${layer.yLong} L ${ox + bw - cover} ${layer.yLong + layer.hookDir * Math.max(4, inp.hookRight * s)}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={lineW}
+                />
+              )}
+            </>
           )}
-          {inp.hookRight > 0 && (
-            <path
-              d={`M ${ox + bw - cover} ${yLong} L ${ox + bw - cover} ${yLong - Math.max(4, inp.hookRight * s)}`}
-              fill="none"
-              stroke="#111"
-              strokeWidth={lineW}
-            />
-          )}
-        </>
-      )}
-      {inp.doubleLayer && (
-        <line
-          x1={ox + cover}
-          y1={yLong - lineW}
-          x2={ox + bw - cover}
-          y2={yLong - lineW}
-          stroke="#111"
-          strokeWidth={lineW}
-        />
-      )}
-      {transXs.map((x, i) => (
-        <circle key={`d${i}`} cx={x} cy={yTrans} r={dotR} fill="#111" />
+          {transXs.map((x, i) => (
+            <circle key={`d${li}-${i}`} cx={x} cy={layer.yTrans} r={dotR} fill="#111" />
+          ))}
+        </g>
       ))}
-      {inp.doubleLayer &&
-        transXs.map((x, i) => <circle key={`d2${i}`} cx={x} cy={yTrans2} r={dotR} fill="#111" />)}
 
       {result.bars
         .filter((b) => b.shape === 'L')
@@ -899,6 +924,12 @@ function SectionDrawing({
       <VDim x={ox - 22} y1={y2} y2={y3} label={inp.hDm} left />
       <VDim x={ox - 22} y1={y1} y2={y2} label={inp.hCm} left />
       <VDim x={ox - 44} y1={y0} y2={y3} label={totalH} left />
+      {inp.doubleLayer && (
+        <>
+          <VDim x={ox + 14} y1={y2} y2={yTopFace} label={inp.coverBase} />
+          <VDim x={ox + 14} y1={yBotFace} y2={y3} label={inp.coverBase} />
+        </>
+      )}
 
       <Level x={lx} y={y0} text={fmtLevel(inp.cdn)} />
       {showBeam && Math.abs(inp.cdg - inp.cdn) > 5 && (
