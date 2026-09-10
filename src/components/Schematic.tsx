@@ -168,6 +168,7 @@ export function Schematic({ inp }: Props) {
   const coverS = inp.coverBase * s
   const yMeshBot = yBaseBot - coverS
   const yMeshTop = yBaseTop + coverS
+  const yColHook = yMeshBot - 8
   const yAtElev = (e: number) => yColTop - (e - inp.cdn) * s
   const yBeam = yAtElev(inp.cdg)
   const yGround = yAtElev(inp.cdtn)
@@ -297,23 +298,6 @@ export function Schematic({ inp }: Props) {
 
       <rect x={colX} y={yColTop} width={colW} height={hCom} fill="#4a4a4a" stroke={OUTLINE} />
 
-      {faceStations(Math.max(2, inp.cx), inp.xCo, inp.coverCol).map((mm, i) => {
-        const x = colX + mm * s
-        const hook = 11
-        const dir = barHookSign(x, colX + colW / 2, x0, x0 + baseW, hook)
-        const room = dir < 0 ? x - x0 : x0 + baseW - x
-        const hLen = Math.max(4, Math.min(hook, room - 2))
-        const extra = x < colX + colW / 2 ? proj.one : proj.two
-        return (
-          <path
-            key={`cy${i}`}
-            d={`M ${x} ${yColTop - extra * s} L ${x} ${yMeshBot} L ${x + dir * hLen} ${yMeshBot}`}
-            fill="none"
-            stroke={STEEL}
-            strokeWidth={barW}
-          />
-        )
-      })}
       {Array.from({ length: nStir }).map((_, i) => (
         <line
           key={`st${i}`}
@@ -351,6 +335,23 @@ export function Schematic({ inp }: Props) {
           ))}
         </>
       )}
+      {faceStations(Math.max(2, inp.cx), inp.xCo, inp.coverCol).map((mm, i) => {
+        const x = colX + mm * s
+        const hook = 11
+        const dir = barHookSign(x, colX + colW / 2, x0, x0 + baseW, hook)
+        const room = dir < 0 ? x - x0 : x0 + baseW - x
+        const hLen = Math.max(4, Math.min(hook, room - 2))
+        const extra = x < colX + colW / 2 ? proj.one : proj.two
+        return (
+          <path
+            key={`cy${i}`}
+            d={`M ${x} ${yColTop - extra * s} L ${x} ${yColHook} L ${x + dir * hLen} ${yColHook}`}
+            fill="none"
+            stroke={STEEL}
+            strokeWidth={barW}
+          />
+        )
+      })}
       <Tag n={1} x={x0 + baseW * 0.28} y={yBaseBot - 24} />
       <text x={x0 + baseW * 0.28 + 10} y={yBaseBot - 21} fill={YELLOW} fontSize={10} fontWeight={700}>
         FaX

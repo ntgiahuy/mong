@@ -664,8 +664,9 @@ function SectionDrawing({
   const yTrans = lineIsBottom ? yBotFace - stackGap : yBotFace
   const yLongTop = lineIsBottom ? yTopFace : yTopFace + stackGap
   const yTransTop = lineIsBottom ? yTopFace + stackGap : yTopFace
-  const yFaX = axis === 'x' ? yLong : yTrans
-  const yHook = yFaX
+  /** Sit on the bottom mat, clear of both FaX and FaY. */
+  const yBotMeshTop = Math.min(yLong, yTrans)
+  const yHook = yBotMeshTop - stackGap - barW / 2
   const meshLayers = [
     { yLong, yTrans, hookDir: -1 as const },
     ...(inp.doubleLayer ? [{ yLong: yLongTop, yTrans: yTransTop, hookDir: 1 as const }] : []),
@@ -764,6 +765,42 @@ function SectionDrawing({
           />
         ))}
 
+      {meshLayers.map((layer, li) => (
+        <g key={`mesh-${li}`}>
+          <line
+            x1={ox + cover}
+            y1={layer.yLong}
+            x2={ox + bw - cover}
+            y2={layer.yLong}
+            stroke="#111"
+            strokeWidth={lineW}
+          />
+          {inp.hooked && (
+            <>
+              {inp.hookLeft > 0 && (
+                <path
+                  d={`M ${ox + cover} ${layer.yLong} L ${ox + cover} ${layer.yLong + layer.hookDir * Math.max(4, inp.hookLeft * s)}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={lineW}
+                />
+              )}
+              {inp.hookRight > 0 && (
+                <path
+                  d={`M ${ox + bw - cover} ${layer.yLong} L ${ox + bw - cover} ${layer.yLong + layer.hookDir * Math.max(4, inp.hookRight * s)}`}
+                  fill="none"
+                  stroke="#111"
+                  strokeWidth={lineW}
+                />
+              )}
+            </>
+          )}
+          {transXs.map((x, i) => (
+            <circle key={`d${li}-${i}`} cx={x} cy={layer.yTrans} r={dotR} fill="#111" />
+          ))}
+        </g>
+      ))}
+
       {faceXs.map((x, i) => {
         const dir = barHookSign(x, colX + cw / 2, ox, ox + bw, hookPx)
         const room = dir < 0 ? x - ox : ox + bw - x
@@ -804,42 +841,6 @@ function SectionDrawing({
           />
         )
       })}
-
-      {meshLayers.map((layer, li) => (
-        <g key={`mesh-${li}`}>
-          <line
-            x1={ox + cover}
-            y1={layer.yLong}
-            x2={ox + bw - cover}
-            y2={layer.yLong}
-            stroke="#111"
-            strokeWidth={lineW}
-          />
-          {inp.hooked && (
-            <>
-              {inp.hookLeft > 0 && (
-                <path
-                  d={`M ${ox + cover} ${layer.yLong} L ${ox + cover} ${layer.yLong + layer.hookDir * Math.max(4, inp.hookLeft * s)}`}
-                  fill="none"
-                  stroke="#111"
-                  strokeWidth={lineW}
-                />
-              )}
-              {inp.hookRight > 0 && (
-                <path
-                  d={`M ${ox + bw - cover} ${layer.yLong} L ${ox + bw - cover} ${layer.yLong + layer.hookDir * Math.max(4, inp.hookRight * s)}`}
-                  fill="none"
-                  stroke="#111"
-                  strokeWidth={lineW}
-                />
-              )}
-            </>
-          )}
-          {transXs.map((x, i) => (
-            <circle key={`d${li}-${i}`} cx={x} cy={layer.yTrans} r={dotR} fill="#111" />
-          ))}
-        </g>
-      ))}
 
       {result.bars
         .filter((b) => b.shape === 'L')
