@@ -422,16 +422,37 @@ function BarShape({ row }: { row: RebarRow }) {
     )
   }
   const [a, b, hook] = row.segs
+  const x = 36
+  const y = 12
+  const w = 76
+  const h = 28
+  const r = 2.2
+  const tick = 9
   return (
-    <svg width={148} height={54} viewBox="0 0 148 54">
-      <StirrupHoop x={38} y={10} w={86} h={32} strokeWidth={2.15} radius={11} />
-      <text x={81} y={31} textAnchor="middle" fontSize={9}>
+    <svg width={148} height={50} viewBox="0 0 148 50">
+      <path
+        d={roundedRectPath(x, y, w, h, r)}
+        fill="none"
+        stroke="#111"
+        strokeWidth={1.7}
+        strokeLinejoin="round"
+      />
+      <line
+        x1={x + w - 0.6}
+        y1={y + 0.6}
+        x2={x + w - tick * 0.74}
+        y2={y + tick * 0.74}
+        stroke="#111"
+        strokeWidth={1.7}
+        strokeLinecap="square"
+      />
+      <text x={x + w / 2} y={y + h / 2 + 3.2} textAnchor="middle" fontSize={9}>
         {a}
       </text>
-      <text x={34} y={31} textAnchor="end" fontSize={9}>
+      <text x={x - 5} y={y + h / 2 + 3.2} textAnchor="end" fontSize={9}>
         {b}
       </text>
-      <text x={34} y={16} textAnchor="end" fontSize={9}>
+      <text x={x + w + 6} y={y + 10} fontSize={9}>
         {hook}
       </text>
     </svg>
