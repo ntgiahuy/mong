@@ -213,6 +213,7 @@ function LeaderTag({
   label,
   obstacles = [],
   avoidYs = [],
+  showTick = true,
 }: {
   n: number
   x: number
@@ -223,6 +224,7 @@ function LeaderTag({
   labelAlign?: 'left' | 'right'
   obstacles?: Seg[]
   avoidYs?: number[]
+  showTick?: boolean
 }) {
   const placed = placeLeader(x, y, toX, toY, obstacles, label, avoidYs)
   const tx = placed.x
@@ -244,14 +246,16 @@ function LeaderTag({
           strokeWidth={0.65}
         />
       )}
-      <line
-        x1={lastVert ? toX - tick : toX}
-        y1={lastVert ? toY : toY - tick}
-        x2={lastVert ? toX + tick : toX}
-        y2={lastVert ? toY : toY + tick}
-        stroke="#111"
-        strokeWidth={1.15}
-      />
+      {showTick ? (
+        <line
+          x1={lastVert ? toX - tick : toX}
+          y1={lastVert ? toY : toY - tick}
+          x2={lastVert ? toX + tick : toX}
+          y2={lastVert ? toY : toY + tick}
+          stroke="#111"
+          strokeWidth={1.15}
+        />
+      ) : null}
       <Tag n={n} x={tx} y={ty} />
       {label ? (
         <text
@@ -1031,31 +1035,55 @@ function PlanDrawing({
 
       {ny.map((mm, i) => {
         const y = oy + mm * s
-        return (
+        const x0 = ox + cover
+        const x1 = ox + w - cover
+        const pad = 1.6
+        const through = y > cy - pad && y < cy + ch + pad
+        const spans = (through
+          ? (
+              [
+                [x0, Math.min(x1, cx - pad)],
+                [Math.max(x0, cx + cw + pad), x1],
+              ] as [number, number][]
+            ).filter(([a, b]) => b - a > 1)
+          : ([[x0, x1]] as [number, number][]))
+        return spans.map(([a, b], j) => (
           <line
-            key={`y${i}`}
-            x1={ox + cover}
+            key={`y${i}-${j}`}
+            x1={a}
             y1={y}
-            x2={ox + w - cover}
+            x2={b}
             y2={y}
             stroke="#111"
             strokeWidth={Math.max(1.1, inp.dFaX / 12)}
           />
-        )
+        ))
       })}
       {nx.map((mm, i) => {
         const x = ox + mm * s
-        return (
+        const y0 = oy + cover
+        const y1 = oy + h - cover
+        const pad = 1.6
+        const through = x > cx - pad && x < cx + cw + pad
+        const spans = (through
+          ? (
+              [
+                [y0, Math.min(y1, cy - pad)],
+                [Math.max(y0, cy + ch + pad), y1],
+              ] as [number, number][]
+            ).filter(([a, b]) => b - a > 1)
+          : ([[y0, y1]] as [number, number][]))
+        return spans.map(([a, b], j) => (
           <line
-            key={`x${i}`}
+            key={`x${i}-${j}`}
             x1={x}
-            y1={oy + cover}
+            y1={a}
             x2={x}
-            y2={oy + h - cover}
+            y2={b}
             stroke="#333"
             strokeWidth={Math.max(0.8, inp.dFaY / 14)}
           />
-        )
+        ))
       })}
 
       <StirrupHoop
@@ -1161,6 +1189,7 @@ function PlanDrawing({
             label={b.label}
             obstacles={planObstacles}
             avoidYs={[cy, cy + ch, aaY, gridY, oy, oy + h]}
+            showTick={false}
           />
         )
       })}
@@ -1173,6 +1202,7 @@ function PlanDrawing({
         label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
         obstacles={planObstacles}
         avoidYs={[cy, cy + ch, oy, oy + h, gridY]}
+        showTick={false}
       />
 
       <HDim x1={ox - lot} x2={ox} y={dimY} label={LOT_PLAN_MM} below />
