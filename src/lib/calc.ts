@@ -48,7 +48,7 @@ export const DEFAULT_INPUTS: Inputs = {
   hCom: 1500,
   hCm: 300,
   hDm: 200,
-  xCc: 1000,
+  xCc: 900,
   yCc: 1000,
   axisXName: '1',
   axisYName: 'A',
