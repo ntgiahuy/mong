@@ -81,7 +81,7 @@ export const t = {
     print: 'In bản vẽ',
     cadView: 'Xem CAD',
     cadViewOff: 'Thoát view CAD',
-    downloadCad: 'Tải file CAD (DXF)',
+    downloadCad: 'Tải CAD (DXF)',
     exportingCad: 'Đang xuất CAD…',
     cadHint: 'Kéo để pan · lăn chuột zoom · DXF mở bằng AutoCAD / LibreCAD',
     cadNote:

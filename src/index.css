@@ -525,15 +525,8 @@ p {
   background: #5a3030;
 }
 
-.result-wrap {
-  margin-top: 18px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px;
-}
-
 .shop-scroll {
+  margin-top: 18px;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: visible;
@@ -760,12 +753,8 @@ p {
   .banner {
     display: none !important;
   }
-  .result-wrap {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #fff !important;
-  }
   .shop-scroll {
+    margin: 0 !important;
     overflow: visible !important;
     max-width: none !important;
     break-inside: avoid;

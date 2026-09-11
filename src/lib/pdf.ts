@@ -4,7 +4,7 @@ import { jsPDF } from 'jspdf'
 const SHEET_PX = 1782
 
 const CLONE_CSS = `
-.app, .result-wrap, .shop-scroll, #root, body, html {
+.app, .shop-scroll, #root, body, html {
   max-width: none !important;
   width: auto !important;
   overflow: visible !important;

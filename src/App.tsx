@@ -325,9 +325,7 @@ export default function App() {
       )}
 
       {showResult && result.errors.length === 0 && (
-        <section className="result-wrap">
-          <ShopDrawing inp={inp} result={result} lang={lang} />
-        </section>
+        <ShopDrawing inp={inp} result={result} lang={lang} />
       )}
     </div>
   )
