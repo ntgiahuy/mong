@@ -696,12 +696,17 @@ function SectionDrawing({
   const faceXs = faceStations(nFace, colMm, inp.coverCol).map((mm) => colX + mm * s)
   const transXs = meshStations(widthMm, inp.coverBase, aDot).map((mm) => ox + mm * s)
 
-  const yMainLab = y0 + Math.max(28, hs.com * 0.38)
-  const yStirLab = y0 + Math.max(12, hs.com * 0.14)
   const captionY = y4 + sandH + SECTION_CAPTION_GAP
   const yAtElev = (elevMm: number) => y0 - (elevMm - inp.cdn) * s
   const yBeam = yAtElev(inp.cdg)
   const yGround = yAtElev(inp.cdtn)
+  /** Interval from natural ground down to the footing-shoulder (vai đế). */
+  const yVai = y1
+  const yVaiHi = Math.min(yGround, yVai)
+  const yVaiLo = Math.max(yGround, yVai)
+  const vaiGroundSpan = yVaiLo - yVaiHi
+  const yMarkMain = yVaiHi + vaiGroundSpan / 3
+  const yMarkStir = yVaiHi + (vaiGroundSpan * 2) / 3
   const beamH = Math.max(8, inp.hBeam * s)
   const showBeam = inp.hasBeam && inp.hBeam > 0
   const lx = ox + bw + 10
@@ -711,7 +716,6 @@ function SectionDrawing({
   const stirYs = Array.from({ length: result.nStirrup }, (_, i) => y0 + (inp.coverCol + i * inp.aStirrup) * s).filter(
     (y) => y <= y1 - 3,
   )
-  const stirYLand = stirYs[0] ?? yStirLab
   const mainLandX = faceXs[faceXs.length - 1] ?? colX + cw - colCover
   const longLandX = Math.min(colX - 8, ox + cover + Math.max(18, bw * 0.18))
   const transLandX =
@@ -866,23 +870,23 @@ function SectionDrawing({
             key={`colmark${b.mark}`}
             n={b.mark}
             x={tagRight}
-            y={yMainLab + i * 20}
+            y={yMarkMain + i * 18}
             toX={i === 0 ? mainLandX : (faceXs[0] ?? colX + colCover)}
-            toY={yMainLab + i * 20}
+            toY={yMarkMain + i * 18}
             label={b.label}
-            obstacles={sectionObstacles}
-            avoidYs={avoidBaseYs}
+            obstacles={[]}
+            avoidYs={[]}
           />
         ))}
       <LeaderTag
         n={stirMark}
         x={tagRight}
-        y={Math.min(yStirLab, y1 - 18)}
+        y={yMarkStir}
         toX={colX + cw - colCover}
-        toY={stirYLand}
+        toY={yMarkStir}
         label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
-        obstacles={sectionObstacles}
-        avoidYs={avoidBaseYs}
+        obstacles={[]}
+        avoidYs={[]}
       />
       <LeaderTag
         n={markLong}

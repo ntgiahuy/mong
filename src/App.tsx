@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CadViewport } from './components/CadViewport'
 import { FoundationForm } from './components/FoundationForm'
 import { Schematic } from './components/Schematic'
 import { ShopDrawing } from './components/ShopDrawing'
@@ -32,8 +31,6 @@ export default function App() {
   const [inp, setInp] = useState<Inputs>(() => loadSaved() ?? DEFAULT_INPUTS)
   const [busy, setBusy] = useState<'pdf' | 'cad' | null>(null)
   const [showResult, setShowResult] = useState(true)
-  const [cadView, setCadView] = useState(false)
-  const [cadHint, setCadHint] = useState(false)
   const [ioError, setIoError] = useState('')
   const [savedFlash, setSavedFlash] = useState(false)
   const result = useMemo(() => compute(inp), [inp])
@@ -106,7 +103,6 @@ export default function App() {
     void withSheet('cad', async (el) => {
       const { exportShopDxf } = await import('./lib/dxf')
       exportShopDxf(el, cadFilename(inp.name))
-      setCadHint(true)
     })
   }
 
@@ -273,6 +269,19 @@ export default function App() {
             </svg>
             {busy === 'pdf' ? L.exporting : L.exportPdf}
           </button>
+          <button type="button" className="btn-ghost" onClick={downloadCad} disabled={busy !== null}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                d="M12 4.5v10M8.5 11.5 12 15l3.5-3.5M6 19.5h12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {busy === 'cad' ? L.exportingCad : L.downloadCad}
+          </button>
         </div>
       </header>
 
@@ -316,46 +325,8 @@ export default function App() {
       )}
 
       {showResult && result.errors.length === 0 && (
-        <section className={`result-wrap${cadView ? ' cad-mode' : ''}`}>
-          <div className="result-toolbar">
-            <button type="button" className="btn-blue" onClick={downloadPdf} disabled={busy !== null}>
-              {busy === 'pdf' ? L.exporting : L.exportPdf}
-            </button>
-            <button type="button" className="btn-ghost" onClick={downloadCad} disabled={busy !== null}>
-              {busy === 'cad' ? L.exportingCad : L.downloadCad}
-            </button>
-            <button
-              type="button"
-              className={cadView ? 'btn-ghost btn-on' : 'btn-ghost'}
-              onClick={() => setCadView((v) => !v)}
-            >
-              {cadView ? L.cadViewOff : L.cadView}
-            </button>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => {
-                fitShopSheetForPrint()
-                window.print()
-              }}
-            >
-              {L.print}
-            </button>
-          </div>
-          {cadHint && (
-            <div className="cad-lock" role="status">
-              <strong>{L.cadLockTitle}</strong>
-              <ol>
-                {L.cadLockSteps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </div>
-          )}
-          <p className="cad-note">{L.cadNote}</p>
-          <CadViewport active={cadView} hint={L.cadHint}>
-            <ShopDrawing inp={inp} result={result} lang={lang} />
-          </CadViewport>
+        <section className="result-wrap">
+          <ShopDrawing inp={inp} result={result} lang={lang} />
         </section>
       )}
     </div>
