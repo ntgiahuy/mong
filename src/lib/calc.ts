@@ -424,6 +424,15 @@ export function compute(i: Inputs): CalcResult {
     label: i.bottomLayerX ? `FaY Ø${i.dFaY}a${i.aFaY}` : `FaX Ø${i.dFaX}a${i.aFaX}`,
   })
 
+  push({
+    shape: 'stirrup',
+    segs: [stirrupA, stirrupB, stirrupHook],
+    d: i.dStirrup,
+    length: stirrupL,
+    n1: nStirrup,
+    label: `Ø${i.dStirrup}a${i.aStirrup}`,
+  })
+
   const nOne = i.stagger ? Math.floor(nCol / 2) : nCol
   const nTwo = i.stagger ? nCol - nOne : 0
   const L0 = colStraight[0] + colHook
@@ -448,15 +457,6 @@ export function compute(i: Inputs): CalcResult {
       label: `${nTwo}Ø${i.dMain}`,
     })
   }
-
-  push({
-    shape: 'stirrup',
-    segs: [stirrupA, stirrupB, stirrupHook],
-    d: i.dStirrup,
-    length: stirrupL,
-    n1: nStirrup,
-    label: `Ø${i.dStirrup}a${i.aStirrup}`,
-  })
 
   const byMap = new Map<number, SteelByDia>()
   for (const b of bars) {

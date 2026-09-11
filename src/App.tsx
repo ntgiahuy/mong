@@ -30,7 +30,7 @@ export default function App() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [inp, setInp] = useState<Inputs>(() => loadSaved() ?? DEFAULT_INPUTS)
   const [busy, setBusy] = useState<'pdf' | 'cad' | null>(null)
-  const [showResult, setShowResult] = useState(true)
+  const [showResult, setShowResult] = useState(false)
   const [ioError, setIoError] = useState('')
   const [savedFlash, setSavedFlash] = useState(false)
   const result = useMemo(() => compute(inp), [inp])
@@ -175,6 +175,7 @@ export default function App() {
             onClick={() => {
               setInp(DEFAULT_INPUTS)
               setIoError('')
+              setShowResult(false)
             }}
           >
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">

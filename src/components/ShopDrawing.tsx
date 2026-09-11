@@ -716,6 +716,11 @@ function SectionDrawing({
   const stirYs = Array.from({ length: result.nStirrup }, (_, i) => y0 + (inp.coverCol + i * inp.aStirrup) * s).filter(
     (y) => y <= y1 - 3,
   )
+  const stirLandY = stirYs.reduce(
+    (best, y) => (Math.abs(y - yMarkStir) < Math.abs(best - yMarkStir) ? y : best),
+    stirYs[0] ?? yMarkStir,
+  )
+  const stirLandX = colX + cw - colCover
   const mainLandX = faceXs[faceXs.length - 1] ?? colX + cw - colCover
   const longLandX = Math.min(colX - 8, ox + cover + Math.max(18, bw * 0.18))
   const transLandX =
@@ -881,9 +886,9 @@ function SectionDrawing({
       <LeaderTag
         n={stirMark}
         x={tagRight}
-        y={yMarkStir}
-        toX={colX + cw - colCover}
-        toY={yMarkStir}
+        y={stirLandY}
+        toX={stirLandX}
+        toY={stirLandY}
         label={`Ø${inp.dStirrup}a${inp.aStirrup}`}
         obstacles={[]}
         avoidYs={[]}
